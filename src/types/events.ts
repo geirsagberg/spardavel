@@ -22,7 +22,6 @@ const PurchaseEventSchema = z.object({
   amount: z.number().positive(),
   category: CategorySchema,
   description: z.string().min(1),
-  metadata: z.record(z.unknown()).optional(),
 })
 
 const AvoidedPurchaseEventSchema = z.object({
@@ -32,7 +31,6 @@ const AvoidedPurchaseEventSchema = z.object({
   amount: z.number().positive(),
   category: CategorySchema,
   description: z.string().min(1),
-  metadata: z.record(z.unknown()).optional(),
 })
 
 const InterestRateChangeEventSchema = z.object({
@@ -40,7 +38,6 @@ const InterestRateChangeEventSchema = z.object({
   id: z.string().uuid(),
   date: DateSchema,
   newRate: z.number().min(0).max(100),
-  notes: z.string().optional(),
 })
 
 const InterestApplicationEventSchema = z.object({
@@ -49,7 +46,6 @@ const InterestApplicationEventSchema = z.object({
   date: DateSchema,
   pendingOnAvoided: z.number(),
   pendingOnSpent: z.number(),
-  metadata: z.record(z.unknown()).optional(),
 })
 
 export const AppEventSchema = z.discriminatedUnion('type', [
@@ -78,7 +74,6 @@ export interface PurchaseEvent extends BaseEvent {
   amount: number // currency-agnostic
   category: Category
   description: string
-  metadata?: Record<string, unknown>
 }
 
 /**
@@ -89,7 +84,6 @@ export interface AvoidedPurchaseEvent extends BaseEvent {
   amount: number // currency-agnostic
   category: Category
   description: string
-  metadata?: Record<string, unknown>
 }
 
 /**
@@ -100,7 +94,6 @@ export interface InterestRateChangeEvent {
   id: string // UUIDv7
   date: string // ISO 8601 date (YYYY-MM-DD) - when the rate change takes effect
   newRate: number // e.g., 3.5 for 3.5% annually
-  notes?: string
 }
 
 /**
@@ -112,7 +105,6 @@ export interface InterestApplicationEvent {
   date: string // ISO 8601 date (YYYY-MM-DD) - end of month when interest is applied
   pendingOnAvoided: number // calculated interest
   pendingOnSpent: number // calculated interest
-  metadata?: Record<string, unknown>
 }
 
 /**

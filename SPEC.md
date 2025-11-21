@@ -37,8 +37,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
   date: string (YYYY-MM-DD),
   amount: number (currency-agnostic, e.g., 30 for 30 kr),
   category: string (Alcohol|Candy|Snacks|Food|Drinks|Games|Other),
-  description: string,
-  metadata?: object
+  description: string
 }
 ```
 
@@ -50,8 +49,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
   date: string (YYYY-MM-DD),
   amount: number (currency-agnostic, e.g., 30 for 30 kr),
   category: string (Alcohol|Candy|Snacks|Food|Drinks|Games|Other),
-  description: string,
-  metadata?: object
+  description: string
 }
 ```
 
@@ -61,8 +59,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
   type: "INTEREST_RATE_CHANGE",
   id: string (UUIDv7),
   date: string (YYYY-MM-DD) - when the rate change takes effect,
-  newRate: number (e.g., 3.5 for 3.5% annually),
-  notes?: string
+  newRate: number (e.g., 3.5 for 3.5% annually)
 }
 ```
 
@@ -73,8 +70,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
   id: string (UUIDv7),
   date: string (YYYY-MM-DD) - end of month when interest is applied,
   pendingOnAvoided: number (calculated interest, same currency-agnostic units),
-  pendingOnSpent: number (calculated interest, same currency-agnostic units),
-  metadata?: object
+  pendingOnSpent: number (calculated interest, same currency-agnostic units)
 }
 ```
 
@@ -156,7 +152,6 @@ Events can be edited after creation. Editing an event triggers full recalculatio
 *INTEREST_RATE_CHANGE:*
 - `newRate` - Interest rate value
 - `date` - Date when rate change takes effect (YYYY-MM-DD)
-- `notes` - Notes about the rate change
 - (Cannot change event type from INTEREST_RATE_CHANGE; delete and create new if needed)
 
 **Immutable fields:**

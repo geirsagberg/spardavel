@@ -43,19 +43,16 @@ export function createAvoidedPurchaseEvent(
  * Create an interest rate change event
  * @param newRate The new interest rate (e.g., 3.5 for 3.5%)
  * @param date The date when the rate change takes effect (YYYY-MM-DD)
- * @param notes Optional notes about the rate change
  */
 export function createInterestRateChangeEvent(
   newRate: number,
   date: string,
-  notes?: string,
 ): InterestRateChangeEvent {
   return {
     type: 'INTEREST_RATE_CHANGE',
     id: uuidv7(),
     date,
     newRate,
-    notes,
   }
 }
 
@@ -132,10 +129,9 @@ export function isValidEvent(event: unknown): event is AppEvent {
         typeof e.description === 'string'
       )
     case 'INTEREST_RATE_CHANGE':
-      return typeof e.effectiveDate === 'string' && typeof e.newRate === 'number'
+      return typeof e.newRate === 'number'
     case 'INTEREST_APPLICATION':
       return (
-        typeof e.appliedDate === 'string' &&
         typeof e.pendingOnAvoided === 'number' &&
         typeof e.pendingOnSpent === 'number'
       )
