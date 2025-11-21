@@ -19,11 +19,16 @@ const PRESETS: (Preset & { emoji: string })[] = [
   { emoji: '🍔', description: 'Food', amount: 50, category: 'Food' },
 ]
 
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0]
+}
+
 export function QuickEntry() {
   const addEvent = useAppStore((state) => state.addEvent)
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<Category>('Other')
+  const [date, setDate] = useState(getTodayString)
   const [isLoading, setIsLoading] = useState(false)
   const [showCustom, setShowCustom] = useState(false)
 
@@ -53,10 +58,13 @@ export function QuickEntry() {
         return
       }
 
+      // Create timestamp from date (use noon to avoid timezone issues)
+      const timestamp = `${date}T12:00:00.000Z`
+
       const event =
         type === 'purchase'
-          ? createPurchaseEvent(numAmount, category, description)
-          : createAvoidedPurchaseEvent(numAmount, category, description)
+          ? createPurchaseEvent(numAmount, category, description, timestamp)
+          : createAvoidedPurchaseEvent(numAmount, category, description, timestamp)
 
       addEvent(event)
 
@@ -64,6 +72,7 @@ export function QuickEntry() {
       setAmount('')
       setDescription('')
       setCategory('Other')
+      setDate(getTodayString())
       setShowCustom(false)
     } finally {
       setIsLoading(false)
@@ -159,7 +168,19 @@ export function QuickEntry() {
 
           {/* Action Buttons - always visible when form is valid */}
           {isFormValid && (
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2 items-end">
+              <div className="form-control w-[130px]">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Date</span>
+                </label>
+                <input
+                  type="date"
+                  className="input input-bordered input-sm"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
               <button
                 className="btn btn-success flex-1"
                 onClick={() => handleAddEvent('avoided')}
