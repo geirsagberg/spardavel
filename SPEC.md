@@ -85,9 +85,11 @@ Interest is calculated daily but only applied monthly.
 For each day:
 ```
 Daily Rate = Annual Rate / 365
-Interest on Avoided = Sum of Avoided Purchases up to that date × Daily Rate
-Interest on Spent = Sum of Purchases up to that date × Daily Rate
+Interest on Avoided = Balance of Avoided Purchases up to that date × Daily Rate
+Interest on Spent = Balance of Purchases up to that date × Daily Rate
 ```
+
+**Important**: The balance includes both principal (PURCHASE/AVOIDED_PURCHASE events) AND previously applied interest (INTEREST_APPLICATION events) for proper compound interest calculation.
 
 Pending interest accumulates but is not added to the balance until the monthly application.
 
@@ -96,13 +98,32 @@ On the last day of each month (or first day of next month):
 - All pending interest from avoided purchases is added to the saved balance
 - All pending interest from spent purchases is accumulated separately (opportunity cost)
 - An INTEREST_APPLICATION event is recorded
+- Applied interest becomes part of the principal balance for subsequent interest calculations (compounding)
+
+### Compound Interest
+Interest compounds monthly:
+1. Month 1: Interest calculated on principal (e.g., 10,000 kr)
+2. INTEREST_APPLICATION event records the interest (e.g., 29.73 kr)
+3. Month 2: Interest calculated on principal + applied interest (10,029.73 kr)
+4. This continues for all subsequent months
+
+Example for 10,000 kr avoided purchase at 3.5% annual rate:
+- August (31 days): 10,000 × (3.5/100/365) × 31 ≈ 29.73 kr
+- September (30 days): 10,029.73 × (3.5/100/365) × 30 ≈ 28.85 kr
+- October (31 days): 10,058.58 × (3.5/100/365) × 31 ≈ 29.91 kr
+- Total after 3 months: 10,088.49 kr
 
 ### Retroactive Recalculation
-When an interest rate is changed with a retroactive `effectiveDate`:
-1. All INTEREST_APPLICATION events from that date onward are invalidated
-2. Recalculate interest for affected months with the new rate
-3. Regenerate INTEREST_APPLICATION events
-4. Update all derived balances
+When an interest rate is changed with a retroactive `effectiveDate`, OR when a historical event is added/edited/deleted:
+1. All INTEREST_APPLICATION events are removed
+2. Interest is recalculated for ALL completed months from the earliest transaction to the current month
+3. New INTEREST_APPLICATION events are regenerated for each completed month
+4. All derived balances are updated
+
+**Key behavior**: Adding a transaction in the past (e.g., August) will automatically generate interest application events for ALL months from August through the last completed month (e.g., October if current month is November). This ensures that:
+- Interest compounds properly across all months
+- The balance carries forward from month to month
+- Historical changes are fully reflected in current totals
 
 ### Rate Changes
 Users can:

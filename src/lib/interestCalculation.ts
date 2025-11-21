@@ -46,9 +46,11 @@ export function calculatePendingInterestForCurrentMonth(
   const { start: monthStart } = getMonthBounds(currentMonthKey)
 
   // Filter events that occurred in this month or earlier
+  // Include INTEREST_APPLICATION for compounding
   const relevantEvents = events.filter((e) => {
     const eventDate = e.timestamp.split('T')[0]
-    return eventDate <= today && (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE')
+    return eventDate <= today && 
+      (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
   })
 
   let pendingOnAvoided = 0
@@ -65,7 +67,7 @@ export function calculatePendingInterestForCurrentMonth(
     const rate = getEffectiveRateForDate(dateStr, events, currentInterestRate)
     const dailyRate = rate / 100 / 365
 
-    // Calculate running balance as of this date
+    // Calculate running balance as of this date (including applied interest for compounding)
     let avoidedBalance = 0
     let purchaseBalance = 0
 
@@ -79,6 +81,10 @@ export function calculatePendingInterestForCurrentMonth(
         avoidedBalance += event.amount
       } else if (event.type === 'PURCHASE') {
         purchaseBalance += event.amount
+      } else if (event.type === 'INTEREST_APPLICATION') {
+        // Add applied interest to balances for compounding
+        avoidedBalance += event.pendingOnAvoided
+        purchaseBalance += event.pendingOnSpent
       }
     }
 
@@ -112,7 +118,7 @@ export function shouldApplyMonthlyInterest(monthKey: string): boolean {
 /**
  * Get all months that need interest application (past months without it)
  * A month needs application if:
- * 1. It has purchase/avoided_purchase events
+ * 1. It has purchase/avoided_purchase events OR has a carried-forward balance from earlier months
  * 2. It's before the current month
  * 3. It doesn't already have an INTEREST_APPLICATION event
  */
@@ -120,25 +126,48 @@ export function getMonthsNeedingInterestApplication(
   events: AppEvent[],
   currentMonthKey: string,
 ): string[] {
-  const monthsWithEvents = new Set<string>()
   const monthsWithApplication = new Set<string>()
-
+  
+  // Find months that already have interest application
   for (const event of events) {
-    if (event.type === 'PURCHASE' || event.type === 'AVOIDED_PURCHASE') {
-      const monthKey = getMonthKey(event.timestamp)
-      if (monthKey < currentMonthKey) {
-        monthsWithEvents.add(monthKey)
-      }
-    } else if (event.type === 'INTEREST_APPLICATION') {
+    if (event.type === 'INTEREST_APPLICATION') {
       const monthKey = getMonthKey(event.appliedDate)
       monthsWithApplication.add(monthKey)
     }
   }
 
-  // Return months with events that don't have interest application
-  return Array.from(monthsWithEvents)
-    .filter((m) => !monthsWithApplication.has(m))
-    .sort()
+  // Find the earliest transaction month
+  let earliestMonthKey: string | null = null
+  for (const event of events) {
+    if (event.type === 'PURCHASE' || event.type === 'AVOIDED_PURCHASE') {
+      const monthKey = getMonthKey(event.timestamp)
+      if (monthKey < currentMonthKey) {
+        if (!earliestMonthKey || monthKey < earliestMonthKey) {
+          earliestMonthKey = monthKey
+        }
+      }
+    }
+  }
+
+  // If no transactions before current month, nothing to do
+  if (!earliestMonthKey) {
+    return []
+  }
+
+  // Generate all months from earliest transaction to current month (exclusive)
+  const allMonths: string[] = []
+  let currentMonth = earliestMonthKey
+  while (currentMonth < currentMonthKey) {
+    if (!monthsWithApplication.has(currentMonth)) {
+      allMonths.push(currentMonth)
+    }
+    // Move to next month
+    const [year, month] = currentMonth.split('-').map(Number)
+    const nextDate = new Date(year, month, 1) // month is 0-indexed, so this gives us next month
+    currentMonth = getMonthKey(nextDate.toISOString())
+  }
+
+  return allMonths.sort()
 }
 
 /**
@@ -153,10 +182,12 @@ export function calculateInterestForMonth(
   const { start: monthStart, end: monthEnd } = getMonthBounds(monthKey)
 
   // Filter events that occurred on or before the month end
+  // Include PURCHASE, AVOIDED_PURCHASE, and INTEREST_APPLICATION for compounding
   const relevantEvents = events
     .filter((e) => {
       const eventDate = e.timestamp.split('T')[0]
-      return eventDate <= monthEnd && (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE')
+      return eventDate <= monthEnd && 
+        (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
     })
     .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
 
@@ -174,7 +205,7 @@ export function calculateInterestForMonth(
     const rate = getEffectiveRateForDate(dateStr, events, defaultRate)
     const dailyRate = rate / 100 / 365
 
-    // Calculate running balance as of this date
+    // Calculate running balance as of this date (including applied interest for compounding)
     let avoidedBalance = 0
     let purchaseBalance = 0
 
@@ -188,6 +219,10 @@ export function calculateInterestForMonth(
         avoidedBalance += event.amount
       } else if (event.type === 'PURCHASE') {
         purchaseBalance += event.amount
+      } else if (event.type === 'INTEREST_APPLICATION') {
+        // Add applied interest to balances for compounding
+        avoidedBalance += event.pendingOnAvoided
+        purchaseBalance += event.pendingOnSpent
       }
     }
 

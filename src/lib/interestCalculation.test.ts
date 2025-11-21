@@ -339,6 +339,173 @@ describe('generateInterestApplicationEvents', () => {
     expect(oct2!.pendingOnAvoided).toBeGreaterThan(0)
     expect(oct2!.pendingOnSpent).toBe(oct1.pendingOnSpent) // Same spent interest as before
   })
+
+  test('adding historical event (like Piano in August) generates interest for ALL months up to current month', () => {
+    // Scenario: Today is November 21, 2025
+    // User adds a 10,000 kr avoided purchase on August 1, 2025
+    // Expected: Interest should be calculated for August, September, October
+    // Bug: Only one month of interest is being added
+    
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(10000, '2025-08-01T00:00:00Z', 'piano-event'),
+    ]
+
+    // Generate interest applications as if we're in November
+    const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    
+    // Should generate interest for August, September, and October (3 months)
+    expect(result).toHaveLength(3)
+    
+    const august = result.find(e => e.appliedDate === '2025-08-31')
+    const september = result.find(e => e.appliedDate === '2025-09-30')
+    const october = result.find(e => e.appliedDate === '2025-10-31')
+    
+    expect(august).toBeDefined()
+    expect(september).toBeDefined()
+    expect(october).toBeDefined()
+    
+    // August: 10,000 kr for 31 days at 3.5% = 10000 * (3.5/100/365) * 31 ≈ 29.73
+    expect(august!.pendingOnAvoided).toBeGreaterThan(29)
+    expect(august!.pendingOnAvoided).toBeLessThan(30)
+    
+    // September: 10,000 kr for 30 days at 3.5% = 10000 * (3.5/100/365) * 30 ≈ 28.77
+    expect(september!.pendingOnAvoided).toBeGreaterThan(28)
+    expect(september!.pendingOnAvoided).toBeLessThan(29)
+    
+    // October: 10,000 kr for 31 days at 3.5% = 10000 * (3.5/100/365) * 31 ≈ 29.73
+    expect(october!.pendingOnAvoided).toBeGreaterThan(29)
+    expect(october!.pendingOnAvoided).toBeLessThan(30)
+    
+    // Total interest for 3 months should be approximately 29.73 + 28.77 + 29.73 = 88.23 kr
+    const totalInterest = august!.pendingOnAvoided + september!.pendingOnAvoided + october!.pendingOnAvoided
+    expect(totalInterest).toBeGreaterThan(87)
+    expect(totalInterest).toBeLessThan(89)
+  })
+
+  test('adding historical purchase only affects purchase interest, not avoided purchase interest', () => {
+    // Start with an avoided purchase in August
+    const initialEvents: AppEvent[] = [
+      createAvoidedPurchaseEvent(5000, '2025-08-01T00:00:00Z', 'avoid-1'),
+    ]
+
+    // Generate interest for August, September, October
+    const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
+    expect(result1).toHaveLength(3)
+    
+    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')
+    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
+
+    // All should have avoided interest, no purchase interest
+    expect(aug1!.pendingOnAvoided).toBeGreaterThan(0)
+    expect(aug1!.pendingOnSpent).toBe(0)
+    expect(sep1!.pendingOnAvoided).toBeGreaterThan(0)
+    expect(sep1!.pendingOnSpent).toBe(0)
+
+    // Now add a purchase in September (different month from avoided purchase)
+    const eventsWithPurchase = [
+      ...initialEvents,
+      createPurchaseEvent(3000, '2025-09-15T00:00:00Z', 'purchase-1'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsWithPurchase, '2025-11', 3.5)
+    expect(result2).toHaveLength(3)
+    
+    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
+    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+
+    // August: avoided interest should be same (no purchase yet)
+    expect(aug2!.pendingOnAvoided).toBe(aug1!.pendingOnAvoided)
+    expect(aug2!.pendingOnSpent).toBe(0)
+
+    // September: avoided interest same, but now has purchase interest
+    expect(sep2!.pendingOnAvoided).toBe(sep1!.pendingOnAvoided)
+    expect(sep2!.pendingOnSpent).toBeGreaterThan(0)
+
+    // October: avoided interest same, purchase interest on full month
+    expect(oct2!.pendingOnAvoided).toBe(oct1!.pendingOnAvoided)
+    expect(oct2!.pendingOnSpent).toBeGreaterThan(sep2!.pendingOnSpent)
+  })
+
+  test('adding historical avoided purchase only affects avoided interest, not purchase interest', () => {
+    // Start with a purchase in August
+    const initialEvents: AppEvent[] = [
+      createPurchaseEvent(5000, '2025-08-01T00:00:00Z', 'purchase-1'),
+    ]
+
+    const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
+    expect(result1).toHaveLength(3)
+    
+    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')
+    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')
+
+    // All should have purchase interest, no avoided interest
+    expect(aug1!.pendingOnSpent).toBeGreaterThan(0)
+    expect(aug1!.pendingOnAvoided).toBe(0)
+
+    // Now add an avoided purchase in September
+    const eventsWithAvoided = [
+      ...initialEvents,
+      createAvoidedPurchaseEvent(3000, '2025-09-15T00:00:00Z', 'avoid-1'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsWithAvoided, '2025-11', 3.5)
+    expect(result2).toHaveLength(3)
+    
+    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
+    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')
+
+    // August: purchase interest should be same (no avoided yet)
+    expect(aug2!.pendingOnSpent).toBe(aug1!.pendingOnSpent)
+    expect(aug2!.pendingOnAvoided).toBe(0)
+
+    // September: purchase interest same, but now has avoided interest
+    expect(sep2!.pendingOnSpent).toBe(sep1!.pendingOnSpent)
+    expect(sep2!.pendingOnAvoided).toBeGreaterThan(0)
+  })
+
+  test('interest compounds monthly - applied interest becomes part of principal', () => {
+    // Add 1000 kr avoided purchase at start of August
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z', 'avoid-1'),
+    ]
+
+    // Generate interest events for August and September
+    const augustInterest = generateInterestApplicationEvents(events, '2025-09', 3.5)
+    expect(augustInterest).toHaveLength(1)
+    expect(augustInterest[0].appliedDate).toBe('2025-08-31')
+    
+    // August interest on 1000 kr for 31 days ≈ 2.97 kr
+    const augustAmount = augustInterest[0].pendingOnAvoided
+    expect(augustAmount).toBeGreaterThan(2.9)
+    expect(augustAmount).toBeLessThan(3.1)
+
+    // Now include the interest application and calculate September
+    const eventsWithAugustInterest = [...events, ...augustInterest]
+    const septemberInterest = generateInterestApplicationEvents(eventsWithAugustInterest, '2025-10', 3.5)
+    
+    // Should only generate September interest (August already has it)
+    expect(septemberInterest).toHaveLength(1)
+    expect(septemberInterest[0].appliedDate).toBe('2025-09-30')
+    
+    const septemberAmount = septemberInterest[0].pendingOnAvoided
+    
+    // September should calculate interest on (1000 + augustAmount) for 30 days
+    // If compounding: (1000 + 2.97) * (3.5/100/365) * 30 ≈ 2.88 kr
+    // If not compounding: 1000 * (3.5/100/365) * 30 ≈ 2.88 kr (same as August calculation)
+    
+    // For true compound interest, September should be slightly higher than:
+    // 1000 * (3.5/100/365) * 30 = 2.877
+    const simpleInterest = 1000 * (3.5/100/365) * 30
+    
+    // With compounding on (1000 + 2.97):
+    const compoundInterest = (1000 + augustAmount) * (3.5/100/365) * 30
+    
+    // September interest should include the effect of August's applied interest
+    expect(septemberAmount).toBeCloseTo(compoundInterest, 2)
+    expect(septemberAmount).toBeGreaterThan(simpleInterest)
+  })
 })
 
 describe('default interest rate changes', () => {
