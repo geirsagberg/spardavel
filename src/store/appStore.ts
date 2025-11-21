@@ -168,7 +168,10 @@ export const useAppStore = create<AppStore>()(
 
       addEvent: (event) => {
         set((state) => {
-          let newEvents = [...state.events, event]
+          // Remove existing interest application events - they will be regenerated
+          // This ensures retroactive purchases trigger recalculation of all affected months
+          let newEvents = state.events.filter((e) => e.type !== 'INTEREST_APPLICATION')
+          newEvents = [...newEvents, event]
           const currentRate = getCurrentInterestRateFromEvents(newEvents)
           newEvents = applyInterestForCompletedMonths(newEvents, currentRate)
           const newMetrics = calculateMetricsFromEvents(newEvents)

@@ -266,6 +266,79 @@ describe('generateInterestApplicationEvents', () => {
     expect(result2).toHaveLength(1)
     expect(result2[0].pendingOnSpent).toBeGreaterThan(result1[0].pendingOnSpent)
   })
+
+  test('recalculates interest for all months when retroactive event is added', () => {
+    // Scenario: Events exist for September, October. Then user adds event for August.
+    // All months from August onwards should have their interest recalculated.
+    const events: AppEvent[] = [
+      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
+      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+    ]
+
+    // Generate initial interest applications
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    expect(result1).toHaveLength(2) // September and October
+
+    const sept1 = result1.find(e => e.appliedDate === '2025-09-30')
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
+    expect(sept1).toBeDefined()
+    expect(oct1).toBeDefined()
+
+    // Now simulate adding a retroactive event for August
+    // We need to remove existing interest applications and regenerate all
+    const eventsWithRetroactive = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'), // New retroactive event
+      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
+      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsWithRetroactive, '2025-11', 3.5)
+    expect(result2).toHaveLength(3) // August, September, and October
+
+    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
+    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+
+    expect(aug2).toBeDefined()
+    expect(aug2!.pendingOnAvoided).toBeGreaterThan(0) // Interest on the August avoided purchase
+
+    // September and October should now include the August balance rolling forward
+    expect(sept2!.pendingOnAvoided).toBeGreaterThan(0) // Interest on August avoided (1000) for September
+    expect(oct2!.pendingOnAvoided).toBeGreaterThan(0) // Interest on August avoided (1000) for October
+  })
+
+  test('interest compounds when retroactive avoided purchase is added', () => {
+    // Add purchase in October only
+    const initialEvents: AppEvent[] = [
+      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+    ]
+
+    const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
+    expect(result1).toHaveLength(1)
+    const oct1 = result1[0]
+
+    // Now add an avoided purchase in September (before October)
+    // This should affect October's interest calculation
+    const eventsWithSeptember = [
+      createAvoidedPurchaseEvent(1000, '2025-09-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsWithSeptember, '2025-11', 3.5)
+    expect(result2).toHaveLength(2) // September and October
+
+    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+
+    // September should have interest on the avoided purchase
+    expect(sept2!.pendingOnAvoided).toBeGreaterThan(0)
+
+    // October should have interest on:
+    // - The September avoided balance (1000) carrying forward
+    // - The October purchase (1000)
+    expect(oct2!.pendingOnAvoided).toBeGreaterThan(0)
+    expect(oct2!.pendingOnSpent).toBe(oct1.pendingOnSpent) // Same spent interest as before
+  })
 })
 
 describe('getEffectiveRateForDate', () => {
