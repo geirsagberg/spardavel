@@ -341,6 +341,94 @@ describe('generateInterestApplicationEvents', () => {
   })
 })
 
+describe('default interest rate changes', () => {
+  test('calculateInterestForMonth uses provided default rate when no rate change events', () => {
+    const events: AppEvent[] = [
+      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+    ]
+
+    // Calculate with 3.5% default rate
+    const result1 = calculateInterestForMonth(events, '2025-10', 3.5)
+
+    // Calculate with 10% default rate
+    const result2 = calculateInterestForMonth(events, '2025-10', 10)
+
+    // Higher rate should produce more interest
+    expect(result2.pendingOnSpent).toBeGreaterThan(result1.pendingOnSpent)
+    // Approximately 10/3.5 = 2.857x more interest
+    const ratio = result2.pendingOnSpent / result1.pendingOnSpent
+    expect(ratio).toBeGreaterThan(2.8)
+    expect(ratio).toBeLessThan(2.9)
+  })
+
+  test('generateInterestApplicationEvents uses provided default rate when no rate change events', () => {
+    const events: AppEvent[] = [
+      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+    ]
+
+    // Generate with 3.5% default rate
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    expect(result1).toHaveLength(1)
+
+    // Generate with 10% default rate
+    const result2 = generateInterestApplicationEvents(events, '2025-11', 10)
+    expect(result2).toHaveLength(1)
+
+    // Higher rate should produce more interest
+    expect(result2[0].pendingOnSpent).toBeGreaterThan(result1[0].pendingOnSpent)
+  })
+
+  test('changing default rate recalculates interest for all months without rate change events', () => {
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
+      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+    ]
+
+    // Generate with original 3.5% rate
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    expect(result1).toHaveLength(3)
+
+    // Generate with new 7% rate (double)
+    const result2 = generateInterestApplicationEvents(events, '2025-11', 7)
+    expect(result2).toHaveLength(3)
+
+    // All months should have approximately doubled interest
+    for (let i = 0; i < 3; i++) {
+      const total1 = result1[i].pendingOnAvoided + result1[i].pendingOnSpent
+      const total2 = result2[i].pendingOnAvoided + result2[i].pendingOnSpent
+
+      if (total1 > 0) {
+        const ratio = total2 / total1
+        expect(ratio).toBeGreaterThan(1.9)
+        expect(ratio).toBeLessThan(2.1)
+      }
+    }
+  })
+
+  test('rate change events override default rate for dates after the change', () => {
+    const events: AppEvent[] = [
+      createPurchaseEvent(1000, '2025-09-01T00:00:00Z'),
+      createInterestRateChangeEvent(10, '2025-10-01', '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+    ]
+
+    // Calculate with different default rates
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    const result2 = generateInterestApplicationEvents(events, '2025-11', 5)
+
+    // September should use default rate (different results)
+    const sept1 = result1.find(e => e.appliedDate === '2025-09-30')
+    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
+    expect(sept2!.pendingOnSpent).toBeGreaterThan(sept1!.pendingOnSpent)
+
+    // October should use 10% rate from event (same results regardless of default)
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+    expect(oct1!.pendingOnSpent).toBe(oct2!.pendingOnSpent)
+  })
+})
+
 describe('getEffectiveRateForDate', () => {
   test('returns default rate when no rate change events', () => {
     const result = getEffectiveRateForDate('2025-10-15', [], 3.5)

@@ -1,5 +1,6 @@
 import type { AppEvent, InterestApplicationEvent } from '~/types/events'
 import { getMonthKey, getMonthBounds, createInterestApplicationEvent } from './eventUtils'
+import { FALLBACK_INTEREST_RATE } from './constants'
 
 /**
  * Get the effective interest rate for a given date
@@ -8,7 +9,7 @@ import { getMonthKey, getMonthBounds, createInterestApplicationEvent } from './e
 export function getEffectiveRateForDate(
   date: string,
   allEvents: AppEvent[],
-  defaultRate: number = 3.5,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
 ): number {
   const rateChangeEvents = allEvents
     .filter((e) => e.type === 'INTEREST_RATE_CHANGE')
@@ -38,7 +39,7 @@ export function getEffectiveRateForDate(
  */
 export function calculatePendingInterestForCurrentMonth(
   events: AppEvent[],
-  currentInterestRate: number = 3.5,
+  currentInterestRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
   const today = new Date().toISOString().split('T')[0]
   const currentMonthKey = getMonthKey(new Date().toISOString())
@@ -147,7 +148,7 @@ export function getMonthsNeedingInterestApplication(
 export function calculateInterestForMonth(
   events: AppEvent[],
   monthKey: string,
-  defaultRate: number = 3.5,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
   const { start: monthStart, end: monthEnd } = getMonthBounds(monthKey)
 
@@ -211,7 +212,7 @@ export function calculateInterestForMonth(
 export function generateInterestApplicationEvents(
   events: AppEvent[],
   currentMonthKey: string,
-  defaultRate: number = 3.5,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
 ): InterestApplicationEvent[] {
   const monthsNeedingApplication = getMonthsNeedingInterestApplication(events, currentMonthKey)
   const newEvents: InterestApplicationEvent[] = []

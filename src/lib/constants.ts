@@ -1,0 +1,1 @@
+export const FALLBACK_INTEREST_RATE = 3.5

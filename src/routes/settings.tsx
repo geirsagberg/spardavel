@@ -23,6 +23,8 @@ function Settings() {
   const updateEvent = useAppStore((state) => state.updateEvent)
   const deleteEvent = useAppStore((state) => state.deleteEvent)
   const currentInterestRate = useAppStore((state) => state.metrics.currentInterestRate)
+  const defaultInterestRate = useAppStore((state) => state.defaultInterestRate)
+  const setDefaultInterestRate = useAppStore((state) => state.setDefaultInterestRate)
 
   const [interestRate, setInterestRate] = useState(() => currentInterestRate.toString())
   const [effectiveDate, setEffectiveDate] = useState(getTodayString)
@@ -30,10 +32,17 @@ function Settings() {
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
   const [editRate, setEditRate] = useState('')
   const [editDate, setEditDate] = useState('')
+  const [editingDefault, setEditingDefault] = useState(false)
+  const [editDefaultRate, setEditDefaultRate] = useState('')
 
   const interestRateEvents = events
     .filter((e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
     .sort((a, b) => (b.effectiveDate ?? '').localeCompare(a.effectiveDate ?? ''))
+
+  // Find earliest rate change event date for display
+  const earliestRateChangeDate = interestRateEvents.length > 0
+    ? interestRateEvents[interestRateEvents.length - 1].effectiveDate
+    : null
 
   useEffect(() => {
     setInterestRate(currentInterestRate.toString())
@@ -158,6 +167,28 @@ function Settings() {
     }
   }
 
+  const handleStartEditDefault = () => {
+    setEditingDefault(true)
+    setEditDefaultRate(defaultInterestRate.toString())
+  }
+
+  const handleCancelEditDefault = () => {
+    setEditingDefault(false)
+    setEditDefaultRate('')
+  }
+
+  const handleSaveDefaultRate = () => {
+    const rate = parseFloat(editDefaultRate)
+    if (isNaN(rate) || rate < 0) {
+      alert('Please enter a valid interest rate')
+      return
+    }
+    setDefaultInterestRate(rate)
+    setEditingDefault(false)
+    setSuccessMessage(`Default interest rate updated to ${rate}%`)
+    setTimeout(() => setSuccessMessage(''), 3000)
+  }
+
   return (
     <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
       <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
@@ -191,8 +222,8 @@ function Settings() {
             </p>
 
             <div className="form-control gap-4 pt-4">
-              <div className="flex flex-wrap gap-2">
-                <div className="form-control flex-1 min-w-[120px]">
+              <div className="flex flex-wrap gap-2 items-end">
+                <div className="form-control flex-1 min-w-[100px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Rate (%)</span>
                   </label>
@@ -206,7 +237,7 @@ function Settings() {
                     min="0"
                   />
                 </div>
-                <div className="form-control flex-1 min-w-[140px]">
+                <div className="form-control flex-1 min-w-[130px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Effective Date</span>
                   </label>
@@ -217,91 +248,128 @@ function Settings() {
                     onChange={(e) => setEffectiveDate(e.target.value)}
                   />
                 </div>
-                <div className="form-control justify-end">
-                  <button className="btn btn-primary btn-sm" onClick={handleUpdateInterestRate}>
-                    Add Rate
-                  </button>
-                </div>
+                <button className="btn btn-primary btn-sm" onClick={handleUpdateInterestRate}>
+                  Add Rate
+                </button>
               </div>
             </div>
 
             {/* Interest Rate History */}
-            {interestRateEvents.length > 0 && (
-              <div className="pt-4">
-                <h3 className="text-sm font-semibold mb-2">Rate History</h3>
-                <div className="space-y-2">
-                  {interestRateEvents.map((event) => (
-                    <div key={event.id} className="bg-base-300 rounded-lg p-3">
-                      {editingEventId === event.id ? (
-                        <div className="flex flex-wrap gap-2 items-end">
-                          <div className="form-control flex-1 min-w-[80px]">
-                            <label className="label py-0.5">
-                              <span className="label-text text-xs">Rate (%)</span>
-                            </label>
-                            <input
-                              type="number"
-                              className="input input-bordered input-sm"
-                              value={editRate}
-                              onChange={(e) => setEditRate(e.target.value)}
-                              step="0.1"
-                              min="0"
-                            />
-                          </div>
-                          <div className="form-control flex-1 min-w-[120px]">
-                            <label className="label py-0.5">
-                              <span className="label-text text-xs">Effective Date</span>
-                            </label>
-                            <input
-                              type="date"
-                              className="input input-bordered input-sm"
-                              value={editDate}
-                              onChange={(e) => setEditDate(e.target.value)}
-                            />
-                          </div>
-                          <div className="flex gap-1">
-                            <button
-                              className="btn btn-success btn-sm"
-                              onClick={() => handleSaveEdit(event.id)}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-sm"
-                              onClick={handleCancelEdit}
-                            >
-                              Cancel
-                            </button>
-                          </div>
+            <div className="pt-4">
+              <h3 className="text-sm font-semibold mb-2">Rate History</h3>
+              <div className="space-y-2">
+                {interestRateEvents.map((event) => (
+                  <div key={event.id} className="bg-base-300 rounded-lg p-3">
+                    {editingEventId === event.id ? (
+                      <div className="flex flex-wrap gap-2 items-end">
+                        <div className="form-control flex-1 min-w-[80px]">
+                          <label className="label py-0.5">
+                            <span className="label-text text-xs">Rate (%)</span>
+                          </label>
+                          <input
+                            type="number"
+                            className="input input-bordered input-sm"
+                            value={editRate}
+                            onChange={(e) => setEditRate(e.target.value)}
+                            step="0.1"
+                            min="0"
+                          />
                         </div>
-                      ) : (
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium">{event.newRate}%</span>
-                            <span className="text-base-content/60 text-sm ml-2">
-                              effective {formatDate(event.effectiveDate)}
-                            </span>
-                          </div>
-                          <div className="flex gap-1">
-                            <button
-                              className="btn btn-ghost btn-xs"
-                              onClick={() => handleStartEdit(event)}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-ghost btn-xs text-error"
-                              onClick={() => handleDeleteRateEvent(event.id)}
-                            >
-                              Delete
-                            </button>
-                          </div>
+                        <div className="form-control flex-1 min-w-[120px]">
+                          <label className="label py-0.5">
+                            <span className="label-text text-xs">Effective Date</span>
+                          </label>
+                          <input
+                            type="date"
+                            className="input input-bordered input-sm"
+                            value={editDate}
+                            onChange={(e) => setEditDate(e.target.value)}
+                          />
                         </div>
-                      )}
+                        <div className="flex gap-1">
+                          <button
+                            className="btn btn-success btn-sm"
+                            onClick={() => handleSaveEdit(event.id)}
+                          >
+                            Save
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-sm"
+                            onClick={handleCancelEdit}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="font-medium">{event.newRate}%</span>
+                          <span className="text-base-content/60 text-sm ml-2">
+                            effective {formatDate(event.effectiveDate)}
+                          </span>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => handleStartEdit(event)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDeleteRateEvent(event.id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Default Rate (always shown at the bottom) */}
+                <div className="bg-base-300 rounded-lg p-3 border-l-4 border-info">
+                  {editingDefault ? (
+                    <div className="flex flex-wrap gap-2 items-end">
+                      <div className="form-control flex-1 min-w-[80px]">
+                        <label className="label py-0.5">
+                          <span className="label-text text-xs">Rate (%)</span>
+                        </label>
+                        <input
+                          type="number"
+                          className="input input-bordered input-sm"
+                          value={editDefaultRate}
+                          onChange={(e) => setEditDefaultRate(e.target.value)}
+                          step="0.1"
+                          min="0"
+                        />
+                      </div>
+                      <div className="flex gap-1">
+                        <button className="btn btn-success btn-sm" onClick={handleSaveDefaultRate}>
+                          Save
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={handleCancelEditDefault}>
+                          Cancel
+                        </button>
+                      </div>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="font-medium">{defaultInterestRate}%</span>
+                        <span className="text-base-content/60 text-sm ml-2">
+                          default{earliestRateChangeDate ? ` (before ${formatDate(earliestRateChangeDate)})` : ''}
+                        </span>
+                      </div>
+                      <button className="btn btn-ghost btn-xs" onClick={handleStartEditDefault}>
+                        Edit
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
 

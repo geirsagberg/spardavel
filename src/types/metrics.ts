@@ -1,4 +1,5 @@
 import type { Category } from './events'
+import { FALLBACK_INTEREST_RATE } from '~/lib/constants'
 
 /**
  * Metrics calculated from events for a specific period
@@ -107,9 +108,9 @@ export function createEmptyDashboardMetrics(): DashboardMetrics {
     interestRateHistory: [
       {
         effectiveDate: new Date().toISOString().split('T')[0],
-        rate: 3.5, // Default to 3.5% annually
+        rate: FALLBACK_INTEREST_RATE,
       },
     ],
-    currentInterestRate: 3.5,
+    currentInterestRate: FALLBACK_INTEREST_RATE,
   }
 }
