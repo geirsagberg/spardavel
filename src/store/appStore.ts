@@ -39,6 +39,10 @@ interface AppStore {
   defaultInterestRate: number
   setDefaultInterestRate: (rate: number) => void
 
+  // Theme
+  theme: string
+  setTheme: (theme: string) => void
+
   // Metrics (derived)
   metrics: DashboardMetrics
   recalculateMetrics: () => void
@@ -205,6 +209,12 @@ export const useAppStore = create<AppStore>()(
       events: [],
       metrics: createEmptyDashboardMetrics(),
       defaultInterestRate: FALLBACK_INTEREST_RATE,
+      theme: 'dark',
+
+      setTheme: (theme) => {
+        set({ theme })
+        document.documentElement.setAttribute('data-theme', theme)
+      },
 
       setDefaultInterestRate: (rate) => {
         set((state) => {
@@ -317,9 +327,15 @@ export const useAppStore = create<AppStore>()(
       partialize: (state) => ({
         events: state.events,
         defaultInterestRate: state.defaultInterestRate,
+        theme: state.theme,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Apply theme to document
+          if (state.theme) {
+            document.documentElement.setAttribute('data-theme', state.theme)
+          }
+          
           // Validate events using Zod schema
           const validationResult = AppEventsArraySchema.safeParse(state.events)
           

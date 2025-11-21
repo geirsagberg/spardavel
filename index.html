@@ -1,19 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Spardavel - Track your savings and avoid impulse purchases" />
-    <meta name="theme-color" content="#ffffff" />
-    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#1d232a" />
+    <meta name="color-scheme" content="dark light" />
     <title>Spardavel</title>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/icons/favicon.ico" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      // Apply theme before page renders to prevent flash
+      (function() {
+        try {
+          const stored = localStorage.getItem('spardavel_events');
+          if (stored) {
+            const data = JSON.parse(stored);
+            if (data.state?.theme) {
+              document.documentElement.setAttribute('data-theme', data.state.theme);
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
     <style>
-      /* Prevent white flash on load by matching the app background */
+      /* Prevent flash on load by matching dark theme background */
       html, body {
-        background-color: #f9fafb;
+        background-color: #1d232a;
         margin: 0;
         padding: 0;
       }
