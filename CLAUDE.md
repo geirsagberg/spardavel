@@ -1,2 +1,3 @@
 - Remember to update SPEC.md as you go
 - Always commit after making a verified change
+- Never run `git push` - the user will push manually
