@@ -104,25 +104,24 @@ function History() {
 
         {/* Filters */}
         <div className="card bg-base-200">
-          <div className="card-body">
-            <h2 className="card-title text-lg">Filters</h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="card-body py-4">
+            <div className="flex flex-wrap gap-2">
               {/* Month Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Month</span>
+              <div className="form-control flex-1 min-w-[100px]">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Month</span>
                 </label>
                 <select
-                  className="select select-bordered"
+                  className="select select-bordered select-sm"
                   value={selectedMonth}
                   onChange={(e) => setSelectedMonth(e.target.value)}
                 >
-                  <option value="">All Months</option>
+                  <option value="">All</option>
                   {availableMonths.map((month) => (
                     <option key={month} value={month}>
                       {new Date(`${month}-01`).toLocaleDateString('nb-NO', {
                         year: 'numeric',
-                        month: 'long',
+                        month: 'short',
                       })}
                     </option>
                   ))}
@@ -130,16 +129,16 @@ function History() {
               </div>
 
               {/* Category Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Category</span>
+              <div className="form-control flex-1 min-w-[100px]">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Category</span>
                 </label>
                 <select
-                  className="select select-bordered"
+                  className="select select-bordered select-sm"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                 >
-                  <option value="All">All Categories</option>
+                  <option value="All">All</option>
                   {CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
@@ -149,17 +148,17 @@ function History() {
               </div>
 
               {/* Type Filter */}
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Type</span>
+              <div className="form-control flex-1 min-w-[90px]">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Type</span>
                 </label>
                 <select
-                  className="select select-bordered"
+                  className="select select-bordered select-sm"
                   value={selectedType}
                   onChange={(e) => setSelectedType(e.target.value)}
                 >
-                  <option value="All">All Types</option>
-                  <option value="Purchases">Purchases</option>
+                  <option value="All">All</option>
+                  <option value="Purchases">Spent</option>
                   <option value="Avoided">Avoided</option>
                 </select>
               </div>
@@ -168,16 +167,14 @@ function History() {
         </div>
 
         {/* Totals */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="stat bg-base-200">
-            <div className="stat-title text-xs">Total Avoided</div>
-            <div className="stat-value text-2xl text-success">{formatAmount(totals.avoided)}</div>
-            <div className="stat-desc">from filtered entries</div>
+        <div className="flex gap-4">
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Avoided</div>
+            <div className="stat-value text-xl text-success">{formatAmount(totals.avoided)}</div>
           </div>
-          <div className="stat bg-base-200">
-            <div className="stat-title text-xs">Total Spent</div>
-            <div className="stat-value text-2xl text-error">{formatAmount(totals.purchases)}</div>
-            <div className="stat-desc">from filtered entries</div>
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Spent</div>
+            <div className="stat-value text-xl text-error">{formatAmount(totals.purchases)}</div>
           </div>
         </div>
 
