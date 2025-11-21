@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useAppStore } from '~/store/appStore'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
 import type { InterestRateChangeEvent, AppEvent } from '~/types/events'
+import { formatPercent, formatDateOnly } from '~/lib/formatting'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
@@ -10,10 +11,6 @@ export const Route = createFileRoute('/settings')({
 
 function getTodayString(): string {
   return new Date().toISOString().split('T')[0]!
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString()
 }
 
 function Settings() {
@@ -140,7 +137,7 @@ function Settings() {
     const event = createInterestRateChangeEvent(rate, effectiveDate)
     addEvent(event)
 
-    setSuccessMessage(`Interest rate set to ${rate}% effective ${formatDate(effectiveDate)}`)
+    setSuccessMessage(`Interest rate set to ${formatPercent(rate)}% effective ${formatDateOnly(effectiveDate)}`)
     setTimeout(() => setSuccessMessage(''), 3000)
     setEffectiveDate(getTodayString())
   }
@@ -315,9 +312,9 @@ function Settings() {
                     ) : (
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="font-medium">{event.newRate}%</span>
+                          <span className="font-medium">{formatPercent(event.newRate)}%</span>
                           <span className="text-base-content/60 text-sm ml-2">
-                            effective {formatDate(event.effectiveDate)}
+                            effective {formatDateOnly(event.effectiveDate)}
                           </span>
                         </div>
                         <div className="flex gap-1">
@@ -368,9 +365,9 @@ function Settings() {
                   ) : (
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-medium">{defaultInterestRate}%</span>
+                        <span className="font-medium">{formatPercent(defaultInterestRate)}%</span>
                         <span className="text-base-content/60 text-sm ml-2">
-                          default{earliestRateChangeDate ? ` (before ${formatDate(earliestRateChangeDate)})` : ''}
+                          default{earliestRateChangeDate ? ` (before ${formatDateOnly(earliestRateChangeDate)})` : ''}
                         </span>
                       </div>
                       <button className="btn btn-ghost btn-xs" onClick={handleStartEditDefault}>
@@ -390,11 +387,11 @@ function Settings() {
             <h2 className="card-title">Data Management</h2>
             <p className="text-base-content/60 text-sm">Export or import your data as JSON</p>
 
-            <div className="flex flex-col gap-3 pt-4">
-              <button className="btn btn-primary" onClick={handleExport}>
+            <div className="flex gap-3 pt-4">
+              <button className="btn btn-primary flex-1" onClick={handleExport}>
                 Export Data
               </button>
-              <label className="btn btn-secondary">
+              <label className="btn btn-secondary flex-1">
                 Import Data
                 <input type="file" accept=".json" className="hidden" onChange={handleImport} />
               </label>

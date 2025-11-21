@@ -49,3 +49,21 @@ export function formatMonthShort(dateString: string): string {
     year: '2-digit',
   })
 }
+
+/**
+ * Format a percentage value according to the app locale
+ */
+export function formatPercent(value: number): string {
+  return new Intl.NumberFormat(APP_LOCALE, {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(value)
+}
+
+/**
+ * Format a date string (ISO) as localized date (e.g., "15. jan. 2025")
+ */
+export function formatDateOnly(dateString: string): string {
+  return new Date(dateString).toLocaleDateString(APP_LOCALE)
+}
