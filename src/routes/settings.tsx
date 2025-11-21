@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '~/store/appStore'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
 
@@ -15,9 +15,14 @@ function Settings() {
   const events = useAppStore((state) => state.events)
   const clearAllEvents = useAppStore((state) => state.clearAllEvents)
   const addEvent = useAppStore((state) => state.addEvent)
+  const currentInterestRate = useAppStore((state) => state.metrics.currentInterestRate)
 
-  const [interestRate, setInterestRate] = useState('3.5')
+  const [interestRate, setInterestRate] = useState(() => currentInterestRate.toString())
   const [successMessage, setSuccessMessage] = useState('')
+
+  useEffect(() => {
+    setInterestRate(currentInterestRate.toString())
+  }, [currentInterestRate])
 
   const handleClearAll = () => {
     if (window.confirm('Are you sure you want to delete ALL data? This cannot be undone.')) {
@@ -98,7 +103,8 @@ function Settings() {
     }
 
     // Add interest rate change event
-    const event = createInterestRateChangeEvent(rate)
+    const today = new Date().toISOString().split('T')[0]
+    const event = createInterestRateChangeEvent(rate, today)
     addEvent(event)
 
     setSuccessMessage(`Interest rate updated to ${rate}%`)
@@ -151,7 +157,6 @@ function Settings() {
                     onChange={(e) => setInterestRate(e.target.value)}
                     step="0.1"
                     min="0"
-                    max="100"
                   />
                   <button className="btn btn-primary" onClick={handleUpdateInterestRate}>
                     Update
@@ -159,80 +164,37 @@ function Settings() {
                 </div>
               </div>
             </div>
-
-            <div className="text-sm text-base-content/60 pt-2">
-              Interest is calculated daily and applied monthly to both avoided purchases and spent amounts.
-            </div>
           </div>
         </div>
 
-        {/* Data Management */}
+        {/* Data Export/Import */}
         <div className="card bg-base-200">
           <div className="card-body">
             <h2 className="card-title">Data Management</h2>
+            <p className="text-base-content/60 text-sm">Export or import your data as JSON</p>
 
-            {/* Export */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Export Data</h3>
-                <p className="text-sm text-base-content/60 mb-3">
-                  Download all your data as a JSON file for backup or transfer
-                </p>
-                <button className="btn btn-outline w-full" onClick={handleExport}>
-                  📥 Export Data ({events.length} events)
-                </button>
-              </div>
-
-              <div className="divider"></div>
-
-              {/* Import */}
-              <div>
-                <h3 className="font-semibold mb-2">Import Data</h3>
-                <p className="text-sm text-base-content/60 mb-3">
-                  Upload a previously exported JSON file to restore or merge data
-                </p>
-                <label className="btn btn-outline w-full cursor-pointer">
-                  📤 Import Data
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={handleImport}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-
-              <div className="divider"></div>
-
-              {/* Clear All */}
-              <div>
-                <h3 className="font-semibold mb-2 text-error">Danger Zone</h3>
-                <p className="text-sm text-base-content/60 mb-3">
-                  Permanently delete all data. This action cannot be undone.
-                </p>
-                <button className="btn btn-error w-full" onClick={handleClearAll}>
-                  🗑️ Delete All Data
-                </button>
-              </div>
+            <div className="flex flex-col gap-3 pt-4">
+              <button className="btn btn-primary" onClick={handleExport}>
+                Export Data
+              </button>
+              <label className="btn btn-secondary">
+                Import Data
+                <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+              </label>
             </div>
           </div>
         </div>
 
-        {/* About */}
+        {/* Clear Data */}
         <div className="card bg-base-200">
           <div className="card-body">
-            <h2 className="card-title">About</h2>
-            <div className="space-y-2 text-sm">
-              <p>
-                <strong>Spardavel</strong> - A spending and savings tracker with interest calculation
-              </p>
-              <p className="text-base-content/60">
-                Track your impulse purchases and avoided purchases while calculating the interest you could earn on your
-                savings.
-              </p>
-              <p className="text-base-content/60">
-                Version 1.0 • All data is stored locally in your browser
-              </p>
+            <h2 className="card-title text-error">Danger Zone</h2>
+            <p className="text-base-content/60 text-sm">Permanently delete all your data</p>
+
+            <div className="pt-4">
+              <button className="btn btn-error" onClick={handleClearAll}>
+                Clear All Data
+              </button>
             </div>
           </div>
         </div>

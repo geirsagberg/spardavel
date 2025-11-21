@@ -1,1 +1,2 @@
 - Remember to update SPEC.md as you go
+- Always commit after making a verified change
