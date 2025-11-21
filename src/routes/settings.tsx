@@ -2,14 +2,14 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '~/store/appStore'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
-import type { InterestRateChangeEvent } from '~/types/events'
+import type { InterestRateChangeEvent, AppEvent } from '~/types/events'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
 })
 
 function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toISOString().split('T')[0]!
 }
 
 function formatDate(dateStr: string): string {
@@ -37,12 +37,11 @@ function Settings() {
 
   const interestRateEvents = events
     .filter((e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
-    .sort((a, b) => (b.effectiveDate ?? '').localeCompare(a.effectiveDate ?? ''))
+    .sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate))
 
   // Find earliest rate change event date for display
-  const earliestRateChangeDate = interestRateEvents.length > 0
-    ? interestRateEvents[interestRateEvents.length - 1].effectiveDate
-    : null
+  const earliestRateChange = interestRateEvents[interestRateEvents.length - 1]
+  const earliestRateChangeDate = earliestRateChange?.effectiveDate ?? null
 
   useEffect(() => {
     setInterestRate(currentInterestRate.toString())
@@ -165,7 +164,7 @@ function Settings() {
       return
     }
 
-    updateEvent(id, { newRate: rate, effectiveDate: editDate })
+    updateEvent(id, { effectiveDate: editDate, newRate: rate } as Partial<Omit<AppEvent, 'id' | 'type'>>)
     setEditingEventId(null)
     setSuccessMessage('Interest rate event updated')
     setTimeout(() => setSuccessMessage(''), 3000)

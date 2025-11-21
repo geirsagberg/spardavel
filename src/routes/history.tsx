@@ -48,7 +48,7 @@ function History() {
 
   // Filter events
   const filteredEvents = useMemo(() => {
-    return events.filter((e) => {
+    return events.filter((e): e is import('~/types/events').PurchaseEvent | import('~/types/events').AvoidedPurchaseEvent => {
       if (e.type !== 'PURCHASE' && e.type !== 'AVOIDED_PURCHASE') {
         return false
       }

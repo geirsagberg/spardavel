@@ -41,15 +41,15 @@ export function calculatePendingInterestForCurrentMonth(
   events: AppEvent[],
   currentInterestRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toISOString().split('T')[0]!
   const currentMonthKey = getMonthKey(new Date().toISOString())
   const { start: monthStart } = getMonthBounds(currentMonthKey)
 
   // Filter events that occurred in this month or earlier
   // Include INTEREST_APPLICATION for compounding
   const relevantEvents = events.filter((e) => {
-    const eventDate = e.timestamp.split('T')[0]
-    return eventDate <= today && 
+    const eventDate = e.timestamp.split('T')[0]!
+    return eventDate <= today! && 
       (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
   })
 
@@ -58,10 +58,10 @@ export function calculatePendingInterestForCurrentMonth(
 
   // Iterate through each day from month start to today
   const currentDate = new Date(monthStart)
-  const endDate = new Date(today)
+  const endDate = new Date(today!)
 
   while (currentDate <= endDate) {
-    const dateStr = currentDate.toISOString().split('T')[0]
+    const dateStr = currentDate.toISOString().split('T')[0]!
 
     // Get effective rate for this date
     const rate = getEffectiveRateForDate(dateStr, events, currentInterestRate)
@@ -72,7 +72,7 @@ export function calculatePendingInterestForCurrentMonth(
     let purchaseBalance = 0
 
     for (const event of relevantEvents) {
-      const eventDate = event.timestamp.split('T')[0]
+      const eventDate = event.timestamp.split('T')[0]!
       if (eventDate > dateStr) {
         break // Only include events up to current date
       }
@@ -163,7 +163,7 @@ export function getMonthsNeedingInterestApplication(
     }
     // Move to next month
     const [year, month] = currentMonth.split('-').map(Number)
-    const nextDate = new Date(year, month, 1) // month is 0-indexed, so this gives us next month
+    const nextDate = new Date(year!, month!, 1) // month is 0-indexed, so this gives us next month
     currentMonth = getMonthKey(nextDate.toISOString())
   }
 
@@ -185,7 +185,7 @@ export function calculateInterestForMonth(
   // Include PURCHASE, AVOIDED_PURCHASE, and INTEREST_APPLICATION for compounding
   const relevantEvents = events
     .filter((e) => {
-      const eventDate = e.timestamp.split('T')[0]
+      const eventDate = e.timestamp.split('T')[0]!
       return eventDate <= monthEnd && 
         (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
     })
@@ -199,7 +199,7 @@ export function calculateInterestForMonth(
   const endDate = new Date(monthEnd)
 
   while (currentDate <= endDate) {
-    const dateStr = currentDate.toISOString().split('T')[0]
+    const dateStr = currentDate.toISOString().split('T')[0]!
 
     // Get effective rate for this date
     const rate = getEffectiveRateForDate(dateStr, events, defaultRate)
@@ -210,7 +210,7 @@ export function calculateInterestForMonth(
     let purchaseBalance = 0
 
     for (const event of relevantEvents) {
-      const eventDate = event.timestamp.split('T')[0]
+      const eventDate = event.timestamp.split('T')[0]!
       if (eventDate > dateStr) {
         break
       }

@@ -131,8 +131,8 @@ export function getMonthKey(date: string): string {
  */
 export function getMonthBounds(monthKey: string): { start: string; end: string } {
   const [year, month] = monthKey.split('-').map(Number)
-  const start = new Date(year, month - 1, 1).toISOString().split('T')[0]
-  const end = new Date(year, month, 0).toISOString().split('T')[0]
+  const start = new Date(year!, month! - 1, 1).toISOString().split('T')[0]!
+  const end = new Date(year!, month!, 0).toISOString().split('T')[0]!
   return { start, end }
 }
 

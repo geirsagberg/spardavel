@@ -20,7 +20,7 @@ const PRESETS: (Preset & { emoji: string })[] = [
 ]
 
 function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]
+  return new Date().toISOString().split('T')[0]!
 }
 
 export function QuickEntry() {

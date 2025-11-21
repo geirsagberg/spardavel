@@ -98,8 +98,8 @@ export function createEmptyAllTimeMetrics(): AllTimeMetrics {
  */
 export function createEmptyDashboardMetrics(): DashboardMetrics {
   const now = new Date()
-  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]!
+  const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]!
 
   return {
     currentMonth: createEmptyPeriodMetrics(currentMonthStart, currentMonthEnd),
@@ -107,7 +107,7 @@ export function createEmptyDashboardMetrics(): DashboardMetrics {
     monthlyHistory: [],
     interestRateHistory: [
       {
-        effectiveDate: new Date().toISOString().split('T')[0],
+        effectiveDate: new Date().toISOString().split('T')[0]!,
         rate: FALLBACK_INTEREST_RATE,
       },
     ],
