@@ -34,11 +34,11 @@ function Settings() {
 
   const interestRateEvents = events
     .filter((e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
-    .sort((a, b) => b.effectiveDate.localeCompare(a.effectiveDate))
+    .sort((a, b) => b.date.localeCompare(a.date))
 
   // Find earliest rate change event date for display
   const earliestRateChange = interestRateEvents[interestRateEvents.length - 1]
-  const earliestRateChangeDate = earliestRateChange?.effectiveDate ?? null
+  const earliestRateChangeDate = earliestRateChange?.date ?? null
 
   useEffect(() => {
     setInterestRate(currentInterestRate.toString())
@@ -145,7 +145,7 @@ function Settings() {
   const handleStartEdit = (event: InterestRateChangeEvent) => {
     setEditingEventId(event.id)
     setEditRate(event.newRate.toString())
-    setEditDate(event.effectiveDate)
+    setEditDate(event.date)
   }
 
   const handleCancelEdit = () => {
@@ -161,7 +161,7 @@ function Settings() {
       return
     }
 
-    updateEvent(id, { effectiveDate: editDate, newRate: rate } as Partial<Omit<AppEvent, 'id' | 'type'>>)
+    updateEvent(id, { date: editDate, newRate: rate } as Partial<Omit<AppEvent, 'id' | 'type'>>)
     setEditingEventId(null)
     setSuccessMessage('Interest rate event updated')
     setTimeout(() => setSuccessMessage(''), 3000)
@@ -314,7 +314,7 @@ function Settings() {
                         <div>
                           <span className="font-medium">{formatPercent(event.newRate)}%</span>
                           <span className="text-base-content/60 text-sm ml-2">
-                            effective {formatDateOnly(event.effectiveDate)}
+                            effective {formatDateOnly(event.date)}
                           </span>
                         </div>
                         <div className="flex gap-1">

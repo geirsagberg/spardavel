@@ -3,9 +3,63 @@
  * All amounts are currency-agnostic (e.g., 30 for 30 kr)
  */
 
+import { z } from 'zod'
+
 export type EventType = 'PURCHASE' | 'AVOIDED_PURCHASE' | 'INTEREST_RATE_CHANGE' | 'INTEREST_APPLICATION'
 
 export type Category = 'Alcohol' | 'Candy' | 'Snacks' | 'Food' | 'Drinks' | 'Games' | 'Other'
+
+// Zod schemas for validation
+const CategorySchema = z.enum(['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other'])
+
+// Date string in YYYY-MM-DD format
+const DateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Invalid date format (expected YYYY-MM-DD)' })
+
+const PurchaseEventSchema = z.object({
+  type: z.literal('PURCHASE'),
+  id: z.string().uuid(),
+  date: DateSchema,
+  amount: z.number().positive(),
+  category: CategorySchema,
+  description: z.string().min(1),
+  metadata: z.record(z.unknown()).optional(),
+})
+
+const AvoidedPurchaseEventSchema = z.object({
+  type: z.literal('AVOIDED_PURCHASE'),
+  id: z.string().uuid(),
+  date: DateSchema,
+  amount: z.number().positive(),
+  category: CategorySchema,
+  description: z.string().min(1),
+  metadata: z.record(z.unknown()).optional(),
+})
+
+const InterestRateChangeEventSchema = z.object({
+  type: z.literal('INTEREST_RATE_CHANGE'),
+  id: z.string().uuid(),
+  date: DateSchema,
+  newRate: z.number().min(0).max(100),
+  notes: z.string().optional(),
+})
+
+const InterestApplicationEventSchema = z.object({
+  type: z.literal('INTEREST_APPLICATION'),
+  id: z.string().uuid(),
+  date: DateSchema,
+  pendingOnAvoided: z.number(),
+  pendingOnSpent: z.number(),
+  metadata: z.record(z.unknown()).optional(),
+})
+
+export const AppEventSchema = z.discriminatedUnion('type', [
+  PurchaseEventSchema,
+  AvoidedPurchaseEventSchema,
+  InterestRateChangeEventSchema,
+  InterestApplicationEventSchema,
+])
+
+export const AppEventsArraySchema = z.array(AppEventSchema)
 
 /**
  * Base event structure
@@ -41,9 +95,10 @@ export interface AvoidedPurchaseEvent extends BaseEvent {
 /**
  * Interest rate change event
  */
-export interface InterestRateChangeEvent extends BaseEvent {
+export interface InterestRateChangeEvent {
   type: 'INTEREST_RATE_CHANGE'
-  effectiveDate: string // ISO 8601 date
+  id: string // UUIDv7
+  date: string // ISO 8601 date (YYYY-MM-DD) - when the rate change takes effect
   newRate: number // e.g., 3.5 for 3.5% annually
   notes?: string
 }
@@ -51,9 +106,10 @@ export interface InterestRateChangeEvent extends BaseEvent {
 /**
  * Interest application event - generated automatically monthly
  */
-export interface InterestApplicationEvent extends BaseEvent {
+export interface InterestApplicationEvent {
   type: 'INTEREST_APPLICATION'
-  appliedDate: string // ISO 8601 date
+  id: string // UUIDv7
+  date: string // ISO 8601 date (YYYY-MM-DD) - end of month when interest is applied
   pendingOnAvoided: number // calculated interest
   pendingOnSpent: number // calculated interest
   metadata?: Record<string, unknown>

@@ -18,6 +18,7 @@
     "react-dom": "latest",
     "uuid": "latest",
     "workbox-window": "latest",
+    "zod": "^4.1.12",
     "zustand": "latest"
   },
   "devDependencies": {

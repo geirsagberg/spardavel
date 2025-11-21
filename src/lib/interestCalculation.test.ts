@@ -40,15 +40,13 @@ function createAvoidedPurchaseEvent(
 function createInterestApplicationEvent(
   pendingOnAvoided: number,
   pendingOnSpent: number,
-  appliedDate: string,
-  date: string = appliedDate,
+  date: string,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): InterestApplicationEvent {
   return {
     type: 'INTEREST_APPLICATION',
     id,
     date,
-    appliedDate,
     pendingOnAvoided,
     pendingOnSpent,
   }
@@ -56,15 +54,13 @@ function createInterestApplicationEvent(
 
 function createInterestRateChangeEvent(
   newRate: number,
-  effectiveDate: string,
-  date: string = effectiveDate,
+  date: string,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): InterestRateChangeEvent {
   return {
     type: 'INTEREST_RATE_CHANGE',
     id,
     date,
-    effectiveDate,
     newRate,
   }
 }
@@ -204,7 +200,7 @@ describe('generateInterestApplicationEvents', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0]!.type).toBe('INTEREST_APPLICATION')
-    expect(result[0]!.appliedDate).toBe('2025-10-31')
+    expect(result[0]!.date).toBe('2025-10-31')
     expect(result[0]!.pendingOnSpent).toBeGreaterThan(0)
   })
 
@@ -228,9 +224,9 @@ describe('generateInterestApplicationEvents', () => {
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
 
     expect(result).toHaveLength(3)
-    expect(result[0]!.appliedDate).toBe('2025-08-31')
-    expect(result[1]!.appliedDate).toBe('2025-09-30')
-    expect(result[2]!.appliedDate).toBe('2025-10-31')
+    expect(result[0]!.date).toBe('2025-08-31')
+    expect(result[1]!.date).toBe('2025-09-30')
+    expect(result[2]!.date).toBe('2025-10-31')
   })
 
   test('does not generate events for months that already have application', () => {
@@ -279,8 +275,8 @@ describe('generateInterestApplicationEvents', () => {
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
     expect(result1).toHaveLength(2) // September and October
 
-    const sept1 = result1.find(e => e.appliedDate === '2025-09-30')
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
+    const sept1 = result1.find(e => e.date === '2025-09-30')
+    const oct1 = result1.find(e => e.date === '2025-10-31')
     expect(sept1).toBeDefined()
     expect(oct1).toBeDefined()
 
@@ -295,9 +291,9 @@ describe('generateInterestApplicationEvents', () => {
     const result2 = generateInterestApplicationEvents(eventsWithRetroactive, '2025-11', 3.5)
     expect(result2).toHaveLength(3) // August, September, and October
 
-    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
-    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+    const aug2 = result2.find(e => e.date === '2025-08-31')
+    const sept2 = result2.find(e => e.date === '2025-09-30')
+    const oct2 = result2.find(e => e.date === '2025-10-31')
 
     expect(aug2).toBeDefined()
     expect(aug2!.pendingOnAvoided).toBeGreaterThan(0) // Interest on the August avoided purchase
@@ -327,8 +323,8 @@ describe('generateInterestApplicationEvents', () => {
     const result2 = generateInterestApplicationEvents(eventsWithSeptember, '2025-11', 3.5)
     expect(result2).toHaveLength(2) // September and October
 
-    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+    const sept2 = result2.find(e => e.date === '2025-09-30')
+    const oct2 = result2.find(e => e.date === '2025-10-31')
 
     // September should have interest on the avoided purchase
     expect(sept2!.pendingOnAvoided).toBeGreaterThan(0)
@@ -356,9 +352,9 @@ describe('generateInterestApplicationEvents', () => {
     // Should generate interest for August, September, and October (3 months)
     expect(result).toHaveLength(3)
     
-    const august = result.find(e => e.appliedDate === '2025-08-31')
-    const september = result.find(e => e.appliedDate === '2025-09-30')
-    const october = result.find(e => e.appliedDate === '2025-10-31')
+    const august = result.find(e => e.date === '2025-08-31')
+    const september = result.find(e => e.date === '2025-09-30')
+    const october = result.find(e => e.date === '2025-10-31')
     
     expect(august).toBeDefined()
     expect(september).toBeDefined()
@@ -392,9 +388,9 @@ describe('generateInterestApplicationEvents', () => {
     const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
     expect(result1).toHaveLength(3)
     
-    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')
-    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
+    const aug1 = result1.find(e => e.date === '2025-08-31')
+    const sep1 = result1.find(e => e.date === '2025-09-30')
+    const oct1 = result1.find(e => e.date === '2025-10-31')
 
     // All should have avoided interest, no purchase interest
     expect(aug1!.pendingOnAvoided).toBeGreaterThan(0)
@@ -411,9 +407,9 @@ describe('generateInterestApplicationEvents', () => {
     const result2 = generateInterestApplicationEvents(eventsWithPurchase, '2025-11', 3.5)
     expect(result2).toHaveLength(3)
     
-    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
-    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+    const aug2 = result2.find(e => e.date === '2025-08-31')
+    const sep2 = result2.find(e => e.date === '2025-09-30')
+    const oct2 = result2.find(e => e.date === '2025-10-31')
 
     // August: avoided interest should be same (no purchase yet)
     expect(aug2!.pendingOnAvoided).toBe(aug1!.pendingOnAvoided)
@@ -437,8 +433,8 @@ describe('generateInterestApplicationEvents', () => {
     const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
     expect(result1).toHaveLength(3)
     
-    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')
-    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')
+    const aug1 = result1.find(e => e.date === '2025-08-31')
+    const sep1 = result1.find(e => e.date === '2025-09-30')
 
     // All should have purchase interest, no avoided interest
     expect(aug1!.pendingOnSpent).toBeGreaterThan(0)
@@ -453,8 +449,8 @@ describe('generateInterestApplicationEvents', () => {
     const result2 = generateInterestApplicationEvents(eventsWithAvoided, '2025-11', 3.5)
     expect(result2).toHaveLength(3)
     
-    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')
-    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')
+    const aug2 = result2.find(e => e.date === '2025-08-31')
+    const sep2 = result2.find(e => e.date === '2025-09-30')
 
     // August: purchase interest should be same (no avoided yet)
     expect(aug2!.pendingOnSpent).toBe(aug1!.pendingOnSpent)
@@ -474,7 +470,7 @@ describe('generateInterestApplicationEvents', () => {
     // Generate interest events for August and September
     const augustInterest = generateInterestApplicationEvents(events, '2025-09', 3.5)
     expect(augustInterest).toHaveLength(1)
-    expect(augustInterest[0]!.appliedDate).toBe('2025-08-31')
+    expect(augustInterest[0]!.date).toBe('2025-08-31')
     
     // August interest on 1000 kr for 31 days ≈ 2.97 kr
     const augustAmount = augustInterest[0]!.pendingOnAvoided
@@ -487,7 +483,7 @@ describe('generateInterestApplicationEvents', () => {
     
     // Should only generate September interest (August already has it)
     expect(septemberInterest).toHaveLength(1)
-    expect(septemberInterest[0]!.appliedDate).toBe('2025-09-30')
+    expect(septemberInterest[0]!.date).toBe('2025-09-30')
     
     const septemberAmount = septemberInterest[0]!.pendingOnAvoided
     
@@ -585,13 +581,13 @@ describe('default interest rate changes', () => {
     const result2 = generateInterestApplicationEvents(events, '2025-11', 5)
 
     // September should use default rate (different results)
-    const sept1 = result1.find(e => e.appliedDate === '2025-09-30')
-    const sept2 = result2.find(e => e.appliedDate === '2025-09-30')
+    const sept1 = result1.find(e => e.date === '2025-09-30')
+    const sept2 = result2.find(e => e.date === '2025-09-30')
     expect(sept2!.pendingOnSpent).toBeGreaterThan(sept1!.pendingOnSpent)
 
     // October should use 10% rate from event (same results regardless of default)
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')
+    const oct1 = result1.find(e => e.date === '2025-10-31')
+    const oct2 = result2.find(e => e.date === '2025-10-31')
     expect(oct1!.pendingOnSpent).toBe(oct2!.pendingOnSpent)
   })
 })
@@ -664,9 +660,9 @@ describe('complex interest rate scenarios', () => {
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
     expect(result).toHaveLength(3)
 
-    const aug = result.find(e => e.appliedDate === '2025-08-31')!
-    const sep = result.find(e => e.appliedDate === '2025-09-30')!
-    const oct = result.find(e => e.appliedDate === '2025-10-31')!
+    const aug = result.find(e => e.date === '2025-08-31')!
+    const sep = result.find(e => e.date === '2025-09-30')!
+    const oct = result.find(e => e.date === '2025-10-31')!
 
     // August: 31 days at 3.5%: 1000 * (3.5/100/365) * 31 ≈ 2.97
     expect(aug.pendingOnAvoided).toBeGreaterThan(2.9)
@@ -697,9 +693,9 @@ describe('complex interest rate scenarios', () => {
 
     // Initial generation with 3.5% default
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
-    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')!
-    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+    const aug1 = result1.find(e => e.date === '2025-08-31')!
+    const sep1 = result1.find(e => e.date === '2025-09-30')!
+    const oct1 = result1.find(e => e.date === '2025-10-31')!
 
     // All should use 3.5%
     expect(aug1.pendingOnAvoided).toBeGreaterThan(2.9)
@@ -707,9 +703,9 @@ describe('complex interest rate scenarios', () => {
 
     // Change default rate to 5%
     const result2 = generateInterestApplicationEvents(events, '2025-11', 5)
-    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')!
-    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+    const aug2 = result2.find(e => e.date === '2025-08-31')!
+    const sep2 = result2.find(e => e.date === '2025-09-30')!
+    const oct2 = result2.find(e => e.date === '2025-10-31')!
 
     // All should use 5% (higher than before)
     expect(aug2.pendingOnAvoided).toBeGreaterThan(aug1.pendingOnAvoided)
@@ -723,9 +719,9 @@ describe('complex interest rate scenarios', () => {
     ]
 
     const result3 = generateInterestApplicationEvents(eventsWithRateChange, '2025-11', 5)
-    const aug3 = result3.find(e => e.appliedDate === '2025-08-31')!
-    const sep3 = result3.find(e => e.appliedDate === '2025-09-30')!
-    const oct3 = result3.find(e => e.appliedDate === '2025-10-31')!
+    const aug3 = result3.find(e => e.date === '2025-08-31')!
+    const sep3 = result3.find(e => e.date === '2025-09-30')!
+    const oct3 = result3.find(e => e.date === '2025-10-31')!
 
     // August and September should still use 5% default (same as result2)
     expect(aug3.pendingOnAvoided).toBeCloseTo(aug2.pendingOnAvoided, 2)
@@ -760,9 +756,9 @@ describe('complex interest rate scenarios', () => {
     ]
 
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
-    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')!
-    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+    const aug1 = result1.find(e => e.date === '2025-08-31')!
+    const sep1 = result1.find(e => e.date === '2025-09-30')!
+    const oct1 = result1.find(e => e.date === '2025-10-31')!
 
     // August uses default 3.5%, Sep and Oct use 5%
     expect(aug1.pendingOnAvoided).toBeGreaterThan(2.9)
@@ -775,9 +771,9 @@ describe('complex interest rate scenarios', () => {
     ]
 
     const result2 = generateInterestApplicationEvents(eventsModified, '2025-11', 3.5)
-    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')!
-    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+    const aug2 = result2.find(e => e.date === '2025-08-31')!
+    const sep2 = result2.find(e => e.date === '2025-09-30')!
+    const oct2 = result2.find(e => e.date === '2025-10-31')!
 
     // August should be unchanged (still 3.5%)
     expect(aug2.pendingOnAvoided).toBeCloseTo(aug1.pendingOnAvoided, 2)
@@ -796,8 +792,8 @@ describe('complex interest rate scenarios', () => {
     ]
 
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
-    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
-    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+    const sep1 = result1.find(e => e.date === '2025-09-30')!
+    const oct1 = result1.find(e => e.date === '2025-10-31')!
 
     // Sep and Oct should use 10% (high values)
     expect(sep1.pendingOnAvoided).toBeGreaterThan(8) // ~8.2
@@ -809,8 +805,8 @@ describe('complex interest rate scenarios', () => {
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithoutRateChange, '2025-11', 3.5)
-    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
-    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+    const sep2 = result2.find(e => e.date === '2025-09-30')!
+    const oct2 = result2.find(e => e.date === '2025-10-31')!
 
     // Sep and Oct should now use 3.5% (much lower)
     expect(sep2.pendingOnAvoided).toBeLessThan(3) // ~2.88

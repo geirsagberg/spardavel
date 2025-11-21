@@ -15,7 +15,7 @@ export function getEffectiveRateForDate(
     .filter((e) => e.type === 'INTEREST_RATE_CHANGE')
     .sort((a, b) => {
       if (a.type === 'INTEREST_RATE_CHANGE' && b.type === 'INTEREST_RATE_CHANGE') {
-        return a.effectiveDate.localeCompare(b.effectiveDate)
+        return a.date.localeCompare(b.date)
       }
       return 0
     })
@@ -23,7 +23,7 @@ export function getEffectiveRateForDate(
   // Find the most recent rate change on or before this date
   let effectiveRate = defaultRate
   for (const event of rateChangeEvents) {
-    if (event.type === 'INTEREST_RATE_CHANGE' && event.effectiveDate <= date) {
+    if (event.type === 'INTEREST_RATE_CHANGE' && event.date <= date) {
       effectiveRate = event.newRate
     } else {
       break
@@ -129,7 +129,7 @@ export function getMonthsNeedingInterestApplication(
   // Find months that already have interest application
   for (const event of events) {
     if (event.type === 'INTEREST_APPLICATION') {
-      const monthKey = getMonthKey(event.appliedDate)
+      const monthKey = getMonthKey(event.date)
       monthsWithApplication.add(monthKey)
     }
   }
@@ -262,7 +262,6 @@ export function generateInterestApplicationEvents(
         pendingOnAvoided,
         pendingOnSpent,
         monthEnd,
-        monthEnd, // Use the month end date
       )
       newEvents.push(applicationEvent)
     }

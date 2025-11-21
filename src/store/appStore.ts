@@ -13,6 +13,7 @@ import {
   generateInterestApplicationEvents,
 } from '~/lib/interestCalculation'
 import type { AppEvent } from '~/types/events'
+import { AppEventsArraySchema } from '~/types/events'
 import type {
   AllTimeMetrics,
   DashboardMetrics,
@@ -86,7 +87,7 @@ function getCurrentInterestRateFromEvents(
         a.type === 'INTEREST_RATE_CHANGE' &&
         b.type === 'INTEREST_RATE_CHANGE'
       ) {
-        return a.effectiveDate.localeCompare(b.effectiveDate)
+        return a.date.localeCompare(b.date)
       }
       return 0
     })
@@ -126,7 +127,7 @@ function calculateMetricsFromEvents(
       metrics.currentInterestRate = currentRate.newRate
       metrics.interestRateHistory = rateChangeEvents
         .filter((e): e is import('~/types/events').InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
-        .map((e) => ({ effectiveDate: e.effectiveDate, rate: e.newRate }))
+        .map((e) => ({ effectiveDate: e.date, rate: e.newRate }))
     }
   }
 
@@ -319,6 +320,23 @@ export const useAppStore = create<AppStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Validate events using Zod schema
+          const validationResult = AppEventsArraySchema.safeParse(state.events)
+          
+          if (!validationResult.success) {
+            console.error('Event validation failed:', validationResult.error)
+            const shouldReset = window.confirm(
+              'The stored data is invalid or corrupted. Would you like to reset all data? (Cancel to continue with potentially invalid data)'
+            )
+            
+            if (shouldReset) {
+              state.events = []
+              state.defaultInterestRate = FALLBACK_INTEREST_RATE
+              state.metrics = createEmptyDashboardMetrics()
+              return
+            }
+          }
+
           // Apply interest for any completed months and recalculate metrics
           const defaultRate =
             state.defaultInterestRate ?? FALLBACK_INTEREST_RATE

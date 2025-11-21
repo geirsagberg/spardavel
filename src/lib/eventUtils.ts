@@ -41,18 +41,19 @@ export function createAvoidedPurchaseEvent(
 
 /**
  * Create an interest rate change event
+ * @param newRate The new interest rate (e.g., 3.5 for 3.5%)
+ * @param date The date when the rate change takes effect (YYYY-MM-DD)
+ * @param notes Optional notes about the rate change
  */
 export function createInterestRateChangeEvent(
   newRate: number,
-  effectiveDate: string,
+  date: string,
   notes?: string,
-  date = new Date().toISOString().split('T')[0]!,
 ): InterestRateChangeEvent {
   return {
     type: 'INTEREST_RATE_CHANGE',
     id: uuidv7(),
     date,
-    effectiveDate,
     newRate,
     notes,
   }
@@ -60,18 +61,19 @@ export function createInterestRateChangeEvent(
 
 /**
  * Create an interest application event
+ * @param pendingOnAvoided Interest earned on avoided purchases
+ * @param pendingOnSpent Opportunity cost interest on purchases
+ * @param date The end of month date when interest is applied (YYYY-MM-DD)
  */
 export function createInterestApplicationEvent(
   pendingOnAvoided: number,
   pendingOnSpent: number,
-  appliedDate: string,
-  date = appliedDate,
+  date: string,
 ): InterestApplicationEvent {
   return {
     type: 'INTEREST_APPLICATION',
     id: uuidv7(),
     date,
-    appliedDate,
     pendingOnAvoided,
     pendingOnSpent,
   }

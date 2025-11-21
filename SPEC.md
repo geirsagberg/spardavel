@@ -20,16 +20,21 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
 **Event ID Strategy: UUIDv7**
 - UUIDv7 is used for all event IDs (timestamp-sortable)
 - Generated based on creation timestamp, enabling natural chronological ordering
-- Eliminates need to explicitly sort events by timestamp (though `timestamp` field is still kept for clarity)
+- Serves as tiebreaker when events have same date
 - Enables efficient prefix queries and scanning
 - Event IDs are immutable; they serve as stable identifiers for editing/deletion
+
+**Event Validation: Zod**
+- All events are validated using Zod schemas on load from localStorage
+- Invalid/corrupted data triggers confirmation dialog with option to reset
+- Ensures data integrity and provides migration path for schema changes
 
 #### 1. Purchase Event
 ```
 {
   type: "PURCHASE",
   id: string (UUIDv7),
-  timestamp: ISO 8601 datetime,
+  date: string (YYYY-MM-DD),
   amount: number (currency-agnostic, e.g., 30 for 30 kr),
   category: string (Alcohol|Candy|Snacks|Food|Drinks|Games|Other),
   description: string,
@@ -42,7 +47,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
 {
   type: "AVOIDED_PURCHASE",
   id: string (UUIDv7),
-  timestamp: ISO 8601 datetime,
+  date: string (YYYY-MM-DD),
   amount: number (currency-agnostic, e.g., 30 for 30 kr),
   category: string (Alcohol|Candy|Snacks|Food|Drinks|Games|Other),
   description: string,
@@ -55,8 +60,7 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
 {
   type: "INTEREST_RATE_CHANGE",
   id: string (UUIDv7),
-  timestamp: ISO 8601 datetime,
-  effectiveDate: ISO 8601 date,
+  date: string (YYYY-MM-DD) - when the rate change takes effect,
   newRate: number (e.g., 3.5 for 3.5% annually),
   notes?: string
 }
@@ -67,13 +71,14 @@ All state is derived from an event stream stored in LocalStorage. Events are edi
 {
   type: "INTEREST_APPLICATION",
   id: string (UUIDv7),
-  timestamp: ISO 8601 datetime (end of month),
-  appliedDate: ISO 8601 date,
+  date: string (YYYY-MM-DD) - end of month when interest is applied,
   pendingOnAvoided: number (calculated interest, same currency-agnostic units),
   pendingOnSpent: number (calculated interest, same currency-agnostic units),
   metadata?: object
 }
 ```
+
+**Note**: Events use date-only format (YYYY-MM-DD) instead of full datetime. Events are sorted by date descending, then by ID descending as tiebreaker (since IDs are UUIDv7 which are timestamp-sortable).
 
 ---
 
@@ -127,9 +132,9 @@ When an interest rate is changed with a retroactive `effectiveDate`, OR when a h
 
 ### Rate Changes
 Users can:
-- Set global interest rate (editable)
-- Schedule future rate changes (effective on a specific date)
-- Change historical rates (recalculates all subsequent months)
+- Set default interest rate (used when no rate change events exist)
+- Create rate change events with specific effective dates
+- Edit/delete rate change events (recalculates all affected months)
 
 ### Event Editing
 Events can be edited after creation. Editing an event triggers full recalculation of all derived metrics:
@@ -145,12 +150,12 @@ Events can be edited after creation. Editing an event triggers full recalculatio
 - `amount` - Transaction amount
 - `category` - Transaction category
 - `description` - Transaction description
-- `timestamp` - Transaction date/time
+- `date` - Transaction date (YYYY-MM-DD)
 - `type` - Change between PURCHASE and AVOIDED_PURCHASE
 
 *INTEREST_RATE_CHANGE:*
 - `newRate` - Interest rate value
-- `effectiveDate` - Date when rate change takes effect
+- `date` - Date when rate change takes effect (YYYY-MM-DD)
 - `notes` - Notes about the rate change
 - (Cannot change event type from INTEREST_RATE_CHANGE; delete and create new if needed)
 
@@ -308,6 +313,7 @@ type DashboardMetrics = {
 - **TypeScript** (latest) - Type safety
 - **Zustand** (latest) - State management (event stream, UI state, derived metrics)
 - **uuid** (latest) - Generate UUIDv7 event IDs (timestamp-sortable)
+- **zod** (latest) - Runtime event validation and schema definition
 
 **State Management Details (Zustand):**
 - Single store for event stream and UI state
@@ -348,10 +354,11 @@ localStorage['spardavel_lastCalculated'] = '2025-01-15'
 ### Event Reconstruction
 On app load:
 1. Read all events from LocalStorage
-2. Sort by event ID (UUIDv7, naturally ordered by creation time)
-3. Reconstruct current state by replaying events in order
-4. Recalculate daily pending interest
-5. Check if monthly interest needs application
+2. Validate events using Zod schemas (prompt user to reset if invalid)
+3. Sort by date descending, then ID descending (UUIDv7 used as tiebreaker)
+4. Reconstruct current state by replaying events in order
+5. Recalculate daily pending interest
+6. Check if monthly interest needs application and generate events if needed
 
 ### Export Format (JSON)
 ```json
