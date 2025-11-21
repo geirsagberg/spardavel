@@ -441,13 +441,13 @@ If importing events from another device:
 - [ ] Quick entry management (optional - not in core spec)
 - [ ] Interest rate change retroactive recalculation (advanced feature)
 
-### Phase 6: PWA & Export/Import (IN PROGRESS)
+### Phase 6: PWA & Export/Import ✓ COMPLETE
 - [x] Export functionality (in Settings page)
 - [x] Import with validation and merging (in Settings page)
-- [ ] PWA setup (manifest, icons, service worker)
-- [ ] Offline support testing
+- [x] PWA setup (manifest, icons, service worker)
+- [x] Offline support configured (conditional SW registration for dev/prod)
 
-### Phase 7: Polish & Testing
+### Phase 7: Polish & Testing (IN PROGRESS)
 - [ ] E2E testing
 - [ ] Mobile UX refinement
 - [ ] Performance optimization
