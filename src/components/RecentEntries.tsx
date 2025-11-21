@@ -1,6 +1,6 @@
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent } from '~/types/events'
-import { formatCurrency, formatDate } from '~/lib/formatting'
+import { formatCurrency, formatDateWithWeekday } from '~/lib/formatting'
 
 function getEventIcon(event: AppEvent): React.ReactNode {
   if (event.type === 'PURCHASE') {
@@ -26,10 +26,14 @@ export function RecentEntries() {
   const events = useAppStore((state) => state.events)
   const deleteEvent = useAppStore((state) => state.deleteEvent)
 
-  // Get last 10 transaction events (purchases and avoided purchases)
+  // Get last 10 transaction events (purchases and avoided purchases) - most recent first
   const transactionEvents = events
     .filter((e) => e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE')
-    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .sort((a, b) => {
+      const dateCompare = b.date.localeCompare(a.date)
+      if (dateCompare !== 0) return dateCompare
+      return b.id.localeCompare(a.id)
+    })
     .slice(0, 10)
 
   if (transactionEvents.length === 0) {
@@ -65,7 +69,7 @@ export function RecentEntries() {
                     <div className="flex gap-2 text-sm text-base-content/60">
                       <span>{event.category}</span>
                       <span>·</span>
-                      <span>{formatDate(event.timestamp)}</span>
+                      <span>{formatDateWithWeekday(event.date)}</span>
                     </div>
                   </div>
                 </div>

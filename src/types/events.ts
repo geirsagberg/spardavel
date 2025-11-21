@@ -13,7 +13,7 @@ export type Category = 'Alcohol' | 'Candy' | 'Snacks' | 'Food' | 'Drinks' | 'Gam
 export interface BaseEvent {
   type: EventType
   id: string // UUIDv7
-  timestamp: string // ISO 8601 datetime
+  date: string // ISO 8601 date (YYYY-MM-DD)
 }
 
 /**

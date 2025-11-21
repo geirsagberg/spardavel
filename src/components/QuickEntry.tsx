@@ -59,13 +59,11 @@ export function QuickEntry() {
         return
       }
 
-      // Create timestamp from date (use noon to avoid timezone issues)
-      const timestamp = `${date}T12:00:00.000Z`
-
+      // Use the date directly (YYYY-MM-DD format)
       const event =
         type === 'purchase'
-          ? createPurchaseEvent(numAmount, category, description, timestamp)
-          : createAvoidedPurchaseEvent(numAmount, category, description, timestamp)
+          ? createPurchaseEvent(numAmount, category, description, date)
+          : createAvoidedPurchaseEvent(numAmount, category, description, date)
 
       addEvent(event)
 

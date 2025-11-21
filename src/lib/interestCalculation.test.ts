@@ -9,13 +9,13 @@ import type { AppEvent, PurchaseEvent, AvoidedPurchaseEvent, InterestApplication
 
 function createPurchaseEvent(
   amount: number,
-  timestamp: string,
+  date: string,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): PurchaseEvent {
   return {
     type: 'PURCHASE',
     id,
-    timestamp,
+    date,
     amount,
     category: 'Other',
     description: 'Test purchase',
@@ -24,13 +24,13 @@ function createPurchaseEvent(
 
 function createAvoidedPurchaseEvent(
   amount: number,
-  timestamp: string,
+  date: string,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): AvoidedPurchaseEvent {
   return {
     type: 'AVOIDED_PURCHASE',
     id,
-    timestamp,
+    date,
     amount,
     category: 'Other',
     description: 'Test avoided purchase',
@@ -41,13 +41,13 @@ function createInterestApplicationEvent(
   pendingOnAvoided: number,
   pendingOnSpent: number,
   appliedDate: string,
-  timestamp: string,
+  date: string = appliedDate,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): InterestApplicationEvent {
   return {
     type: 'INTEREST_APPLICATION',
     id,
-    timestamp,
+    date,
     appliedDate,
     pendingOnAvoided,
     pendingOnSpent,
@@ -57,13 +57,13 @@ function createInterestApplicationEvent(
 function createInterestRateChangeEvent(
   newRate: number,
   effectiveDate: string,
-  timestamp: string,
+  date: string = effectiveDate,
   id: string = `test-${Date.now()}-${Math.random()}`,
 ): InterestRateChangeEvent {
   return {
     type: 'INTEREST_RATE_CHANGE',
     id,
-    timestamp,
+    date,
     effectiveDate,
     newRate,
   }
@@ -77,7 +77,7 @@ describe('getMonthsNeedingInterestApplication', () => {
 
   test('returns empty array when only current month has events', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-11-15T10:00:00Z'),
+      createPurchaseEvent(100, '2025-11-15'),
     ]
     const result = getMonthsNeedingInterestApplication(events, '2025-11')
     expect(result).toEqual([])
@@ -85,7 +85,7 @@ describe('getMonthsNeedingInterestApplication', () => {
 
   test('returns previous month when it has events but no interest application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-10-15T10:00:00Z'),
+      createPurchaseEvent(100, '2025-10-15'),
     ]
     const result = getMonthsNeedingInterestApplication(events, '2025-11')
     expect(result).toEqual(['2025-10'])
@@ -93,8 +93,8 @@ describe('getMonthsNeedingInterestApplication', () => {
 
   test('returns empty array when previous month already has interest application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-10-15T10:00:00Z'),
-      createInterestApplicationEvent(0.5, 0.5, '2025-10-31', '2025-10-31T23:59:59Z'),
+      createPurchaseEvent(100, '2025-10-15'),
+      createInterestApplicationEvent(0.5, 0.5, '2025-10-31', '2025-10-31'),
     ]
     const result = getMonthsNeedingInterestApplication(events, '2025-11')
     expect(result).toEqual([])
@@ -102,9 +102,9 @@ describe('getMonthsNeedingInterestApplication', () => {
 
   test('returns multiple months in order when they need application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-08-15T10:00:00Z'),
-      createAvoidedPurchaseEvent(50, '2025-09-10T10:00:00Z'),
-      createPurchaseEvent(200, '2025-10-20T10:00:00Z'),
+      createPurchaseEvent(100, '2025-08-15'),
+      createAvoidedPurchaseEvent(50, '2025-09-10'),
+      createPurchaseEvent(200, '2025-10-20'),
     ]
     const result = getMonthsNeedingInterestApplication(events, '2025-11')
     expect(result).toEqual(['2025-08', '2025-09', '2025-10'])
@@ -112,10 +112,10 @@ describe('getMonthsNeedingInterestApplication', () => {
 
   test('excludes months that already have interest application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-08-15T10:00:00Z'),
-      createInterestApplicationEvent(0.5, 0.5, '2025-08-31', '2025-08-31T23:59:59Z'),
-      createAvoidedPurchaseEvent(50, '2025-09-10T10:00:00Z'),
-      createPurchaseEvent(200, '2025-10-20T10:00:00Z'),
+      createPurchaseEvent(100, '2025-08-15'),
+      createInterestApplicationEvent(0.5, 0.5, '2025-08-31', '2025-08-31'),
+      createAvoidedPurchaseEvent(50, '2025-09-10'),
+      createPurchaseEvent(200, '2025-10-20'),
     ]
     const result = getMonthsNeedingInterestApplication(events, '2025-11')
     expect(result).toEqual(['2025-09', '2025-10'])
@@ -131,7 +131,7 @@ describe('calculateInterestForMonth', () => {
 
   test('calculates interest for a single purchase at start of month', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
 
@@ -143,7 +143,7 @@ describe('calculateInterestForMonth', () => {
 
   test('calculates interest for avoided purchase', () => {
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-10-01'),
     ]
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
 
@@ -154,7 +154,7 @@ describe('calculateInterestForMonth', () => {
 
   test('calculates interest proportionally for mid-month purchase', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-16T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-16'),
     ]
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
 
@@ -165,7 +165,7 @@ describe('calculateInterestForMonth', () => {
 
   test('accumulates interest from previous month events', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-09-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-09-01'),
     ]
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
 
@@ -176,8 +176,8 @@ describe('calculateInterestForMonth', () => {
 
   test('uses effective rate from rate change events', () => {
     const events: AppEvent[] = [
-      createInterestRateChangeEvent(10, '2025-10-01', '2025-10-01T00:00:00Z'),
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(10, '2025-10-01', '2025-10-01'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
 
@@ -190,7 +190,7 @@ describe('calculateInterestForMonth', () => {
 describe('generateInterestApplicationEvents', () => {
   test('generates no events when no months need application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(100, '2025-11-15T10:00:00Z'),
+      createPurchaseEvent(100, '2025-11-15'),
     ]
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
     expect(result).toEqual([])
@@ -198,7 +198,7 @@ describe('generateInterestApplicationEvents', () => {
 
   test('generates event for completed month with purchases', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
 
@@ -210,7 +210,7 @@ describe('generateInterestApplicationEvents', () => {
 
   test('generates event for completed month with avoided purchases', () => {
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-10-01'),
     ]
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
 
@@ -221,9 +221,9 @@ describe('generateInterestApplicationEvents', () => {
 
   test('generates multiple events for multiple months', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-08-15T00:00:00Z'),
-      createAvoidedPurchaseEvent(500, '2025-09-10T00:00:00Z'),
-      createPurchaseEvent(200, '2025-10-20T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-08-15'),
+      createAvoidedPurchaseEvent(500, '2025-09-10'),
+      createPurchaseEvent(200, '2025-10-20'),
     ]
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
 
@@ -235,8 +235,8 @@ describe('generateInterestApplicationEvents', () => {
 
   test('does not generate events for months that already have application', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
-      createInterestApplicationEvent(2.97, 0, '2025-10-31', '2025-10-31T23:59:59Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
+      createInterestApplicationEvent(2.97, 0, '2025-10-31', '2025-10-31'),
     ]
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
 
@@ -246,7 +246,7 @@ describe('generateInterestApplicationEvents', () => {
   test('regenerates events when adding events for previous months', () => {
     // Simulate scenario: user adds event for October in November
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-15T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-15'),
     ]
 
     // First time generating events
@@ -259,7 +259,7 @@ describe('generateInterestApplicationEvents', () => {
     // Adding another event for the same month (simulating edit scenario)
     // In real code, we'd remove existing INTEREST_APPLICATION first
     const eventsAfterEdit = eventsWithApplication.filter((e): e is AppEvent => e.type !== 'INTEREST_APPLICATION')
-    eventsAfterEdit.push(createPurchaseEvent(500, '2025-10-20T00:00:00Z'))
+    eventsAfterEdit.push(createPurchaseEvent(500, '2025-10-20'))
 
     // Should generate new event
     const result2 = generateInterestApplicationEvents(eventsAfterEdit, '2025-11', 3.5)
@@ -271,8 +271,8 @@ describe('generateInterestApplicationEvents', () => {
     // Scenario: Events exist for September, October. Then user adds event for August.
     // All months from August onwards should have their interest recalculated.
     const events: AppEvent[] = [
-      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
-      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+      createPurchaseEvent(500, '2025-09-10'),
+      createPurchaseEvent(300, '2025-10-15'),
     ]
 
     // Generate initial interest applications
@@ -287,9 +287,9 @@ describe('generateInterestApplicationEvents', () => {
     // Now simulate adding a retroactive event for August
     // We need to remove existing interest applications and regenerate all
     const eventsWithRetroactive = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'), // New retroactive event
-      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
-      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'), // New retroactive event
+      createPurchaseEvent(500, '2025-09-10'),
+      createPurchaseEvent(300, '2025-10-15'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithRetroactive, '2025-11', 3.5)
@@ -310,7 +310,7 @@ describe('generateInterestApplicationEvents', () => {
   test('interest compounds when retroactive avoided purchase is added', () => {
     // Add purchase in October only
     const initialEvents: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
 
     const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
@@ -320,8 +320,8 @@ describe('generateInterestApplicationEvents', () => {
     // Now add an avoided purchase in September (before October)
     // This should affect October's interest calculation
     const eventsWithSeptember = [
-      createAvoidedPurchaseEvent(1000, '2025-09-01T00:00:00Z'),
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-09-01'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithSeptember, '2025-11', 3.5)
@@ -347,7 +347,7 @@ describe('generateInterestApplicationEvents', () => {
     // Bug: Only one month of interest is being added
     
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(10000, '2025-08-01T00:00:00Z', 'piano-event'),
+      createAvoidedPurchaseEvent(10000, '2025-08-01', 'piano-event'),
     ]
 
     // Generate interest applications as if we're in November
@@ -385,7 +385,7 @@ describe('generateInterestApplicationEvents', () => {
   test('adding historical purchase only affects purchase interest, not avoided purchase interest', () => {
     // Start with an avoided purchase in August
     const initialEvents: AppEvent[] = [
-      createAvoidedPurchaseEvent(5000, '2025-08-01T00:00:00Z', 'avoid-1'),
+      createAvoidedPurchaseEvent(5000, '2025-08-01', 'avoid-1'),
     ]
 
     // Generate interest for August, September, October
@@ -405,7 +405,7 @@ describe('generateInterestApplicationEvents', () => {
     // Now add a purchase in September (different month from avoided purchase)
     const eventsWithPurchase = [
       ...initialEvents,
-      createPurchaseEvent(3000, '2025-09-15T00:00:00Z', 'purchase-1'),
+      createPurchaseEvent(3000, '2025-09-15', 'purchase-1'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithPurchase, '2025-11', 3.5)
@@ -431,7 +431,7 @@ describe('generateInterestApplicationEvents', () => {
   test('adding historical avoided purchase only affects avoided interest, not purchase interest', () => {
     // Start with a purchase in August
     const initialEvents: AppEvent[] = [
-      createPurchaseEvent(5000, '2025-08-01T00:00:00Z', 'purchase-1'),
+      createPurchaseEvent(5000, '2025-08-01', 'purchase-1'),
     ]
 
     const result1 = generateInterestApplicationEvents(initialEvents, '2025-11', 3.5)
@@ -447,7 +447,7 @@ describe('generateInterestApplicationEvents', () => {
     // Now add an avoided purchase in September
     const eventsWithAvoided = [
       ...initialEvents,
-      createAvoidedPurchaseEvent(3000, '2025-09-15T00:00:00Z', 'avoid-1'),
+      createAvoidedPurchaseEvent(3000, '2025-09-15', 'avoid-1'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithAvoided, '2025-11', 3.5)
@@ -468,7 +468,7 @@ describe('generateInterestApplicationEvents', () => {
   test('interest compounds monthly - applied interest becomes part of principal', () => {
     // Add 1000 kr avoided purchase at start of August
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z', 'avoid-1'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01', 'avoid-1'),
     ]
 
     // Generate interest events for August and September
@@ -511,7 +511,7 @@ describe('generateInterestApplicationEvents', () => {
 describe('default interest rate changes', () => {
   test('calculateInterestForMonth uses provided default rate when no rate change events', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
 
     // Calculate with 3.5% default rate
@@ -530,7 +530,7 @@ describe('default interest rate changes', () => {
 
   test('generateInterestApplicationEvents uses provided default rate when no rate change events', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
 
     // Generate with 3.5% default rate
@@ -547,9 +547,9 @@ describe('default interest rate changes', () => {
 
   test('changing default rate recalculates interest for all months without rate change events', () => {
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createPurchaseEvent(500, '2025-09-10T00:00:00Z'),
-      createPurchaseEvent(300, '2025-10-15T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createPurchaseEvent(500, '2025-09-10'),
+      createPurchaseEvent(300, '2025-10-15'),
     ]
 
     // Generate with original 3.5% rate
@@ -575,9 +575,9 @@ describe('default interest rate changes', () => {
 
   test('rate change events override default rate for dates after the change', () => {
     const events: AppEvent[] = [
-      createPurchaseEvent(1000, '2025-09-01T00:00:00Z'),
-      createInterestRateChangeEvent(10, '2025-10-01', '2025-10-01T00:00:00Z'),
-      createPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createPurchaseEvent(1000, '2025-09-01'),
+      createInterestRateChangeEvent(10, '2025-10-01', '2025-10-01'),
+      createPurchaseEvent(1000, '2025-10-01'),
     ]
 
     // Calculate with different default rates
@@ -604,8 +604,8 @@ describe('getEffectiveRateForDate', () => {
 
   test('returns rate from most recent change before date', () => {
     const events: AppEvent[] = [
-      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01T00:00:00Z'),
-      createInterestRateChangeEvent(7, '2025-10-01', '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01'),
+      createInterestRateChangeEvent(7, '2025-10-01', '2025-10-01'),
     ]
     const result = getEffectiveRateForDate('2025-10-15', events, 3.5)
     expect(result).toBe(7)
@@ -613,8 +613,8 @@ describe('getEffectiveRateForDate', () => {
 
   test('returns earlier rate for dates before latest change', () => {
     const events: AppEvent[] = [
-      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01T00:00:00Z'),
-      createInterestRateChangeEvent(7, '2025-10-15', '2025-10-15T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01'),
+      createInterestRateChangeEvent(7, '2025-10-15', '2025-10-15'),
     ]
     const result = getEffectiveRateForDate('2025-10-10', events, 3.5)
     expect(result).toBe(5)
@@ -622,7 +622,7 @@ describe('getEffectiveRateForDate', () => {
 
   test('returns default rate for dates before any rate change', () => {
     const events: AppEvent[] = [
-      createInterestRateChangeEvent(5, '2025-10-01', '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-10-01', '2025-10-01'),
     ]
     const result = getEffectiveRateForDate('2025-09-15', events, 3.5)
     expect(result).toBe(3.5)
@@ -634,9 +634,9 @@ describe('complex interest rate scenarios', () => {
     // Scenario: 1000 kr avoided purchase on Oct 1
     // Rate changes: 3.5% (default) -> 5% on Oct 10 -> 7% on Oct 20
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
-      createInterestRateChangeEvent(5, '2025-10-10', '2025-10-10T00:00:00Z'),
-      createInterestRateChangeEvent(7, '2025-10-20', '2025-10-20T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-10-01'),
+      createInterestRateChangeEvent(5, '2025-10-10', '2025-10-10'),
+      createInterestRateChangeEvent(7, '2025-10-20', '2025-10-20'),
     ]
 
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
@@ -656,9 +656,9 @@ describe('complex interest rate scenarios', () => {
     // Sep 15: change to 5%
     // Oct 10: change to 7%
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createInterestRateChangeEvent(5, '2025-09-15', '2025-09-15T00:00:00Z'),
-      createInterestRateChangeEvent(7, '2025-10-10', '2025-10-10T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createInterestRateChangeEvent(5, '2025-09-15', '2025-09-15'),
+      createInterestRateChangeEvent(7, '2025-10-10', '2025-10-10'),
     ]
 
     const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
@@ -692,7 +692,7 @@ describe('complex interest rate scenarios', () => {
     // Change default to 5% -> regenerates all months with 5%
     // Add rate change event for Oct 1 at 7% -> Aug and Sep still use 5%, Oct uses 7%
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
     ]
 
     // Initial generation with 3.5% default
@@ -719,7 +719,7 @@ describe('complex interest rate scenarios', () => {
     // Now add a rate change event for October 1 at 7%
     const eventsWithRateChange = [
       ...events,
-      createInterestRateChangeEvent(7, '2025-10-01', '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(7, '2025-10-01', '2025-10-01'),
     ]
 
     const result3 = generateInterestApplicationEvents(eventsWithRateChange, '2025-11', 5)
@@ -738,8 +738,8 @@ describe('complex interest rate scenarios', () => {
   test('adding rate change event in middle of month affects only that portion of month', () => {
     // Scenario: 1000 kr on Oct 1, rate change on Oct 15 from 3.5% to 10%
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
-      createInterestRateChangeEvent(10, '2025-10-15', '2025-10-15T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-10-01'),
+      createInterestRateChangeEvent(10, '2025-10-15', '2025-10-15'),
     ]
 
     const result = calculateInterestForMonth(events, '2025-10', 3.5)
@@ -755,8 +755,8 @@ describe('complex interest rate scenarios', () => {
     // Scenario: 1000 kr in Aug, rate change on Sep 1 to 5%
     // Then change the rate change to 7% -> Sep and Oct recalculated, Aug unchanged
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01', 'rate-1'),
     ]
 
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
@@ -770,8 +770,8 @@ describe('complex interest rate scenarios', () => {
 
     // Now change the rate to 7%
     const eventsModified: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createInterestRateChangeEvent(7, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createInterestRateChangeEvent(7, '2025-09-01', '2025-09-01', 'rate-1'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsModified, '2025-11', 3.5)
@@ -791,8 +791,8 @@ describe('complex interest rate scenarios', () => {
     // Scenario: 1000 kr in Aug, rate change on Sep 1 to 10%
     // Then delete the rate change -> all months use default 3.5%
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01', 'rate-1'),
     ]
 
     const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
@@ -805,7 +805,7 @@ describe('complex interest rate scenarios', () => {
 
     // Now remove the rate change event
     const eventsWithoutRateChange: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
     ]
 
     const result2 = generateInterestApplicationEvents(eventsWithoutRateChange, '2025-11', 3.5)
@@ -822,8 +822,8 @@ describe('complex interest rate scenarios', () => {
     // August interest applied at 3.5%
     // September interest calculated on (1000 + August interest) at 10%
     const events: AppEvent[] = [
-      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
-      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01T00:00:00Z'),
+      createAvoidedPurchaseEvent(1000, '2025-08-01'),
+      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01'),
     ]
 
     // First generate August interest

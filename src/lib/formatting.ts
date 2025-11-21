@@ -19,6 +19,7 @@ export function formatCurrency(amount: number): string {
 
 /**
  * Format a date/timestamp according to the app locale
+ * @deprecated Use formatDateWithWeekday for entries display
  */
 export function formatDate(timestamp: string): string {
   const date = new Date(timestamp)
@@ -27,6 +28,18 @@ export function formatDate(timestamp: string): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+  })
+}
+
+/**
+ * Format a date with weekday, year and date for entries (e.g., "man. 15. jan. 2025")
+ */
+export function formatDateWithWeekday(date: string): string {
+  return new Date(date).toLocaleDateString(APP_LOCALE, {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   })
 }
 

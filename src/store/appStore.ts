@@ -6,7 +6,7 @@ import {
   getMonthBounds,
   getMonthKey,
   isDateInMonth,
-  sortEventsByUUID,
+  sortEventsByDateAsc,
 } from '~/lib/eventUtils'
 import {
   calculatePendingInterestForCurrentMonth,
@@ -107,7 +107,7 @@ function calculateMetricsFromEvents(
   events: AppEvent[],
   defaultInterestRate: number = FALLBACK_INTEREST_RATE,
 ): DashboardMetrics {
-  const sortedEvents = sortEventsByUUID(events)
+  const sortedEvents = sortEventsByDateAsc(events)
   const currentMonthKey = getCurrentMonthKey()
   const { start: currentMonthStart, end: currentMonthEnd } =
     getMonthBounds(currentMonthKey)
@@ -132,7 +132,7 @@ function calculateMetricsFromEvents(
 
   // Process all events
   for (const event of sortedEvents) {
-    const monthKey = getMonthKey(event.timestamp)
+    const monthKey = getMonthKey(event.date)
     const { start, end } = getMonthBounds(monthKey)
 
     if (!monthlyMap.has(monthKey)) {
@@ -299,7 +299,7 @@ export const useAppStore = create<AppStore>()(
 
       getEventsByMonth: (monthKey) => {
         return get().events.filter((event) =>
-          isDateInMonth(event.timestamp, monthKey),
+          isDateInMonth(event.date, monthKey),
         )
       },
 

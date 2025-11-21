@@ -8,12 +8,12 @@ export function createPurchaseEvent(
   amount: number,
   category: Category,
   description: string,
-  timestamp = new Date().toISOString(),
+  date = new Date().toISOString().split('T')[0]!,
 ): PurchaseEvent {
   return {
     type: 'PURCHASE',
     id: uuidv7(),
-    timestamp,
+    date,
     amount,
     category,
     description,
@@ -27,12 +27,12 @@ export function createAvoidedPurchaseEvent(
   amount: number,
   category: Category,
   description: string,
-  timestamp = new Date().toISOString(),
+  date = new Date().toISOString().split('T')[0]!,
 ): AvoidedPurchaseEvent {
   return {
     type: 'AVOIDED_PURCHASE',
     id: uuidv7(),
-    timestamp,
+    date,
     amount,
     category,
     description,
@@ -46,12 +46,12 @@ export function createInterestRateChangeEvent(
   newRate: number,
   effectiveDate: string,
   notes?: string,
-  timestamp = new Date().toISOString(),
+  date = new Date().toISOString().split('T')[0]!,
 ): InterestRateChangeEvent {
   return {
     type: 'INTEREST_RATE_CHANGE',
     id: uuidv7(),
-    timestamp,
+    date,
     effectiveDate,
     newRate,
     notes,
@@ -65,12 +65,12 @@ export function createInterestApplicationEvent(
   pendingOnAvoided: number,
   pendingOnSpent: number,
   appliedDate: string,
-  timestamp = new Date().toISOString(),
+  date = appliedDate,
 ): InterestApplicationEvent {
   return {
     type: 'INTEREST_APPLICATION',
     id: uuidv7(),
-    timestamp,
+    date,
     appliedDate,
     pendingOnAvoided,
     pendingOnSpent,
@@ -78,10 +78,34 @@ export function createInterestApplicationEvent(
 }
 
 /**
- * Sort events by UUIDv7 (naturally ordered by creation timestamp)
+ * Sort events by date (desc) and then by ID (desc) as tiebreaker
+ */
+export function sortEventsByDateDesc(events: AppEvent[]): AppEvent[] {
+  return [...events].sort((a, b) => {
+    const dateCompare = b.date.localeCompare(a.date)
+    if (dateCompare !== 0) return dateCompare
+    return b.id.localeCompare(a.id)
+  })
+}
+
+/**
+ * Sort events by date (asc) and then by ID (asc) as tiebreaker
+ * Used for calculations that need chronological order
+ */
+export function sortEventsByDateAsc(events: AppEvent[]): AppEvent[] {
+  return [...events].sort((a, b) => {
+    const dateCompare = a.date.localeCompare(b.date)
+    if (dateCompare !== 0) return dateCompare
+    return a.id.localeCompare(b.id)
+  })
+}
+
+/**
+ * Legacy: Sort events by UUIDv7 (naturally ordered by creation timestamp)
+ * @deprecated Use sortEventsByDateAsc instead
  */
 export function sortEventsByUUID(events: AppEvent[]): AppEvent[] {
-  return [...events].sort((a, b) => a.id.localeCompare(b.id))
+  return sortEventsByDateAsc(events)
 }
 
 /**
@@ -92,8 +116,8 @@ export function isValidEvent(event: unknown): event is AppEvent {
 
   const e = event as Record<string, unknown>
 
-  if (!e.type || !e.id || !e.timestamp) return false
-  if (typeof e.type !== 'string' || typeof e.id !== 'string' || typeof e.timestamp !== 'string') {
+  if (!e.type || !e.id || !e.date) return false
+  if (typeof e.type !== 'string' || typeof e.id !== 'string' || typeof e.date !== 'string') {
     return false
   }
 
@@ -122,8 +146,8 @@ export function isValidEvent(event: unknown): event is AppEvent {
  * Get the month-year key for grouping events
  */
 export function getMonthKey(date: string): string {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  // Date is already in YYYY-MM-DD format, just extract YYYY-MM
+  return date.substring(0, 7)
 }
 
 /**

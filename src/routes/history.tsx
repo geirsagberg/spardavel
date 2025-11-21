@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
-import { formatCurrency, formatDate, formatMonth } from '~/lib/formatting'
+import { formatCurrency, formatDateWithWeekday, formatMonth } from '~/lib/formatting'
 
 export const Route = createFileRoute('/history')({
   component: History,
@@ -24,10 +24,8 @@ function History() {
     const months = new Set<string>()
     events.forEach((e) => {
       if (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE') {
-        const date = new Date(e.timestamp)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        months.add(`${year}-${month}`)
+        // Date is already in YYYY-MM-DD format, extract YYYY-MM
+        months.add(e.date.substring(0, 7))
       }
     })
     return Array.from(months).sort().reverse()
@@ -53,10 +51,8 @@ function History() {
 
       // Filter by month
       if (selectedMonth) {
-        const date = new Date(e.timestamp)
-        const year = date.getFullYear()
-        const month = String(date.getMonth() + 1).padStart(2, '0')
-        const eventMonth = `${year}-${month}`
+        // Date is already in YYYY-MM-DD format, extract YYYY-MM
+        const eventMonth = e.date.substring(0, 7)
         if (eventMonth !== selectedMonth) return false
       }
 
@@ -174,7 +170,11 @@ function History() {
             ) : (
               <div className="space-y-3">
                 {filteredEvents
-                  .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+                  .sort((a, b) => {
+                    const dateCompare = b.date.localeCompare(a.date)
+                    if (dateCompare !== 0) return dateCompare
+                    return b.id.localeCompare(a.id)
+                  })
                   .map((event) => (
                     <div
                       key={event.id}
@@ -199,7 +199,7 @@ function History() {
                           <div className="flex gap-2 text-sm text-base-content/60">
                             <span>{event.category}</span>
                             <span>·</span>
-                            <span>{formatDate(event.timestamp)}</span>
+                            <span>{formatDateWithWeekday(event.date)}</span>
                           </div>
                         </div>
                       </div>

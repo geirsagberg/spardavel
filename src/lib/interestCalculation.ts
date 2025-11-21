@@ -42,14 +42,13 @@ export function calculatePendingInterestForCurrentMonth(
   currentInterestRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
   const today = new Date().toISOString().split('T')[0]!
-  const currentMonthKey = getMonthKey(new Date().toISOString())
+  const currentMonthKey = getMonthKey(today)
   const { start: monthStart } = getMonthBounds(currentMonthKey)
 
   // Filter events that occurred in this month or earlier
   // Include INTEREST_APPLICATION for compounding
   const relevantEvents = events.filter((e) => {
-    const eventDate = e.timestamp.split('T')[0]!
-    return eventDate <= today! && 
+    return e.date <= today && 
       (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
   })
 
@@ -58,7 +57,7 @@ export function calculatePendingInterestForCurrentMonth(
 
   // Iterate through each day from month start to today
   const currentDate = new Date(monthStart)
-  const endDate = new Date(today!)
+  const endDate = new Date(today)
 
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0]!
@@ -72,8 +71,7 @@ export function calculatePendingInterestForCurrentMonth(
     let purchaseBalance = 0
 
     for (const event of relevantEvents) {
-      const eventDate = event.timestamp.split('T')[0]!
-      if (eventDate > dateStr) {
+      if (event.date > dateStr) {
         break // Only include events up to current date
       }
 
@@ -140,7 +138,7 @@ export function getMonthsNeedingInterestApplication(
   let earliestMonthKey: string | null = null
   for (const event of events) {
     if (event.type === 'PURCHASE' || event.type === 'AVOIDED_PURCHASE') {
-      const monthKey = getMonthKey(event.timestamp)
+      const monthKey = getMonthKey(event.date)
       if (monthKey < currentMonthKey) {
         if (!earliestMonthKey || monthKey < earliestMonthKey) {
           earliestMonthKey = monthKey
@@ -185,11 +183,10 @@ export function calculateInterestForMonth(
   // Include PURCHASE, AVOIDED_PURCHASE, and INTEREST_APPLICATION for compounding
   const relevantEvents = events
     .filter((e) => {
-      const eventDate = e.timestamp.split('T')[0]!
-      return eventDate <= monthEnd && 
+      return e.date <= monthEnd && 
         (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
     })
-    .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+    .sort((a, b) => a.date.localeCompare(b.date))
 
   let pendingOnAvoided = 0
   let pendingOnSpent = 0
@@ -210,8 +207,7 @@ export function calculateInterestForMonth(
     let purchaseBalance = 0
 
     for (const event of relevantEvents) {
-      const eventDate = event.timestamp.split('T')[0]!
-      if (eventDate > dateStr) {
+      if (event.date > dateStr) {
         break
       }
 
@@ -266,7 +262,7 @@ export function generateInterestApplicationEvents(
         pendingOnAvoided,
         pendingOnSpent,
         monthEnd,
-        `${monthEnd}T23:59:59.999Z`, // End of month timestamp
+        monthEnd, // Use the month end date
       )
       newEvents.push(applicationEvent)
     }
