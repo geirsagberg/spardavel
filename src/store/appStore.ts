@@ -8,6 +8,7 @@ import {
   createEmptyAllTimeMetrics,
 } from '~/types/metrics'
 import { sortEventsByUUID, getMonthKey, getMonthBounds, getCurrentMonthKey, isDateInMonth } from '~/lib/eventUtils'
+import { calculatePendingInterestForCurrentMonth } from '~/lib/interestCalculation'
 
 interface AppStore {
   // Event stream
@@ -98,6 +99,18 @@ function calculateMetricsFromEvents(events: AppEvent[]): DashboardMetrics {
   } else {
     metrics.currentMonth = createEmptyPeriodMetrics(currentMonthStart, currentMonthEnd)
   }
+
+  // Calculate pending interest for current month
+  const { pendingOnAvoided, pendingOnSpent } = calculatePendingInterestForCurrentMonth(
+    sortedEvents,
+    metrics.currentInterestRate,
+  )
+  metrics.currentMonth.pendingInterestOnAvoided = pendingOnAvoided
+  metrics.currentMonth.pendingInterestOnSpent = pendingOnSpent
+
+  // Update all-time pending interest
+  metrics.allTime.pendingSavedInterest = pendingOnAvoided
+  metrics.allTime.pendingCostInterest = pendingOnSpent
 
   // Build monthly history (sorted by month)
   const sortedMonths = Array.from(monthlyMap.entries())
