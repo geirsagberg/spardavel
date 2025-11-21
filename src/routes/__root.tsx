@@ -1,10 +1,9 @@
-import { RootRoute } from '@tanstack/react-router'
-import { Outlet } from '@tanstack/react-router'
+import { createRootRoute, Outlet } from '@tanstack/react-router'
 import { DesktopHeader } from '~/components/DesktopHeader'
 import { Navigation } from '~/components/Navigation'
 import '../root.css'
 
-export const Route = new RootRoute({
+export const Route = createRootRoute({
   component: () => (
     <>
       <DesktopHeader />
