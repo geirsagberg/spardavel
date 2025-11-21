@@ -68,11 +68,11 @@ export function Dashboard() {
             <h3 className="font-bold">Pending Interest</h3>
             <div className="text-sm">
               <div>
-                Saved interest: <span className="font-semibold text-success">{formatAmount(currentMonth.pendingInterestOnAvoided)}</span>
+                Saved interest: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnAvoided)}</span>
               </div>
               {currentMonth.pendingInterestOnSpent > 0 && (
                 <div>
-                  Opportunity cost: <span className="font-semibold text-error">{formatAmount(currentMonth.pendingInterestOnSpent)}</span>
+                  Opportunity cost: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnSpent)}</span>
                 </div>
               )}
             </div>
