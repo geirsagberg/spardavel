@@ -271,15 +271,19 @@ type DashboardMetrics = {
 
 ## Technical Stack
 
+### Package Manager
+- **Bun** - Fast JavaScript runtime and package manager
+- Always use latest versions of dependencies
+
 ### Frontend
-- **React 19** - UI framework
-- **Vite** - Build tool
-- **TanStack Start** - Routing and SSR
-- **Tailwind CSS** - Styling
-- **DaisyUI** - Component library
-- **TypeScript** - Type safety
-- **Zustand** - State management (event stream, UI state, derived metrics)
-- **uuid** - Generate UUIDv7 event IDs (timestamp-sortable)
+- **React 19** (latest) - UI framework
+- **Vite** (latest) - Build tool
+- **TanStack Start** (latest) - Routing and SSR
+- **Tailwind CSS** (latest) - Styling
+- **DaisyUI** (latest) - Component library
+- **TypeScript** (latest) - Type safety
+- **Zustand** (latest) - State management (event stream, UI state, derived metrics)
+- **uuid** (latest) - Generate UUIDv7 event IDs (timestamp-sortable)
 
 **State Management Details (Zustand):**
 - Single store for event stream and UI state
@@ -289,12 +293,12 @@ type DashboardMetrics = {
 
 ### Storage & Persistence
 - **LocalStorage** - Store event stream
-- **PWA (Workbox)** - Offline-first, installable
+- **PWA (Workbox)** (latest) - Offline-first, installable
 - **Structured Serialization** - Events as JSON
 
 ### Build & Deploy
-- **Vite** - Fast dev server and production builds
-- **TypeScript** - Compile-time type checking
+- **Vite** (latest) - Fast dev server and production builds
+- **TypeScript** (latest) - Compile-time type checking
 - **ES Modules** - Modern JavaScript
 
 ---

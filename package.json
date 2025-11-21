@@ -1,0 +1,34 @@
+{
+  "name": "spardavel",
+  "type": "module",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node dist/index.js",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "latest",
+    "react-dom": "latest",
+    "@tanstack/react-router": "latest",
+    "@tanstack/react-start": "latest",
+    "zustand": "latest",
+    "uuid": "latest",
+    "daisyui": "latest",
+    "workbox-window": "latest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/node": "latest",
+    "@types/uuid": "latest",
+    "typescript": "latest",
+    "vite": "latest",
+    "@vitejs/plugin-react": "latest",
+    "vite-tsconfig-paths": "latest",
+    "@tailwindcss/vite": "latest"
+  }
+}
