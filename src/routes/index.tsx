@@ -11,9 +11,19 @@ function Home() {
   return (
     <div className="min-h-screen bg-base-100">
       <div className="container mx-auto max-w-2xl space-y-8 px-4 py-8">
-        <div>
-          <h1 className="text-4xl font-bold">Spardavel</h1>
-          <p className="text-base-content/60">Track your savings and reduce impulse purchases</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold">Spardavel</h1>
+            <p className="text-base-content/60">Track your savings and reduce impulse purchases</p>
+          </div>
+          <div className="flex gap-2">
+            <a href="/history" className="btn btn-sm btn-outline">
+              History
+            </a>
+            <a href="/analytics" className="btn btn-sm btn-outline">
+              Analytics
+            </a>
+          </div>
         </div>
 
         <Dashboard />

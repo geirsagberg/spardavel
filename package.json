@@ -10,14 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "latest",
-    "react-dom": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/react-start": "latest",
-    "zustand": "latest",
-    "uuid": "latest",
     "daisyui": "latest",
-    "workbox-window": "latest"
+    "react": "latest",
+    "react-dom": "latest",
+    "uuid": "latest",
+    "workbox-window": "latest",
+    "zustand": "latest"
   },
   "devDependencies": {
     "@types/bun": "latest",
