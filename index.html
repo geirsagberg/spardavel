@@ -5,10 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Spardavel - Track your savings and avoid impulse purchases" />
     <meta name="theme-color" content="#ffffff" />
+    <meta name="color-scheme" content="light" />
     <title>Spardavel</title>
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/icons/favicon.ico" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <style>
+      /* Prevent white flash on load by matching the app background */
+      html, body {
+        background-color: #f9fafb;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
   </head>
   <body>
     <div id="app"></div>
