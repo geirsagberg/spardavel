@@ -428,7 +428,7 @@ If importing events from another device:
 ### Phase 3: Interest Calculation ✓ COMPLETE
 - [x] Daily pending interest calculation
 - [x] Interest display in dashboard
-- [ ] Monthly interest application (INTEREST_APPLICATION events)
+- [x] Monthly interest application (INTEREST_APPLICATION events)
 
 ### Phase 4: Views & Analytics ✓ COMPLETE
 - [x] History page with filtering
