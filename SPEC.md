@@ -359,20 +359,21 @@ On app load:
     { "type": "PURCHASE", "id": "...", ... },
     ...
   ],
-  "metrics": {
-    "estimatedSavings": 2150,
-    "estimatedSpent": 5890,
-    ...
+  "settings": {
+    "defaultInterestRate": 3.5
   }
 }
 ```
 
+**Note**: The `settings` object contains all user preferences including the default interest rate used when no rate change events exist.
+
 ### Import Process
 1. User selects JSON file
 2. Validate format and version
-3. Merge events (detect duplicates by ID)
-4. Recalculate from merged event stream
-5. Show confirmation with metrics delta
+3. Import settings (if available) - restores default interest rate and other preferences
+4. Merge events (detect duplicates by ID)
+5. Recalculate from merged event stream
+6. Show confirmation with metrics delta
 
 ---
 

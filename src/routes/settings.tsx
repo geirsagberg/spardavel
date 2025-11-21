@@ -61,6 +61,9 @@ function Settings() {
       version: '1',
       exportDate: new Date().toISOString(),
       events: events,
+      settings: {
+        defaultInterestRate: defaultInterestRate,
+      },
     }
 
     const jsonString = JSON.stringify(data, null, 2)
@@ -93,6 +96,11 @@ function Settings() {
           return
         }
 
+        // Import settings if available
+        if (data.settings?.defaultInterestRate !== undefined) {
+          setDefaultInterestRate(data.settings.defaultInterestRate)
+        }
+
         // Import events
         const newEventIds = new Set()
         const existingIds = new Set(events.map((e) => e.id))
@@ -104,8 +112,12 @@ function Settings() {
           }
         }
 
+        const settingsMessage = data.settings?.defaultInterestRate !== undefined 
+          ? ' Settings restored.' 
+          : ''
+
         setSuccessMessage(
-          `Imported ${newEventIds.size} new events. (${data.events.length - newEventIds.size} duplicates skipped)`
+          `Imported ${newEventIds.size} new events. (${data.events.length - newEventIds.size} duplicates skipped)${settingsMessage}`
         )
         setTimeout(() => setSuccessMessage(''), 3000)
 
