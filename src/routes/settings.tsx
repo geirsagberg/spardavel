@@ -106,12 +106,12 @@ function Settings() {
   }
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <div className="container mx-auto max-w-2xl space-y-6 px-4 py-8">
+    <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
+      <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold">Settings</h1>
-          <p className="text-base-content/60">Configure your app and manage your data</p>
+          <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
+          <p className="text-sm text-base-content/60 sm:text-base">Configure your app</p>
         </div>
 
         {/* Success Message */}
@@ -235,13 +235,6 @@ function Settings() {
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Back Link */}
-        <div>
-          <a href="/" className="link">
-            ← Back to Dashboard
-          </a>
         </div>
       </div>
     </div>

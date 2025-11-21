@@ -94,12 +94,12 @@ function History() {
   }, [filteredEvents])
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <div className="container mx-auto max-w-4xl space-y-6 px-4 py-8">
+    <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
+      <div className="container mx-auto max-w-4xl space-y-6 px-4 py-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold">History</h1>
-          <p className="text-base-content/60">Filter and view your transaction history</p>
+          <h1 className="text-3xl font-bold sm:text-4xl">History</h1>
+          <p className="text-sm text-base-content/60 sm:text-base">View your transactions</p>
         </div>
 
         {/* Filters */}
@@ -244,13 +244,6 @@ function History() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Back Link */}
-        <div>
-          <a href="/" className="link">
-            ← Back to Dashboard
-          </a>
         </div>
       </div>
     </div>

@@ -59,12 +59,12 @@ function Analytics() {
   }))
 
   return (
-    <div className="min-h-screen bg-base-100">
-      <div className="container mx-auto max-w-6xl space-y-8 px-4 py-8">
+    <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
+      <div className="container mx-auto max-w-6xl space-y-8 px-4 py-6">
         {/* Header */}
         <div>
-          <h1 className="text-4xl font-bold">Analytics</h1>
-          <p className="text-base-content/60">View your spending and savings patterns</p>
+          <h1 className="text-3xl font-bold sm:text-4xl">Analytics</h1>
+          <p className="text-sm text-base-content/60 sm:text-base">Your spending patterns</p>
         </div>
 
         {/* Key Stats */}
@@ -208,13 +208,6 @@ function Analytics() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Back Link */}
-        <div>
-          <a href="/" className="link">
-            ← Back to Dashboard
-          </a>
         </div>
       </div>
     </div>
