@@ -22,7 +22,7 @@ const PurchaseEventSchema = z.object({
   amount: z.number().positive(),
   category: CategorySchema,
   description: z.string().min(1),
-}).passthrough()
+}).strip()
 
 const AvoidedPurchaseEventSchema = z.object({
   type: z.literal('AVOIDED_PURCHASE'),
@@ -31,14 +31,14 @@ const AvoidedPurchaseEventSchema = z.object({
   amount: z.number().positive(),
   category: CategorySchema,
   description: z.string().min(1),
-}).passthrough()
+}).strip()
 
 const InterestRateChangeEventSchema = z.object({
   type: z.literal('INTEREST_RATE_CHANGE'),
   id: z.string().uuid(),
   date: DateSchema,
   newRate: z.number().min(0).max(100),
-}).passthrough()
+}).strip()
 
 const InterestApplicationEventSchema = z.object({
   type: z.literal('INTEREST_APPLICATION'),
@@ -46,7 +46,7 @@ const InterestApplicationEventSchema = z.object({
   date: DateSchema,
   pendingOnAvoided: z.number(),
   pendingOnSpent: z.number(),
-}).passthrough()
+}).strip()
 
 export const AppEventSchema = z.discriminatedUnion('type', [
   PurchaseEventSchema,

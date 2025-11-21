@@ -325,16 +325,11 @@ export const useAppStore = create<AppStore>()(
           
           if (!validationResult.success) {
             console.error('Event validation failed:', validationResult.error)
-            const shouldReset = window.confirm(
-              'The stored data is invalid or corrupted. Would you like to reset all data? (Cancel to continue with potentially invalid data)'
-            )
-            
-            if (shouldReset) {
-              state.events = []
-              state.defaultInterestRate = FALLBACK_INTEREST_RATE
-              state.metrics = createEmptyDashboardMetrics()
-              return
-            }
+            // Reset everything - clear localStorage and start fresh
+            state.events = []
+            state.defaultInterestRate = FALLBACK_INTEREST_RATE
+            state.metrics = createEmptyDashboardMetrics()
+            return
           }
 
           // Apply interest for any completed months and recalculate metrics
