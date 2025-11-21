@@ -43,13 +43,13 @@ function Analytics() {
     }
   }
 
-  // Monthly trends
+  // Monthly trends (only show applied interest, not pending, since these are historical months)
   const monthlyTrends = (metrics.monthlyHistory || [])
     .map((month) => ({
       month: formatMonthShort(month.periodStart),
       avoided: month.avoidedTotal,
       spent: month.purchasesTotal,
-      interest: month.pendingInterestOnAvoided + month.appliedInterestOnAvoided,
+      interest: month.appliedInterestOnAvoided,
     }))
     .reverse()
 

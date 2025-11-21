@@ -628,3 +628,219 @@ describe('getEffectiveRateForDate', () => {
     expect(result).toBe(3.5)
   })
 })
+
+describe('complex interest rate scenarios', () => {
+  test('multiple rate changes within single month - daily interest calculation', () => {
+    // Scenario: 1000 kr avoided purchase on Oct 1
+    // Rate changes: 3.5% (default) -> 5% on Oct 10 -> 7% on Oct 20
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-10-10', '2025-10-10T00:00:00Z'),
+      createInterestRateChangeEvent(7, '2025-10-20', '2025-10-20T00:00:00Z'),
+    ]
+
+    const result = calculateInterestForMonth(events, '2025-10', 3.5)
+
+    // Expected calculation:
+    // Oct 1-9 (9 days): 1000 * (3.5/100/365) * 9 = 0.863
+    // Oct 10-19 (10 days): 1000 * (5/100/365) * 10 = 1.370
+    // Oct 20-31 (12 days): 1000 * (7/100/365) * 12 = 2.301
+    // Total: ~4.53 kr
+    expect(result.pendingOnAvoided).toBeGreaterThan(4.4)
+    expect(result.pendingOnAvoided).toBeLessThan(4.7)
+  })
+
+  test('rate changes across multiple months affect each month correctly', () => {
+    // Scenario: 1000 kr avoided purchase on Aug 1, with rate changes
+    // Aug: default 3.5%
+    // Sep 15: change to 5%
+    // Oct 10: change to 7%
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-09-15', '2025-09-15T00:00:00Z'),
+      createInterestRateChangeEvent(7, '2025-10-10', '2025-10-10T00:00:00Z'),
+    ]
+
+    const result = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    expect(result).toHaveLength(3)
+
+    const aug = result.find(e => e.appliedDate === '2025-08-31')!
+    const sep = result.find(e => e.appliedDate === '2025-09-30')!
+    const oct = result.find(e => e.appliedDate === '2025-10-31')!
+
+    // August: 31 days at 3.5%: 1000 * (3.5/100/365) * 31 ≈ 2.97
+    expect(aug.pendingOnAvoided).toBeGreaterThan(2.9)
+    expect(aug.pendingOnAvoided).toBeLessThan(3.1)
+
+    // September: 
+    // Sep 1-14 (14 days) at 3.5%: 1000 * (3.5/100/365) * 14 ≈ 1.342
+    // Sep 15-30 (16 days) at 5%: 1000 * (5/100/365) * 16 ≈ 2.192
+    // Total: ~3.53
+    expect(sep.pendingOnAvoided).toBeGreaterThan(3.4)
+    expect(sep.pendingOnAvoided).toBeLessThan(3.7)
+
+    // October:
+    // Oct 1-9 (9 days) at 5%: 1000 * (5/100/365) * 9 ≈ 1.233
+    // Oct 10-31 (22 days) at 7%: 1000 * (7/100/365) * 22 ≈ 4.219
+    // Total: ~5.45
+    expect(oct.pendingOnAvoided).toBeGreaterThan(5.3)
+    expect(oct.pendingOnAvoided).toBeLessThan(5.6)
+  })
+
+  test('changing default rate then adding rate change event - only future months affected by rate change', () => {
+    // Scenario: 1000 kr in August with default 3.5%
+    // Change default to 5% -> regenerates all months with 5%
+    // Add rate change event for Oct 1 at 7% -> Aug and Sep still use 5%, Oct uses 7%
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+    ]
+
+    // Initial generation with 3.5% default
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')!
+    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+
+    // All should use 3.5%
+    expect(aug1.pendingOnAvoided).toBeGreaterThan(2.9)
+    expect(aug1.pendingOnAvoided).toBeLessThan(3.1)
+
+    // Change default rate to 5%
+    const result2 = generateInterestApplicationEvents(events, '2025-11', 5)
+    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')!
+    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+
+    // All should use 5% (higher than before)
+    expect(aug2.pendingOnAvoided).toBeGreaterThan(aug1.pendingOnAvoided)
+    expect(sep2.pendingOnAvoided).toBeGreaterThan(sep1.pendingOnAvoided)
+    expect(oct2.pendingOnAvoided).toBeGreaterThan(oct1.pendingOnAvoided)
+
+    // Now add a rate change event for October 1 at 7%
+    const eventsWithRateChange = [
+      ...events,
+      createInterestRateChangeEvent(7, '2025-10-01', '2025-10-01T00:00:00Z'),
+    ]
+
+    const result3 = generateInterestApplicationEvents(eventsWithRateChange, '2025-11', 5)
+    const aug3 = result3.find(e => e.appliedDate === '2025-08-31')!
+    const sep3 = result3.find(e => e.appliedDate === '2025-09-30')!
+    const oct3 = result3.find(e => e.appliedDate === '2025-10-31')!
+
+    // August and September should still use 5% default (same as result2)
+    expect(aug3.pendingOnAvoided).toBeCloseTo(aug2.pendingOnAvoided, 2)
+    expect(sep3.pendingOnAvoided).toBeCloseTo(sep2.pendingOnAvoided, 2)
+
+    // October should use 7% (higher than result2)
+    expect(oct3.pendingOnAvoided).toBeGreaterThan(oct2.pendingOnAvoided)
+  })
+
+  test('adding rate change event in middle of month affects only that portion of month', () => {
+    // Scenario: 1000 kr on Oct 1, rate change on Oct 15 from 3.5% to 10%
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-10-01T00:00:00Z'),
+      createInterestRateChangeEvent(10, '2025-10-15', '2025-10-15T00:00:00Z'),
+    ]
+
+    const result = calculateInterestForMonth(events, '2025-10', 3.5)
+
+    // Oct 1-14 (14 days) at 3.5%: 1000 * (3.5/100/365) * 14 ≈ 1.342
+    // Oct 15-31 (17 days) at 10%: 1000 * (10/100/365) * 17 ≈ 4.658
+    // Total: ~6.0
+    expect(result.pendingOnAvoided).toBeGreaterThan(5.8)
+    expect(result.pendingOnAvoided).toBeLessThan(6.2)
+  })
+
+  test('modifying existing rate change event recalculates affected months correctly', () => {
+    // Scenario: 1000 kr in Aug, rate change on Sep 1 to 5%
+    // Then change the rate change to 7% -> Sep and Oct recalculated, Aug unchanged
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createInterestRateChangeEvent(5, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+    ]
+
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    const aug1 = result1.find(e => e.appliedDate === '2025-08-31')!
+    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+
+    // August uses default 3.5%, Sep and Oct use 5%
+    expect(aug1.pendingOnAvoided).toBeGreaterThan(2.9)
+    expect(aug1.pendingOnAvoided).toBeLessThan(3.1)
+
+    // Now change the rate to 7%
+    const eventsModified: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createInterestRateChangeEvent(7, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsModified, '2025-11', 3.5)
+    const aug2 = result2.find(e => e.appliedDate === '2025-08-31')!
+    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+
+    // August should be unchanged (still 3.5%)
+    expect(aug2.pendingOnAvoided).toBeCloseTo(aug1.pendingOnAvoided, 2)
+
+    // September and October should be higher (now using 7% instead of 5%)
+    expect(sep2.pendingOnAvoided).toBeGreaterThan(sep1.pendingOnAvoided)
+    expect(oct2.pendingOnAvoided).toBeGreaterThan(oct1.pendingOnAvoided)
+  })
+
+  test('deleting rate change event reverts to default rate for affected period', () => {
+    // Scenario: 1000 kr in Aug, rate change on Sep 1 to 10%
+    // Then delete the rate change -> all months use default 3.5%
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01T00:00:00Z', 'rate-1'),
+    ]
+
+    const result1 = generateInterestApplicationEvents(events, '2025-11', 3.5)
+    const sep1 = result1.find(e => e.appliedDate === '2025-09-30')!
+    const oct1 = result1.find(e => e.appliedDate === '2025-10-31')!
+
+    // Sep and Oct should use 10% (high values)
+    expect(sep1.pendingOnAvoided).toBeGreaterThan(8) // ~8.2
+    expect(oct1.pendingOnAvoided).toBeGreaterThan(8) // ~8.5
+
+    // Now remove the rate change event
+    const eventsWithoutRateChange: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+    ]
+
+    const result2 = generateInterestApplicationEvents(eventsWithoutRateChange, '2025-11', 3.5)
+    const sep2 = result2.find(e => e.appliedDate === '2025-09-30')!
+    const oct2 = result2.find(e => e.appliedDate === '2025-10-31')!
+
+    // Sep and Oct should now use 3.5% (much lower)
+    expect(sep2.pendingOnAvoided).toBeLessThan(3) // ~2.88
+    expect(oct2.pendingOnAvoided).toBeLessThan(3.1) // ~2.97
+  })
+
+  test('compound interest with rate changes - applied interest uses rate at application time', () => {
+    // Scenario: 1000 kr on Aug 1 at 3.5%, rate changes to 10% on Sep 1
+    // August interest applied at 3.5%
+    // September interest calculated on (1000 + August interest) at 10%
+    const events: AppEvent[] = [
+      createAvoidedPurchaseEvent(1000, '2025-08-01T00:00:00Z'),
+      createInterestRateChangeEvent(10, '2025-09-01', '2025-09-01T00:00:00Z'),
+    ]
+
+    // First generate August interest
+    const august = generateInterestApplicationEvents(events, '2025-09', 3.5)
+    expect(august).toHaveLength(1)
+    const augustInterest = august[0]!.pendingOnAvoided
+    expect(augustInterest).toBeGreaterThan(2.9)
+    expect(augustInterest).toBeLessThan(3.1)
+
+    // Now generate September with August's applied interest included
+    const eventsWithAugust = [...events, ...august]
+    const september = generateInterestApplicationEvents(eventsWithAugust, '2025-10', 3.5)
+    expect(september).toHaveLength(1)
+
+    // September should calculate interest at 10% on (1000 + augustInterest)
+    // (1000 + 2.97) * (10/100/365) * 30 ≈ 8.22
+    const expectedSeptInterest = (1000 + augustInterest) * (10/100/365) * 30
+    expect(september[0]!.pendingOnAvoided).toBeCloseTo(expectedSeptInterest, 1)
+  })
+})

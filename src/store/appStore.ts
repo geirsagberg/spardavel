@@ -283,6 +283,7 @@ export const useAppStore = create<AppStore>()(
         set(() => ({
           events: [],
           metrics: createEmptyDashboardMetrics(),
+          defaultInterestRate: FALLBACK_INTEREST_RATE,
         }))
       },
 
