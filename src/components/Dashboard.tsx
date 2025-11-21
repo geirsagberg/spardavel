@@ -15,97 +15,47 @@ export function Dashboard() {
   const currentPendingInterest = currentMonth.pendingInterestOnAvoided + currentMonth.pendingInterestOnSpent
 
   return (
-    <div className="space-y-6">
-      {/* Quick Stats Section */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {/* Saved Stats */}
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title text-sm text-base-content/70">This Month</h3>
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs text-base-content/60">Saved</p>
-                <p className="text-2xl font-bold text-success">{formatAmount(currentMonth.avoidedTotal)}</p>
+    <div className="space-y-3">
+      {/* Compact Stats Summary */}
+      <div className="card bg-base-200">
+        <div className="card-body p-4">
+          <div className="grid grid-cols-2 gap-4">
+            {/* This Month */}
+            <div>
+              <h3 className="text-xs font-semibold text-base-content/60 mb-1">This Month</h3>
+              <div className="flex items-baseline gap-2">
+                <span className="text-success font-bold">{formatAmount(currentMonth.avoidedTotal)}</span>
+                <span className="text-xs text-base-content/60">saved</span>
               </div>
-              <div>
-                <p className="text-xs text-base-content/60">Spent</p>
-                <p className="text-2xl font-bold text-error">{formatAmount(currentMonth.purchasesTotal)}</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-error font-bold">{formatAmount(currentMonth.purchasesTotal)}</span>
+                <span className="text-xs text-base-content/60">spent</span>
+              </div>
+            </div>
+
+            {/* All Time */}
+            <div>
+              <h3 className="text-xs font-semibold text-base-content/60 mb-1">All Time</h3>
+              <div className="flex items-baseline gap-2">
+                <span className="text-success font-bold">{formatAmount(allTime.savedTotal)}</span>
+                <span className="text-xs text-base-content/60">saved</span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-error font-bold">{formatAmount(allTime.spentTotal)}</span>
+                <span className="text-xs text-base-content/60">spent</span>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* All Time Stats */}
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h3 className="card-title text-sm text-base-content/70">All Time</h3>
-            <div className="space-y-2">
-              <div>
-                <p className="text-xs text-base-content/60">Total Saved</p>
-                <p className="text-2xl font-bold text-success">{formatAmount(allTime.savedTotal)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-base-content/60">Total Spent</p>
-                <p className="text-2xl font-bold text-error">{formatAmount(allTime.spentTotal)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Interest Section */}
-      {currentPendingInterest > 0 && (
-        <div className="alert alert-info">
-          <svg className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            ></path>
-          </svg>
-          <div>
-            <h3 className="font-bold">Pending Interest</h3>
-            <div className="text-sm">
-              <div>
-                Saved interest: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnAvoided)}</span>
-              </div>
+          {/* Compact Interest & Stats Row */}
+          {currentPendingInterest > 0 && (
+            <div className="mt-3 pt-3 border-t border-base-300 text-xs text-base-content/70">
+              Pending interest: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnAvoided)}</span>
               {currentMonth.pendingInterestOnSpent > 0 && (
-                <div>
-                  Opportunity cost: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnSpent)}</span>
-                </div>
+                <> · Cost: <span className="font-semibold">{formatAmount(currentMonth.pendingInterestOnSpent)}</span></>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="stat bg-base-200">
-          <div className="stat-title text-xs">Purchases</div>
-          <div className="stat-value text-2xl">{currentMonth.purchasesCount}</div>
-          <div className="stat-desc">this month</div>
-        </div>
-
-        <div className="stat bg-base-200">
-          <div className="stat-title text-xs">Avoided</div>
-          <div className="stat-value text-2xl text-success">{currentMonth.avoidedCount}</div>
-          <div className="stat-desc">this month</div>
-        </div>
-
-        <div className="stat bg-base-200">
-          <div className="stat-title text-xs">Interest Rate</div>
-          <div className="stat-value text-2xl">{metrics.currentInterestRate}%</div>
-          <div className="stat-desc">annually</div>
-        </div>
-
-        <div className="stat bg-base-200">
-          <div className="stat-title text-xs">Potential</div>
-          <div className="stat-value text-2xl text-info">
-            {formatAmount(allTime.savedTotal + allTime.spentTotal)}
-          </div>
-          <div className="stat-desc">if avoided all</div>
+          )}
         </div>
       </div>
     </div>
