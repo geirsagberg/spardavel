@@ -116,20 +116,23 @@ export function QuickEntry() {
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
             <div className="flex flex-wrap gap-2 pt-2">
-              <div className="form-control min-w-[70px] flex-1">
+              <div className="form-control min-w-[85px] flex-1">
                 <label className="label py-0.5">
                   <span className="label-text text-xs">Amount</span>
                 </label>
-                <input
-                  type="number"
-                  placeholder="30"
-                  className="input input-bordered input-sm"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  step="0.01"
-                  min="0"
-                  disabled={isLoading}
-                />
+                <div className="join">
+                  <input
+                    type="number"
+                    placeholder="30"
+                    className="input input-bordered input-sm join-item w-full"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    step="0.01"
+                    min="0"
+                    disabled={isLoading}
+                  />
+                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">kr</span>
+                </div>
               </div>
 
               <div className="form-control min-w-[100px] flex-[2]">
