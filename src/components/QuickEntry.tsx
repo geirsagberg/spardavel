@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { Category } from '~/types/events'
 import { createPurchaseEvent, createAvoidedPurchaseEvent } from '~/lib/eventUtils'
 import { useAppStore } from '~/store/appStore'
+import { formatCurrency, APP_CURRENCY } from '~/lib/formatting'
 
 const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
 
@@ -99,7 +100,7 @@ export function QuickEntry() {
                   disabled={isLoading}
                 >
                   <span className="text-lg">{preset.emoji}</span>
-                  <span className="text-[10px]">{preset.amount}kr</span>
+                  <span className="text-[10px]">{formatCurrency(preset.amount)}</span>
                 </button>
               ))}
               <button
@@ -131,7 +132,7 @@ export function QuickEntry() {
                     min="0"
                     disabled={isLoading}
                   />
-                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">kr</span>
+                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">{APP_CURRENCY}</span>
                 </div>
               </div>
 

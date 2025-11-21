@@ -1,21 +1,6 @@
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent } from '~/types/events'
-
-const DEFAULT_CURRENCY = 'kr'
-
-function formatAmount(amount: number): string {
-  return `${amount.toLocaleString()} ${DEFAULT_CURRENCY}`
-}
-
-function formatDate(timestamp: string): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('nb-NO', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
+import { formatCurrency, formatDate } from '~/lib/formatting'
 
 function getEventIcon(event: AppEvent): React.ReactNode {
   if (event.type === 'PURCHASE') {
@@ -86,7 +71,7 @@ export function RecentEntries() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                  <div className={`font-bold ${getEventColor(event)}`}>{formatAmount(event.amount)}</div>
+                  <div className={`font-bold ${getEventColor(event)}`}>{formatCurrency(event.amount)}</div>
                   <button
                     className="btn btn-xs btn-ghost text-error"
                     onClick={() => deleteEvent(event.id)}

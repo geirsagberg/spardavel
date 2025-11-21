@@ -215,9 +215,12 @@ type DashboardMetrics = {
 
 ### Currency Display
 - **Storage**: All amounts stored as currency-agnostic numbers (e.g., 30, 100, 2150)
-- **Display**: Default to NOK (Norwegian Krone) with "kr" suffix
-- **Formatting**: Display with locale formatting when relevant (1,000.50 kr)
-- **Future**: Settings page could allow changing display currency (for internationalization)
+- **Display**: Default to NOK (Norwegian Krone) formatted with Norwegian locale (nb-NO)
+- **Formatting**: All currency values use `Intl.NumberFormat` with Norwegian locale
+  - Format: "1 234 kr" (space as thousands separator, no decimals)
+  - Centralized in `/src/lib/formatting.ts` for easy locale switching
+- **Locale Configuration**: Change `APP_LOCALE` and `APP_CURRENCY` constants in `formatting.ts` to switch entire app to different locale
+- **Future**: Settings page could allow changing display currency and locale (for internationalization)
 
 ### Main Page (Dashboard)
 

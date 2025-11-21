@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
+import { formatCurrency, formatMonthShort } from '~/lib/formatting'
 
 export const Route = createFileRoute('/analytics')({
   component: Analytics,
@@ -9,13 +10,19 @@ export const Route = createFileRoute('/analytics')({
 const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#06b6d4', '#0ea5e9']
 
-function formatAmount(amount: number): string {
-  return `${amount.toLocaleString()} kr`
-}
-
 function Analytics() {
   const events = useAppStore((state) => state.events)
   const metrics = useAppStore((state) => state.metrics)
+
+  // Calculate total applied interest
+  const totalAppliedInterestEarned = metrics.monthlyHistory.reduce(
+    (sum, month) => sum + month.appliedInterestOnAvoided,
+    0
+  )
+  const totalAppliedInterestCost = metrics.monthlyHistory.reduce(
+    (sum, month) => sum + month.appliedInterestOnSpent,
+    0
+  )
 
   // Category breakdown (all time)
   const categoryBreakdown: Array<{ category: Category; avoided: number; spent: number }> = []
@@ -37,15 +44,14 @@ function Analytics() {
   }
 
   // Monthly trends
-  const monthlyTrends = (metrics.monthlyHistory || []).map((month) => ({
-    month: new Date(`${month.periodStart}T00:00:00`).toLocaleDateString('nb-NO', {
-      month: 'short',
-      year: '2-digit',
-    }),
-    avoided: month.avoidedTotal,
-    spent: month.purchasesTotal,
-    interest: month.pendingInterestOnAvoided + month.appliedInterestOnAvoided,
-  }))
+  const monthlyTrends = (metrics.monthlyHistory || [])
+    .map((month) => ({
+      month: formatMonthShort(month.periodStart),
+      avoided: month.avoidedTotal,
+      spent: month.purchasesTotal,
+      interest: month.pendingInterestOnAvoided + month.appliedInterestOnAvoided,
+    }))
+    .reverse()
 
   // Category pie data (current month)
   const currentMonthCategoryData = CATEGORIES.filter((cat) => {
@@ -75,15 +81,22 @@ function Analytics() {
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Total Saved</div>
                 <div className="stat-value text-xl text-success">
-                  {formatAmount(metrics.allTime.savedTotal + metrics.allTime.pendingSavedInterest)}
+                  {formatCurrency(metrics.allTime.savedTotal + metrics.allTime.pendingSavedInterest)}
                 </div>
               </div>
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Interest Earned</div>
                 <div className="stat-value text-xl text-info">
-                  +{formatAmount(metrics.allTime.pendingSavedInterest)}
+                  +{formatCurrency(metrics.allTime.pendingSavedInterest)}
                 </div>
                 <div className="stat-desc text-xs">pending this month</div>
+              </div>
+              <div className="stat flex-1 p-0">
+                <div className="stat-title text-xs">Applied Interest</div>
+                <div className="stat-value text-xl text-info">
+                  +{formatCurrency(totalAppliedInterestEarned)}
+                </div>
+                <div className="stat-desc text-xs">all time</div>
               </div>
             </div>
           </div>
@@ -97,15 +110,22 @@ function Analytics() {
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Total Spent</div>
                 <div className="stat-value text-xl text-error">
-                  {formatAmount(metrics.allTime.spentTotal)}
+                  {formatCurrency(metrics.allTime.spentTotal)}
                 </div>
               </div>
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Opportunity Cost</div>
                 <div className="stat-value text-xl text-warning">
-                  -{formatAmount(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
+                  -{formatCurrency(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
                 </div>
                 <div className="stat-desc text-xs">interest lost</div>
+              </div>
+              <div className="stat flex-1 p-0">
+                <div className="stat-title text-xs">Applied Interest</div>
+                <div className="stat-value text-xl text-warning">
+                  -{formatCurrency(totalAppliedInterestCost)}
+                </div>
+                <div className="stat-desc text-xs">all time</div>
               </div>
             </div>
           </div>
@@ -128,18 +148,18 @@ function Analytics() {
                       <div key={row.category}>
                         <div className="flex justify-between text-sm mb-1">
                           <span className="font-semibold">{row.category}</span>
-                          <span>{formatAmount(total)}</span>
+                          <span>{formatCurrency(total)}</span>
                         </div>
                         <div className="h-6 w-full overflow-hidden rounded-lg bg-base-300 flex">
                           <div
                             className="bg-success"
                             style={{ width: `${avoidedPercent}%` }}
-                            title={`Avoided: ${formatAmount(row.avoided)}`}
+                            title={`Avoided: ${formatCurrency(row.avoided)}`}
                           />
                           <div
                             className="bg-error"
                             style={{ width: `${100 - avoidedPercent}%` }}
-                            title={`Spent: ${formatAmount(row.spent)}`}
+                            title={`Spent: ${formatCurrency(row.spent)}`}
                           />
                         </div>
                       </div>
@@ -162,9 +182,9 @@ function Analytics() {
                       {categoryBreakdown.map((row) => (
                         <tr key={row.category}>
                           <td>{row.category}</td>
-                          <td className="text-right text-success">{formatAmount(row.avoided)}</td>
-                          <td className="text-right text-error">{formatAmount(row.spent)}</td>
-                          <td className="text-right font-semibold">{formatAmount(row.avoided + row.spent)}</td>
+                          <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
+                          <td className="text-right text-error">{formatCurrency(row.spent)}</td>
+                          <td className="text-right font-semibold">{formatCurrency(row.avoided + row.spent)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -196,9 +216,9 @@ function Analytics() {
                     {monthlyTrends.map((row) => (
                       <tr key={row.month}>
                         <td className="font-semibold">{row.month}</td>
-                        <td className="text-right text-success">{formatAmount(row.avoided)}</td>
-                        <td className="text-right text-error">{formatAmount(row.spent)}</td>
-                        <td className="text-right text-info">{formatAmount(row.interest)}</td>
+                        <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
+                        <td className="text-right text-error">{formatCurrency(row.spent)}</td>
+                        <td className="text-right text-info">{formatCurrency(row.interest)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -225,7 +245,7 @@ function Analytics() {
                       ></div>
                       <span className="font-medium">{item.name}</span>
                     </div>
-                    <span className="font-semibold">{formatAmount(item.value)}</span>
+                    <span className="font-semibold">{formatCurrency(item.value)}</span>
                   </div>
                 ))}
               </div>

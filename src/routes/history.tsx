@@ -2,26 +2,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
+import { formatCurrency, formatDate, formatMonth } from '~/lib/formatting'
 
 export const Route = createFileRoute('/history')({
   component: History,
 })
 
 const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
-
-function formatAmount(amount: number): string {
-  return `${amount.toLocaleString()} kr`
-}
-
-function formatDate(timestamp: string): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('nb-NO', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 
 function History() {
   const events = useAppStore((state) => state.events)
@@ -119,10 +106,7 @@ function History() {
                   <option value="">All</option>
                   {availableMonths.map((month) => (
                     <option key={month} value={month}>
-                      {new Date(`${month}-01`).toLocaleDateString('nb-NO', {
-                        year: 'numeric',
-                        month: 'short',
-                      })}
+                      {formatMonth(month)}
                     </option>
                   ))}
                 </select>
@@ -170,11 +154,11 @@ function History() {
         <div className="flex gap-4">
           <div className="stat bg-base-200 flex-1 py-3">
             <div className="stat-title text-xs">Avoided</div>
-            <div className="stat-value text-xl text-success">{formatAmount(totals.avoided)}</div>
+            <div className="stat-value text-xl text-success">{formatCurrency(totals.avoided)}</div>
           </div>
           <div className="stat bg-base-200 flex-1 py-3">
             <div className="stat-title text-xs">Spent</div>
-            <div className="stat-value text-xl text-error">{formatAmount(totals.purchases)}</div>
+            <div className="stat-value text-xl text-error">{formatCurrency(totals.purchases)}</div>
           </div>
         </div>
 
@@ -226,7 +210,7 @@ function History() {
                             event.type === 'PURCHASE' ? 'text-error' : 'text-success'
                           }`}
                         >
-                          {formatAmount(event.amount)}
+                          {formatCurrency(event.amount)}
                         </div>
                         <button
                           className="btn btn-xs btn-ghost text-error"
