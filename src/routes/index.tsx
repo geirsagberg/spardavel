@@ -23,6 +23,9 @@ function Home() {
             <a href="/analytics" className="btn btn-sm btn-outline">
               Analytics
             </a>
+            <a href="/settings" className="btn btn-sm btn-outline">
+              Settings
+            </a>
           </div>
         </div>
 
