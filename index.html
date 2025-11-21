@@ -14,7 +14,8 @@
     <div id="app"></div>
     <script type="module" src="/src/entry-client.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // Only register service worker in production
+      if ('serviceWorker' in navigator && !window.location.hostname.includes('localhost')) {
         navigator.serviceWorker.register('/sw.js').catch(() => {})
       }
     </script>
