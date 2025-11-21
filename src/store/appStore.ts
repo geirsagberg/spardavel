@@ -332,6 +332,8 @@ export const useAppStore = create<AppStore>()(
             )
             
             if (shouldReset) {
+              // Clear localStorage completely to ensure fresh start
+              localStorage.removeItem(STORAGE_KEY)
               state.events = []
               state.defaultInterestRate = FALLBACK_INTEREST_RATE
               state.metrics = createEmptyDashboardMetrics()
