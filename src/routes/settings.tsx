@@ -2,23 +2,38 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '~/store/appStore'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
+import type { InterestRateChangeEvent } from '~/types/events'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
 })
 
-function formatAmount(amount: number): string {
-  return `${amount.toLocaleString()} kr`
+function getTodayString(): string {
+  return new Date().toISOString().split('T')[0]
+}
+
+function formatDate(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString()
 }
 
 function Settings() {
   const events = useAppStore((state) => state.events)
   const clearAllEvents = useAppStore((state) => state.clearAllEvents)
   const addEvent = useAppStore((state) => state.addEvent)
+  const updateEvent = useAppStore((state) => state.updateEvent)
+  const deleteEvent = useAppStore((state) => state.deleteEvent)
   const currentInterestRate = useAppStore((state) => state.metrics.currentInterestRate)
 
   const [interestRate, setInterestRate] = useState(() => currentInterestRate.toString())
+  const [effectiveDate, setEffectiveDate] = useState(getTodayString)
   const [successMessage, setSuccessMessage] = useState('')
+  const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const [editRate, setEditRate] = useState('')
+  const [editDate, setEditDate] = useState('')
+
+  const interestRateEvents = events
+    .filter((e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
+    .sort((a, b) => (b.effectiveDate ?? '').localeCompare(a.effectiveDate ?? ''))
 
   useEffect(() => {
     setInterestRate(currentInterestRate.toString())
@@ -102,13 +117,45 @@ function Settings() {
       return
     }
 
-    // Add interest rate change event
-    const today = new Date().toISOString().split('T')[0]
-    const event = createInterestRateChangeEvent(rate, today)
+    const event = createInterestRateChangeEvent(rate, effectiveDate)
     addEvent(event)
 
-    setSuccessMessage(`Interest rate updated to ${rate}%`)
+    setSuccessMessage(`Interest rate set to ${rate}% effective ${formatDate(effectiveDate)}`)
     setTimeout(() => setSuccessMessage(''), 3000)
+    setEffectiveDate(getTodayString())
+  }
+
+  const handleStartEdit = (event: InterestRateChangeEvent) => {
+    setEditingEventId(event.id)
+    setEditRate(event.newRate.toString())
+    setEditDate(event.effectiveDate)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingEventId(null)
+    setEditRate('')
+    setEditDate('')
+  }
+
+  const handleSaveEdit = (id: string) => {
+    const rate = parseFloat(editRate)
+    if (isNaN(rate) || rate < 0) {
+      alert('Please enter a valid interest rate')
+      return
+    }
+
+    updateEvent(id, { newRate: rate, effectiveDate: editDate })
+    setEditingEventId(null)
+    setSuccessMessage('Interest rate event updated')
+    setTimeout(() => setSuccessMessage(''), 3000)
+  }
+
+  const handleDeleteRateEvent = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this interest rate change?')) {
+      deleteEvent(id)
+      setSuccessMessage('Interest rate event deleted')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    }
   }
 
   return (
@@ -144,26 +191,117 @@ function Settings() {
             </p>
 
             <div className="form-control gap-4 pt-4">
-              <div>
-                <label className="label">
-                  <span className="label-text">Annual Interest Rate (%)</span>
-                </label>
-                <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <div className="form-control flex-1 min-w-[120px]">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Rate (%)</span>
+                  </label>
                   <input
                     type="number"
                     placeholder="3.5"
-                    className="input input-bordered flex-1"
+                    className="input input-bordered input-sm"
                     value={interestRate}
                     onChange={(e) => setInterestRate(e.target.value)}
                     step="0.1"
                     min="0"
                   />
-                  <button className="btn btn-primary" onClick={handleUpdateInterestRate}>
-                    Update
+                </div>
+                <div className="form-control flex-1 min-w-[140px]">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Effective Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="input input-bordered input-sm"
+                    value={effectiveDate}
+                    onChange={(e) => setEffectiveDate(e.target.value)}
+                  />
+                </div>
+                <div className="form-control justify-end">
+                  <button className="btn btn-primary btn-sm" onClick={handleUpdateInterestRate}>
+                    Add Rate
                   </button>
                 </div>
               </div>
             </div>
+
+            {/* Interest Rate History */}
+            {interestRateEvents.length > 0 && (
+              <div className="pt-4">
+                <h3 className="text-sm font-semibold mb-2">Rate History</h3>
+                <div className="space-y-2">
+                  {interestRateEvents.map((event) => (
+                    <div key={event.id} className="bg-base-300 rounded-lg p-3">
+                      {editingEventId === event.id ? (
+                        <div className="flex flex-wrap gap-2 items-end">
+                          <div className="form-control flex-1 min-w-[80px]">
+                            <label className="label py-0.5">
+                              <span className="label-text text-xs">Rate (%)</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              value={editRate}
+                              onChange={(e) => setEditRate(e.target.value)}
+                              step="0.1"
+                              min="0"
+                            />
+                          </div>
+                          <div className="form-control flex-1 min-w-[120px]">
+                            <label className="label py-0.5">
+                              <span className="label-text text-xs">Effective Date</span>
+                            </label>
+                            <input
+                              type="date"
+                              className="input input-bordered input-sm"
+                              value={editDate}
+                              onChange={(e) => setEditDate(e.target.value)}
+                            />
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => handleSaveEdit(event.id)}
+                            >
+                              Save
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-sm"
+                              onClick={handleCancelEdit}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <span className="font-medium">{event.newRate}%</span>
+                            <span className="text-base-content/60 text-sm ml-2">
+                              effective {formatDate(event.effectiveDate)}
+                            </span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              className="btn btn-ghost btn-xs"
+                              onClick={() => handleStartEdit(event)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="btn btn-ghost btn-xs text-error"
+                              onClick={() => handleDeleteRateEvent(event.id)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
