@@ -8,7 +8,16 @@ export const Route = createFileRoute('/analytics')({
 })
 
 const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
-const COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#06b6d4', '#0ea5e9']
+// DaisyUI color classes that will adapt to theme changes
+const COLOR_CLASSES = [
+  'bg-error',
+  'bg-warning', 
+  'bg-info',
+  'bg-success',
+  'bg-primary',
+  'bg-secondary',
+  'bg-accent'
+]
 
 function Analytics() {
   const events = useAppStore((state) => state.events)
@@ -61,7 +70,7 @@ function Analytics() {
   }).map((cat, idx) => ({
     name: cat,
     value: metrics.currentMonth.avoidedByCategory[cat] + metrics.currentMonth.purchasesByCategory[cat],
-    color: COLORS[idx % COLORS.length],
+    colorClass: COLOR_CLASSES[idx % COLOR_CLASSES.length],
   }))
 
   return (
@@ -240,8 +249,7 @@ function Analytics() {
                   <div key={item.name} className="flex items-center justify-between rounded-lg bg-base-300 p-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className="h-4 w-4 rounded"
-                        style={{ backgroundColor: item.color }}
+                        className={`h-4 w-4 rounded ${item.colorClass}`}
                       ></div>
                       <span className="font-medium">{item.name}</span>
                     </div>

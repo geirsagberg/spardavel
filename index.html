@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="Spardavel - Track your savings and avoid impulse purchases" />
-    <meta name="theme-color" content="#1d232a" />
+
     <meta name="color-scheme" content="dark light" />
     <title>Spardavel</title>
     <link rel="manifest" href="/manifest.json" />
@@ -25,9 +25,9 @@
       })();
     </script>
     <style>
-      /* Prevent flash on load by matching dark theme background */
+      /* Prevent flash on load by using base-100 background */
       html, body {
-        background-color: #1d232a;
+        background-color: oklch(var(--b1));
         margin: 0;
         padding: 0;
       }
