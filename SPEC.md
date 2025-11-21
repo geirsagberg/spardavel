@@ -425,10 +425,10 @@ If importing events from another device:
 - [x] Delete event with recalculation
 - [x] TanStack Start routing setup
 
-### Phase 3: Interest Calculation (IN PROGRESS)
-- [ ] Daily pending interest calculation
-- [ ] Monthly interest application
-- [ ] Interest display in dashboard
+### Phase 3: Interest Calculation ✓ COMPLETE
+- [x] Daily pending interest calculation
+- [x] Interest display in dashboard
+- [ ] Monthly interest application (INTEREST_APPLICATION events)
 
 ### Phase 4: Views & Analytics
 - [ ] History page with filtering
