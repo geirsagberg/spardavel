@@ -1,9 +1,9 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider } from '@tanstack/react-router'
-import { createRouter } from './router'
+import { getRouter } from './router'
 
-const router = createRouter()
+const router = getRouter()
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
   <React.StrictMode>
