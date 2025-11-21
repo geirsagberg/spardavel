@@ -430,12 +430,12 @@ If importing events from another device:
 - [x] Interest display in dashboard
 - [ ] Monthly interest application (INTEREST_APPLICATION events)
 
-### Phase 4: Views & Analytics
-- [ ] History page with filtering
-- [ ] Analytics page with charts
-- [ ] Category breakdown
+### Phase 4: Views & Analytics ✓ COMPLETE
+- [x] History page with filtering
+- [x] Analytics page with charts
+- [x] Category breakdown
 
-### Phase 5: Settings & Configuration
+### Phase 5: Settings & Configuration (IN PROGRESS)
 - [ ] Settings page
 - [ ] Quick entry management
 - [ ] Interest rate configuration with future scheduling
