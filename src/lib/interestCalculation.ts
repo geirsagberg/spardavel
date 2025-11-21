@@ -166,10 +166,11 @@ export function getMonthsNeedingInterestApplication(
     if (!monthsWithApplication.has(currentMonth)) {
       allMonths.push(currentMonth)
     }
-    // Move to next month
+    // Move to next month by manipulating the month string directly to avoid timezone issues
     const [year, month] = currentMonth.split('-').map(Number)
-    const nextDate = new Date(year!, month!, 1) // month is 0-indexed, so this gives us next month
-    currentMonth = getMonthKey(nextDate.toISOString())
+    const nextMonth = month! === 12 ? 1 : month! + 1
+    const nextYear = month! === 12 ? year! + 1 : year!
+    currentMonth = `${nextYear}-${String(nextMonth).padStart(2, '0')}`
   }
 
   return allMonths.sort()
