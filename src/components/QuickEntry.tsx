@@ -11,11 +11,12 @@ type Preset = {
   category: Category
 }
 
-const PRESETS: Preset[] = [
-  { description: 'Beer', amount: 30, category: 'Alcohol' },
-  { description: 'Coffee', amount: 40, category: 'Drinks' },
-  { description: 'Candy', amount: 25, category: 'Candy' },
-  { description: 'Snack', amount: 20, category: 'Snacks' },
+const PRESETS: (Preset & { emoji: string })[] = [
+  { emoji: '🍺', description: 'Beer', amount: 30, category: 'Alcohol' },
+  { emoji: '☕', description: 'Coffee', amount: 40, category: 'Drinks' },
+  { emoji: '🍬', description: 'Candy', amount: 25, category: 'Candy' },
+  { emoji: '🍿', description: 'Snack', amount: 20, category: 'Snacks' },
+  { emoji: '🍔', description: 'Food', amount: 50, category: 'Food' },
 ]
 
 export function QuickEntry() {
@@ -80,66 +81,64 @@ export function QuickEntry() {
           {/* Preset Buttons */}
           <div>
             <p className="label-text mb-2">Select a preset or custom:</p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <div className="flex flex-wrap gap-2">
               {PRESETS.map((preset) => (
                 <button
                   key={preset.description}
-                  className={`btn btn-sm ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
+                  className={`btn btn-sm aspect-square h-14 w-14 flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
                   onClick={() => handlePresetClick(preset)}
                   disabled={isLoading}
                 >
-                  {preset.description} {preset.amount}kr
+                  <span className="text-lg">{preset.emoji}</span>
+                  <span className="text-[10px]">{preset.amount}kr</span>
                 </button>
               ))}
               <button
-                className={`btn btn-sm ${showCustom ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm aspect-square h-14 w-14 flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
                 onClick={handleCustomClick}
                 disabled={isLoading}
               >
-                Custom
+                <span className="text-lg">✏️</span>
+                <span className="text-[10px]">Custom</span>
               </button>
             </div>
           </div>
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
-            <div className="space-y-3 pt-2">
-              {/* Amount and Description in single row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="form-control">
-                  <label className="label py-1">
-                    <span className="label-text text-xs">Amount (kr)</span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="30"
-                    className="input input-bordered input-sm"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    step="0.01"
-                    min="0"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                <div className="form-control">
-                  <label className="label py-1">
-                    <span className="label-text text-xs">Description</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Beer"
-                    className="input input-bordered input-sm"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    disabled={isLoading}
-                  />
-                </div>
+            <div className="flex flex-wrap gap-2 pt-2">
+              <div className="form-control min-w-[70px] flex-1">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Amount</span>
+                </label>
+                <input
+                  type="number"
+                  placeholder="30"
+                  className="input input-bordered input-sm"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  step="0.01"
+                  min="0"
+                  disabled={isLoading}
+                />
               </div>
 
-              {/* Category Dropdown */}
-              <div className="form-control">
-                <label className="label py-1">
+              <div className="form-control min-w-[100px] flex-[2]">
+                <label className="label py-0.5">
+                  <span className="label-text text-xs">Description</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Beer"
+                  className="input input-bordered input-sm"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="form-control min-w-[90px] flex-1">
+                <label className="label py-0.5">
                   <span className="label-text text-xs">Category</span>
                 </label>
                 <select
