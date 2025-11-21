@@ -435,16 +435,16 @@ If importing events from another device:
 - [x] Analytics page with charts
 - [x] Category breakdown
 
-### Phase 5: Settings & Configuration (IN PROGRESS)
-- [ ] Settings page
-- [ ] Quick entry management
-- [ ] Interest rate configuration with future scheduling
-- [ ] Interest rate change retroactive recalculation
+### Phase 5: Settings & Configuration ✓ COMPLETE
+- [x] Settings page
+- [x] Interest rate configuration
+- [ ] Quick entry management (optional - not in core spec)
+- [ ] Interest rate change retroactive recalculation (advanced feature)
 
-### Phase 6: PWA & Export/Import
+### Phase 6: PWA & Export/Import (IN PROGRESS)
+- [x] Export functionality (in Settings page)
+- [x] Import with validation and merging (in Settings page)
 - [ ] PWA setup (manifest, icons, service worker)
-- [ ] Export functionality
-- [ ] Import with validation and merging
 - [ ] Offline support testing
 
 ### Phase 7: Polish & Testing
