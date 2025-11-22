@@ -1,5 +1,5 @@
 - Remember to update SPEC.md as you go
-- Always commit after making a verified change
+- Only commit after the user has confirmed the changes are good
 - Never run `git push` - the user will push manually
 - Use context7 for library docs
 - Dev server runs on port 3000
