@@ -115,12 +115,12 @@ export function QuickEntry() {
                 </button>
               ))}
               <button
-                className={`btn btn-sm aspect-square h-14 w-14 flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm h-14 flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
                 onClick={handleCustomClick}
                 disabled={isLoading}
               >
-                <span className="text-lg">✏️</span>
-                <span className="text-[10px]">Custom</span>
+                <span className="text-lg leading-none">✏️</span>
+                <span className="text-[10px] leading-tight">Custom</span>
               </button>
             </div>
           </div>
