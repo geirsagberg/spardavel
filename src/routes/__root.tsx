@@ -2,13 +2,13 @@ import type { ReactNode } from 'react'
 import { useEffect } from 'react'
 import {
   createRootRoute,
-  Outlet,
   Scripts,
   HeadContent,
 } from '@tanstack/react-router'
 import { DesktopHeader } from '~/components/DesktopHeader'
 import { Navigation } from '~/components/Navigation'
 import { NotFound } from '~/components/NotFound'
+import { SwipeableOutlet } from '~/components/SwipeableOutlet'
 import { useAppStore } from '~/store/appStore'
 import css from '~/styles/root.css?url'
 
@@ -64,7 +64,7 @@ function RootComponent() {
   return (
     <RootDocument>
       <DesktopHeader />
-      <Outlet />
+      <SwipeableOutlet />
       <Navigation />
     </RootDocument>
   )
