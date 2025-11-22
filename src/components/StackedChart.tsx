@@ -1,13 +1,14 @@
-import { useEffect, useRef } from 'react'
 import * as echarts from 'echarts'
-import { useAppStore } from '~/store/appStore'
+import { useEffect, useRef, useState } from 'react'
 import { formatCurrency } from '~/lib/formatting'
+import { useAppStore } from '~/store/appStore'
 
 export function StackedChart() {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstanceRef = useRef<echarts.ECharts | null>(null)
   const metrics = useAppStore((state) => state.metrics)
   const theme = useAppStore((state) => state.theme)
+  const [autoScale, setAutoScale] = useState(true)
 
   useEffect(() => {
     if (!chartRef.current) return
@@ -26,13 +27,13 @@ export function StackedChart() {
       return {
         year: date.getFullYear(),
         month: date.getMonth(),
-        key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+        key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
       }
     })
 
     // Map history data to the last 6 months, filling in zeros for missing months
     const last6Months = last6MonthDates.map(({ key }) => {
-      const found = monthlyHistory.find(m => m.periodStart.startsWith(key))
+      const found = monthlyHistory.find((m) => m.periodStart.startsWith(key))
       if (found) return found
       // Return empty period for missing months
       const parts = key.split('-')
@@ -50,52 +51,74 @@ export function StackedChart() {
         pendingInterestOnAvoided: 0,
         pendingInterestOnSpent: 0,
         appliedInterestOnAvoided: 0,
-        appliedInterestOnSpent: 0
+        appliedInterestOnSpent: 0,
       }
     })
 
     const categories = last6Months.map((period) => {
       const [year, month, day] = period.periodStart.split('-').map(Number)
       const date = new Date(year!, month! - 1, day!)
-      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        year: 'numeric',
+      })
     })
 
     const totalSaved = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const previousMonths = monthlyHistory.slice(
+        0,
+        monthlyHistory.length - 6 + idx,
+      )
       const cumulativeSaved = previousMonths.reduce(
         (sum, p) => sum + p.avoidedTotal + p.appliedInterestOnAvoided,
-        0
+        0,
       )
-      return cumulativeSaved + period.avoidedTotal + period.appliedInterestOnAvoided
+      return (
+        cumulativeSaved + period.avoidedTotal + period.appliedInterestOnAvoided
+      )
     })
 
     const totalInterest = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const previousMonths = monthlyHistory.slice(
+        0,
+        monthlyHistory.length - 6 + idx,
+      )
       const cumulativeInterest = previousMonths.reduce(
         (sum, p) => sum + p.appliedInterestOnAvoided,
-        0
+        0,
       )
       return cumulativeInterest + period.appliedInterestOnAvoided
     })
 
     const totalSpent = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
-      const cumulativeSpent = previousMonths.reduce((sum, p) => sum + p.purchasesTotal, 0)
+      const previousMonths = monthlyHistory.slice(
+        0,
+        monthlyHistory.length - 6 + idx,
+      )
+      const cumulativeSpent = previousMonths.reduce(
+        (sum, p) => sum + p.purchasesTotal,
+        0,
+      )
       return cumulativeSpent + period.purchasesTotal
     })
 
     const totalOpportunityCost = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const previousMonths = monthlyHistory.slice(
+        0,
+        monthlyHistory.length - 6 + idx,
+      )
       const cumulativeCost = previousMonths.reduce(
         (sum, p) => sum + p.appliedInterestOnSpent,
-        0
+        0,
       )
       return cumulativeCost + period.appliedInterestOnSpent
     })
 
     // Get computed colors from CSS variables (DaisyUI 5)
     const computedStyle = getComputedStyle(document.documentElement)
-    const baseContent = computedStyle.getPropertyValue('--color-base-content').trim()
+    const baseContent = computedStyle
+      .getPropertyValue('--color-base-content')
+      .trim()
     const textColor = baseContent
     const textColorMuted = baseContent.replace(')', ' / 0.6)')
     const lineColor = baseContent.replace(')', ' / 0.2)')
@@ -106,7 +129,7 @@ export function StackedChart() {
       tooltip: {
         trigger: 'axis',
         axisPointer: {
-          type: 'shadow'
+          type: 'shadow',
         },
         formatter: (params: any) => {
           if (!Array.isArray(params)) return ''
@@ -124,7 +147,7 @@ export function StackedChart() {
             `
           })
           return result
-        }
+        },
       },
 
       grid: {
@@ -132,7 +155,7 @@ export function StackedChart() {
         right: '4%',
         bottom: '3%',
         top: '3%',
-        containLabel: true
+        containLabel: true,
       },
       xAxis: {
         type: 'category',
@@ -147,37 +170,37 @@ export function StackedChart() {
           rich: {
             month: {
               fontSize: 12,
-              lineHeight: 16
+              lineHeight: 16,
             },
             year: {
               fontSize: 10,
-              lineHeight: 14
-            }
-          }
+              lineHeight: 14,
+            },
+          },
         },
         axisLine: {
           lineStyle: {
-            color: lineColor
-          }
-        }
+            color: lineColor,
+          },
+        },
       },
       yAxis: {
         type: 'value',
-        scale: true,
+        scale: autoScale,
         axisLabel: {
           color: textColorMuted,
-          formatter: (value: number) => formatCurrency(value)
+          formatter: (value: number) => formatCurrency(value),
         },
         splitLine: {
           lineStyle: {
-            color: gridColor
-          }
+            color: gridColor,
+          },
         },
         axisLine: {
           lineStyle: {
-            color: lineColor
-          }
-        }
+            color: lineColor,
+          },
+        },
       },
       series: [
         {
@@ -187,11 +210,11 @@ export function StackedChart() {
           data: totalSaved,
           areaStyle: {},
           itemStyle: {
-            color: '#10b981'
+            color: '#10b981',
           },
           emphasis: {
-            focus: 'series'
-          }
+            focus: 'series',
+          },
         },
         {
           name: 'Total Interest',
@@ -200,11 +223,11 @@ export function StackedChart() {
           data: totalInterest,
           areaStyle: {},
           itemStyle: {
-            color: '#3b82f6'
+            color: '#3b82f6',
           },
           emphasis: {
-            focus: 'series'
-          }
+            focus: 'series',
+          },
         },
         {
           name: 'Total Spent',
@@ -213,11 +236,11 @@ export function StackedChart() {
           data: totalSpent,
           areaStyle: {},
           itemStyle: {
-            color: '#ef4444'
+            color: '#ef4444',
           },
           emphasis: {
-            focus: 'series'
-          }
+            focus: 'series',
+          },
         },
         {
           name: 'Total Opportunity Cost',
@@ -226,13 +249,13 @@ export function StackedChart() {
           data: totalOpportunityCost,
           areaStyle: {},
           itemStyle: {
-            color: '#f97316'
+            color: '#f97316',
           },
           emphasis: {
-            focus: 'series'
-          }
-        }
-      ]
+            focus: 'series',
+          },
+        },
+      ],
     }
 
     chart.setOption(option)
@@ -245,7 +268,7 @@ export function StackedChart() {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [metrics, theme])
+  }, [metrics, theme, autoScale])
 
   useEffect(() => {
     return () => {
@@ -256,5 +279,20 @@ export function StackedChart() {
     }
   }, [])
 
-  return <div ref={chartRef} className="w-full h-64 bg-base-200 rounded-lg p-4" />
+  return (
+    <div className="relative">
+      <div ref={chartRef} className="w-full h-64 bg-base-200 rounded-lg p-4" />
+      <div className="absolute bottom-[18px] left-6 z-10">
+        <label className="flex items-center gap-1.5 cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+          <input
+            type="checkbox"
+            checked={autoScale}
+            onChange={(e) => setAutoScale(e.target.checked)}
+            className="checkbox checkbox-xs border-base-content/20"
+          />
+          <span className="text-[10px] text-base-content/80">Scale Y</span>
+        </label>
+      </div>
+    </div>
+  )
 }
