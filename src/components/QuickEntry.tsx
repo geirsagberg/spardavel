@@ -100,7 +100,7 @@ export function QuickEntry() {
           {/* Preset Buttons */}
           <div>
             <p className="label-text mb-2">Select a preset or custom:</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
               {PRESETS.map((preset) => (
                 <button
                   key={preset.description}
