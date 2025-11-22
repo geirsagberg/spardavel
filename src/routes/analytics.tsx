@@ -59,6 +59,7 @@ function Analytics() {
       avoided: month.avoidedTotal,
       spent: month.purchasesTotal,
       interest: month.appliedInterestOnAvoided,
+      opportunityCost: month.appliedInterestOnSpent,
     }))
     .reverse()
 
@@ -212,13 +213,14 @@ function Analytics() {
               <p className="text-base-content/60">No data yet</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="table table-sm">
+                <table className="table table-sm table-fixed">
                   <thead>
                     <tr>
-                      <th>Month</th>
-                      <th className="text-right">Avoided</th>
-                      <th className="text-right">Spent</th>
-                      <th className="text-right">Interest</th>
+                      <th className="w-1/5">Month</th>
+                      <th className="w-1/5 text-right">Avoided</th>
+                      <th className="w-1/5 text-right">Spent</th>
+                      <th className="w-1/5 text-right">Interest</th>
+                      <th className="w-1/5 text-right">Opportunity Cost</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -228,6 +230,7 @@ function Analytics() {
                         <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
                         <td className="text-right text-error">{formatCurrency(row.spent)}</td>
                         <td className="text-right text-info">{formatCurrency(row.interest)}</td>
+                        <td className="text-right text-warning">{formatCurrency(row.opportunityCost)}</td>
                       </tr>
                     ))}
                   </tbody>
