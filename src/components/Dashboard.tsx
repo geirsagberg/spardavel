@@ -11,48 +11,49 @@ export function Dashboard() {
 
   return (
     <div className="space-y-3">
-      {/* Compact Stats Summary */}
-      <div className="card bg-base-200">
-        <div className="card-body p-4">
-          <div className="grid grid-cols-2 gap-4">
-            {/* This Month */}
-            <div>
-              <h3 className="text-xs font-semibold text-base-content/60 mb-1">This Month</h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-success font-bold">{formatCurrency(currentMonth.avoidedTotal)}</span>
-                <span className="text-xs text-base-content/60">saved</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-error font-bold">{formatCurrency(currentMonth.purchasesTotal)}</span>
-                <span className="text-xs text-base-content/60">spent</span>
-              </div>
-            </div>
-
-            {/* All Time */}
-            <div>
-              <h3 className="text-xs font-semibold text-base-content/60 mb-1">All Time</h3>
-              <div className="flex items-baseline gap-2">
-                <span className="text-success font-bold">{formatCurrency(allTime.savedTotal)}</span>
-                <span className="text-xs text-base-content/60">saved</span>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-error font-bold">{formatCurrency(allTime.spentTotal)}</span>
-                <span className="text-xs text-base-content/60">spent</span>
-              </div>
-            </div>
+      {/* This Month */}
+      <div>
+        <h3 className="text-sm font-semibold text-base-content/60 mb-2">This Month</h3>
+        <div className="flex gap-3">
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Avoided</div>
+            <div className="stat-value text-2xl text-success">{formatCurrency(currentMonth.avoidedTotal)}</div>
           </div>
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Spent</div>
+            <div className="stat-value text-2xl text-error">{formatCurrency(currentMonth.purchasesTotal)}</div>
+          </div>
+        </div>
+      </div>
 
-          {/* Compact Interest & Stats Row */}
-          {currentPendingInterest > 0 && (
-            <div className="mt-3 pt-3 border-t border-base-300 text-xs text-base-content/70">
+      {/* All Time */}
+      <div>
+        <h3 className="text-sm font-semibold text-base-content/60 mb-2">All Time</h3>
+        <div className="flex gap-3">
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Saved</div>
+            <div className="stat-value text-2xl text-success">{formatCurrency(allTime.savedTotal)}</div>
+          </div>
+          <div className="stat bg-base-200 flex-1 py-3">
+            <div className="stat-title text-xs">Spent</div>
+            <div className="stat-value text-2xl text-error">{formatCurrency(allTime.spentTotal)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pending Interest */}
+      {currentPendingInterest > 0 && (
+        <div className="card bg-base-200">
+          <div className="card-body p-3">
+            <div className="text-xs text-base-content/70">
               Pending interest: <span className="font-semibold">{formatCurrency(currentMonth.pendingInterestOnAvoided)}</span>
               {currentMonth.pendingInterestOnSpent > 0 && (
                 <> · Cost: <span className="font-semibold">{formatCurrency(currentMonth.pendingInterestOnSpent)}</span></>
               )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
