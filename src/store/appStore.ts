@@ -57,6 +57,14 @@ interface AppStore {
 const STORAGE_KEY = 'spardavel_events'
 
 /**
+ * Sort events by date then by id to maintain consistent order
+ * This ensures events are always stored in sorted order
+ */
+function sortEvents(events: AppEvent[]): AppEvent[] {
+  return sortEventsByDateAsc(events)
+}
+
+/**
  * Apply interest for completed months and return updated events
  * This checks for months that need interest application and adds the events
  */
@@ -72,7 +80,7 @@ function applyInterestForCompletedMonths(
   )
 
   if (interestEvents.length > 0) {
-    return [...events, ...interestEvents]
+    return sortEvents([...events, ...interestEvents])
   }
   return events
 }
@@ -107,12 +115,12 @@ function getCurrentInterestRateFromEvents(
 
 /**
  * Calculate metrics from all events
+ * Events are expected to already be sorted by date then id
  */
 function calculateMetricsFromEvents(
   events: AppEvent[],
   defaultInterestRate: number = FALLBACK_INTEREST_RATE,
 ): DashboardMetrics {
-  const sortedEvents = sortEventsByDateAsc(events)
   const currentMonthKey = getCurrentMonthKey()
   const { start: currentMonthStart, end: currentMonthEnd } =
     getMonthBounds(currentMonthKey)
@@ -122,7 +130,7 @@ function calculateMetricsFromEvents(
   const monthlyMap = new Map<string, PeriodMetrics>()
 
   // Extract current interest rate from events
-  const rateChangeEvents = sortedEvents.filter(
+  const rateChangeEvents = events.filter(
     (e) => e.type === 'INTEREST_RATE_CHANGE',
   )
   if (rateChangeEvents.length > 0) {
@@ -136,7 +144,7 @@ function calculateMetricsFromEvents(
   }
 
   // Process all events
-  for (const event of sortedEvents) {
+  for (const event of events) {
     const monthKey = getMonthKey(event.date)
     const { start, end } = getMonthBounds(monthKey)
 
@@ -184,7 +192,7 @@ function calculateMetricsFromEvents(
   // Pass the default rate so getEffectiveRateForDate can use it for dates before rate changes
   const { pendingOnAvoided, pendingOnSpent } =
     calculatePendingInterestForCurrentMonth(
-      sortedEvents,
+      events,
       defaultInterestRate,
     )
   metrics.currentMonth.pendingInterestOnAvoided = pendingOnAvoided
@@ -219,8 +227,10 @@ export const useAppStore = create<AppStore>()(
       setDefaultInterestRate: (rate) => {
         set((state) => {
           // Recalculate all interest with new default rate
-          const filteredEvents = state.events.filter(
-            (e) => e.type !== 'INTEREST_APPLICATION',
+          const filteredEvents = sortEvents(
+            state.events.filter(
+              (e) => e.type !== 'INTEREST_APPLICATION',
+            )
           )
           // Use the new default rate directly for recalculation
           const newEvents = applyInterestForCompletedMonths(filteredEvents, rate)
@@ -240,7 +250,7 @@ export const useAppStore = create<AppStore>()(
           const filteredEvents = state.events.filter(
             (e) => e.type !== 'INTEREST_APPLICATION',
           )
-          const withNewEvent = [...filteredEvents, event]
+          const withNewEvent = sortEvents([...filteredEvents, event])
           const currentRate = getCurrentInterestRateFromEvents(
             withNewEvent,
             state.defaultInterestRate,
@@ -255,14 +265,16 @@ export const useAppStore = create<AppStore>()(
         set((state) => {
           // First, remove any auto-generated interest application events
           // They will be regenerated based on the updated data
-          const updatedEvents = state.events
-            .filter((event) => event.type !== 'INTEREST_APPLICATION')
-            .map((event) => {
-              if (event.id === id) {
-                return { ...event, ...updates }
-              }
-              return event
-            })
+          const updatedEvents = sortEvents(
+            state.events
+              .filter((event) => event.type !== 'INTEREST_APPLICATION')
+              .map((event) => {
+                if (event.id === id) {
+                  return { ...event, ...updates }
+                }
+                return event
+              })
+          )
           const currentRate = getCurrentInterestRateFromEvents(
             updatedEvents,
             state.defaultInterestRate,
@@ -277,8 +289,10 @@ export const useAppStore = create<AppStore>()(
         set((state) => {
           // First, remove the event and any auto-generated interest application events
           // They will be regenerated based on the updated data
-          const filteredEvents = state.events.filter(
-            (event) => event.id !== id && event.type !== 'INTEREST_APPLICATION',
+          const filteredEvents = sortEvents(
+            state.events.filter(
+              (event) => event.id !== id && event.type !== 'INTEREST_APPLICATION',
+            )
           )
           const currentRate = getCurrentInterestRateFromEvents(
             filteredEvents,
@@ -364,9 +378,12 @@ export const useAppStore = create<AppStore>()(
             state.events,
             defaultRate,
           )
-          state.events = applyInterestForCompletedMonths(
-            state.events,
-            currentRate,
+          // Ensure events are sorted after rehydration
+          state.events = sortEvents(
+            applyInterestForCompletedMonths(
+              state.events,
+              currentRate,
+            )
           )
           state.metrics = calculateMetricsFromEvents(state.events, defaultRate)
         }
