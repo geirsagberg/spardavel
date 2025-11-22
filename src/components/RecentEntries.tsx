@@ -1,6 +1,6 @@
+import { formatCurrency, formatDateWithWeekday } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent } from '~/types/events'
-import { formatCurrency, formatDateWithWeekday } from '~/lib/formatting'
 
 function getEventIcon(event: AppEvent): React.ReactNode {
   if (event.type === 'PURCHASE') {
@@ -41,7 +41,9 @@ export function RecentEntries() {
       <div className="card bg-base-200">
         <div className="card-body">
           <h2 className="card-title">Recent Entries</h2>
-          <p className="text-base-content/60">No entries yet. Add one to get started!</p>
+          <p className="text-base-content/60">
+            No entries yet. Add one to get started!
+          </p>
         </div>
       </div>
     )
@@ -56,16 +58,24 @@ export function RecentEntries() {
 
         <div className="space-y-3">
           {transactionEvents.map((event) => {
-            if (event.type !== 'PURCHASE' && event.type !== 'AVOIDED_PURCHASE') {
+            if (
+              event.type !== 'PURCHASE' &&
+              event.type !== 'AVOIDED_PURCHASE'
+            ) {
               return null
             }
 
             return (
-              <div key={event.id} className="flex items-center justify-between rounded-lg bg-base-300 p-3">
+              <div
+                key={event.id}
+                className="flex items-center justify-between rounded-lg bg-base-300 p-3"
+              >
                 <div className="flex flex-1 items-center gap-3">
                   <div className="text-xl">{getEventIcon(event)}</div>
                   <div className="flex-1 min-w-0">
-                    <div className={`font-semibold ${getEventColor(event)}`}>{event.description}</div>
+                    <div className={`font-semibold ${getEventColor(event)}`}>
+                      {event.description}
+                    </div>
                     <div className="flex gap-2 text-sm text-base-content/60">
                       <span>{event.category}</span>
                       <span>·</span>
@@ -75,7 +85,9 @@ export function RecentEntries() {
                 </div>
 
                 <div className="flex flex-col items-end gap-2">
-                  <div className={`font-bold ${getEventColor(event)}`}>{formatCurrency(event.amount)}</div>
+                  <div className={`font-bold ${getEventColor(event)}`}>
+                    {formatCurrency(event.amount)}
+                  </div>
                   <button
                     className="btn btn-xs btn-ghost text-error"
                     onClick={() => deleteEvent(event.id)}

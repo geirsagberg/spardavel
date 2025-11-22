@@ -181,7 +181,7 @@ export function QuickEntry() {
 
               {/* Action Buttons row with date */}
               <div className="flex flex-wrap gap-2 items-end">
-                <div className="form-control w-[130px]">
+                <div className="form-control w-[110px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Date</span>
                   </label>
@@ -201,7 +201,7 @@ export function QuickEntry() {
                   {isLoading ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
-                    '✓ Saved'
+                    '✓ Skipped'
                   )}
                 </button>
                 <button
@@ -212,7 +212,7 @@ export function QuickEntry() {
                   {isLoading ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
-                    '✗ Spent'
+                    '✗ Bought'
                   )}
                 </button>
               </div>

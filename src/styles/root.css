@@ -26,7 +26,6 @@ input[type='number'] {
 /* Standardize border radius and colors across all themes */
 @plugin "daisyui/theme" {
   name: light;
-  --color-success: oklch(0.48 0.177 163.223);
 }
 
 @plugin "daisyui/theme" {
@@ -38,7 +37,6 @@ input[type='number'] {
 
 @plugin "daisyui/theme" {
   name: retro;
-  --color-success: oklch(0.48 0.177 163.223);
   --radius-selector: 0.5rem;
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
@@ -53,7 +51,6 @@ input[type='number'] {
 
 @plugin "daisyui/theme" {
   name: bumblebee;
-  --color-success: oklch(0.48 0.177 163.223);
   --radius-selector: 0.5rem;
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
@@ -79,3 +76,29 @@ input[type='number'] {
   --radius-field: 0.25rem;
   --radius-box: 0.5rem;
 }
+
+/* Improve text utility contrast for light themes */
+/* This only affects text utility classes, not button backgrounds */
+[data-theme='light'],
+[data-theme='bumblebee'],
+[data-theme='retro'] {
+  .text-success {
+    color: oklch(0.5 0.177 163.223); /* Darker green for better contrast */
+  }
+
+  .text-error {
+    color: oklch(0.5 0.191 22.216); /* Darker red for better contrast */
+  }
+
+  .text-info {
+    color: oklch(0.5 0.16 232.661); /* Darker blue for better contrast */
+  }
+
+  .text-warning {
+    color: oklch(
+      0.5 0.189 84.429
+    ); /* Darker yellow/orange for better contrast */
+  }
+}
+
+/* Dark themes (dark, forest, synthwave, dracula, coffee) keep their original lighter colors */
