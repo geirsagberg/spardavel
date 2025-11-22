@@ -1,0 +1,260 @@
+import { useEffect, useRef } from 'react'
+import * as echarts from 'echarts'
+import { useAppStore } from '~/store/appStore'
+import { formatCurrency } from '~/lib/formatting'
+
+export function StackedChart() {
+  const chartRef = useRef<HTMLDivElement>(null)
+  const chartInstanceRef = useRef<echarts.ECharts | null>(null)
+  const metrics = useAppStore((state) => state.metrics)
+  const theme = useAppStore((state) => state.theme)
+
+  useEffect(() => {
+    if (!chartRef.current) return
+
+    if (!chartInstanceRef.current) {
+      chartInstanceRef.current = echarts.init(chartRef.current)
+    }
+
+    const chart = chartInstanceRef.current
+    const monthlyHistory = metrics.monthlyHistory
+
+    // Generate last 6 months including current month
+    const now = new Date()
+    const last6MonthDates = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+      }
+    })
+
+    // Map history data to the last 6 months, filling in zeros for missing months
+    const last6Months = last6MonthDates.map(({ key }) => {
+      const found = monthlyHistory.find(m => m.periodStart.startsWith(key))
+      if (found) return found
+      // Return empty period for missing months
+      const parts = key.split('-')
+      const year = parseInt(parts[0]!)
+      const month = parseInt(parts[1]!)
+      return {
+        periodStart: `${key}-01`,
+        periodEnd: `${key}-${new Date(year, month, 0).getDate()}`,
+        purchasesCount: 0,
+        purchasesTotal: 0,
+        purchasesByCategory: {},
+        avoidedCount: 0,
+        avoidedTotal: 0,
+        avoidedByCategory: {},
+        pendingInterestOnAvoided: 0,
+        pendingInterestOnSpent: 0,
+        appliedInterestOnAvoided: 0,
+        appliedInterestOnSpent: 0
+      }
+    })
+
+    const categories = last6Months.map((period) => {
+      const [year, month, day] = period.periodStart.split('-').map(Number)
+      const date = new Date(year!, month! - 1, day!)
+      return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    })
+
+    const totalSaved = last6Months.map((period, idx) => {
+      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const cumulativeSaved = previousMonths.reduce(
+        (sum, p) => sum + p.avoidedTotal + p.appliedInterestOnAvoided,
+        0
+      )
+      return cumulativeSaved + period.avoidedTotal + period.appliedInterestOnAvoided
+    })
+
+    const totalInterest = last6Months.map((period, idx) => {
+      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const cumulativeInterest = previousMonths.reduce(
+        (sum, p) => sum + p.appliedInterestOnAvoided,
+        0
+      )
+      return cumulativeInterest + period.appliedInterestOnAvoided
+    })
+
+    const totalSpent = last6Months.map((period, idx) => {
+      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const cumulativeSpent = previousMonths.reduce((sum, p) => sum + p.purchasesTotal, 0)
+      return cumulativeSpent + period.purchasesTotal
+    })
+
+    const totalOpportunityCost = last6Months.map((period, idx) => {
+      const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+      const cumulativeCost = previousMonths.reduce(
+        (sum, p) => sum + p.appliedInterestOnSpent,
+        0
+      )
+      return cumulativeCost + period.appliedInterestOnSpent
+    })
+
+    // Get computed colors from CSS variables (DaisyUI 5)
+    const computedStyle = getComputedStyle(document.documentElement)
+    const baseContent = computedStyle.getPropertyValue('--color-base-content').trim()
+    const textColor = baseContent
+    const textColorMuted = baseContent.replace(')', ' / 0.6)')
+    const lineColor = baseContent.replace(')', ' / 0.2)')
+    const gridColor = baseContent.replace(')', ' / 0.1)')
+
+    const option: echarts.EChartsOption = {
+      backgroundColor: 'transparent',
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'shadow'
+        },
+        formatter: (params: any) => {
+          if (!Array.isArray(params)) return ''
+          const month = params[0]?.axisValue || ''
+          let result = `<div style="font-weight: bold; margin-bottom: 4px;">${month}</div>`
+          params.forEach((param: any) => {
+            result += `
+              <div style="display: flex; justify-content: space-between; gap: 16px;">
+                <span>
+                  <span style="display: inline-block; width: 10px; height: 10px; border-radius: 50%; background-color: ${param.color}; margin-right: 5px;"></span>
+                  ${param.seriesName}
+                </span>
+                <span style="font-weight: bold;">${formatCurrency(param.value)}</span>
+              </div>
+            `
+          })
+          return result
+        }
+      },
+
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '3%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        data: categories,
+        axisLabel: {
+          interval: 0,
+          color: textColorMuted,
+          formatter: (value: string) => {
+            const [month, year] = value.split(' ')
+            return `{month|${month}}\n{year|${year}}`
+          },
+          rich: {
+            month: {
+              fontSize: 12,
+              lineHeight: 16
+            },
+            year: {
+              fontSize: 10,
+              lineHeight: 14
+            }
+          }
+        },
+        axisLine: {
+          lineStyle: {
+            color: lineColor
+          }
+        }
+      },
+      yAxis: {
+        type: 'value',
+        scale: true,
+        axisLabel: {
+          color: textColorMuted,
+          formatter: (value: number) => formatCurrency(value)
+        },
+        splitLine: {
+          lineStyle: {
+            color: gridColor
+          }
+        },
+        axisLine: {
+          lineStyle: {
+            color: lineColor
+          }
+        }
+      },
+      series: [
+        {
+          name: 'Total Saved',
+          type: 'line',
+          stack: 'Total',
+          data: totalSaved,
+          areaStyle: {},
+          itemStyle: {
+            color: '#10b981'
+          },
+          emphasis: {
+            focus: 'series'
+          }
+        },
+        {
+          name: 'Total Interest',
+          type: 'line',
+          stack: 'Total',
+          data: totalInterest,
+          areaStyle: {},
+          itemStyle: {
+            color: '#3b82f6'
+          },
+          emphasis: {
+            focus: 'series'
+          }
+        },
+        {
+          name: 'Total Spent',
+          type: 'line',
+          stack: 'Total',
+          data: totalSpent,
+          areaStyle: {},
+          itemStyle: {
+            color: '#ef4444'
+          },
+          emphasis: {
+            focus: 'series'
+          }
+        },
+        {
+          name: 'Total Opportunity Cost',
+          type: 'line',
+          stack: 'Total',
+          data: totalOpportunityCost,
+          areaStyle: {},
+          itemStyle: {
+            color: '#f97316'
+          },
+          emphasis: {
+            focus: 'series'
+          }
+        }
+      ]
+    }
+
+    chart.setOption(option)
+
+    const handleResize = () => {
+      chart.resize()
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [metrics, theme])
+
+  useEffect(() => {
+    return () => {
+      if (chartInstanceRef.current) {
+        chartInstanceRef.current.dispose()
+        chartInstanceRef.current = null
+      }
+    }
+  }, [])
+
+  return <div ref={chartRef} className="w-full h-64 bg-base-200 rounded-lg p-4" />
+}

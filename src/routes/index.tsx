@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Dashboard } from '~/components/Dashboard'
 import { QuickEntry } from '~/components/QuickEntry'
 import { RecentEntries } from '~/components/RecentEntries'
+import { StackedChart } from '~/components/StackedChart'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -17,7 +17,7 @@ function Home() {
           <p className="text-sm text-base-content/60">Track your savings</p>
         </div>
 
-        <Dashboard />
+        <StackedChart />
         <QuickEntry />
         <RecentEntries />
       </div>

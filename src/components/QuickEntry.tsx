@@ -127,100 +127,100 @@ export function QuickEntry() {
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              <div className="form-control min-w-[85px] flex-1">
-                <label className="label py-0.5">
-                  <span className="label-text text-xs">Amount</span>
-                </label>
-                <div className="join">
+            <>
+              <div className="flex flex-wrap gap-2 pt-2">
+                <div className="form-control min-w-[100px] flex-1">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Amount</span>
+                  </label>
+                  <div className="join">
+                     <input
+                      type="number"
+                      placeholder="30"
+                      className="input input-bordered input-sm join-item w-full"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      step="0.01"
+                      min="0"
+                      disabled={isLoading}
+                    />
+                    <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">
+                      {APP_CURRENCY}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="form-control min-w-[100px] flex-2">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Description</span>
+                  </label>
                   <input
-                    type="number"
-                    placeholder="30"
-                    className="input input-bordered input-sm join-item w-full"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    step="0.01"
-                    min="0"
+                    type="text"
+                    placeholder="Beer"
+                    className="input input-bordered input-sm"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                     disabled={isLoading}
                   />
-                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">
-                    {APP_CURRENCY}
-                  </span>
+                </div>
+
+                <div className="form-control min-w-[90px] flex-1">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Category</span>
+                  </label>
+                  <select
+                    className="select select-bordered select-sm"
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value as Category)}
+                    disabled={isLoading}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              <div className="form-control min-w-[100px] flex-2">
-                <label className="label py-0.5">
-                  <span className="label-text text-xs">Description</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="Beer"
-                  className="input input-bordered input-sm"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div className="form-control min-w-[90px] flex-1">
-                <label className="label py-0.5">
-                  <span className="label-text text-xs">Category</span>
-                </label>
-                <select
-                  className="select select-bordered select-sm"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value as Category)}
-                  disabled={isLoading}
+              {/* Action Buttons row with date */}
+              <div className="flex flex-wrap gap-2 pt-2 items-end">
+                <div className="form-control w-[130px]">
+                  <label className="label py-0.5">
+                    <span className="label-text text-xs">Date</span>
+                  </label>
+                  <input
+                    type="date"
+                    className="input input-bordered input-sm"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    disabled={isLoading}
+                  />
+                </div>
+                <button
+                  className="btn btn-success flex-1"
+                  onClick={() => handleAddEvent('avoided')}
+                  disabled={isLoading || !isFormValid}
                 >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm"></span>
+                  ) : (
+                    '✓ Saved'
+                  )}
+                </button>
+                <button
+                  className="btn btn-error flex-1"
+                  onClick={() => handleAddEvent('purchase')}
+                  disabled={isLoading || !isFormValid}
+                >
+                  {isLoading ? (
+                    <span className="loading loading-spinner loading-sm"></span>
+                  ) : (
+                    '✗ Spent'
+                  )}
+                </button>
               </div>
-            </div>
-          )}
-
-          {/* Action Buttons - always visible when form is valid */}
-          {isFormValid && (
-            <div className="flex flex-wrap gap-2 pt-2 items-end">
-              <div className="form-control w-[130px]">
-                <label className="label py-0.5">
-                  <span className="label-text text-xs">Date</span>
-                </label>
-                <input
-                  type="date"
-                  className="input input-bordered input-sm"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  disabled={isLoading}
-                />
-              </div>
-              <button
-                className="btn btn-success flex-1"
-                onClick={() => handleAddEvent('avoided')}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="loading loading-spinner loading-sm"></span>
-                ) : (
-                  '✓ Avoided'
-                )}
-              </button>
-              <button
-                className="btn btn-error flex-1"
-                onClick={() => handleAddEvent('purchase')}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="loading loading-spinner loading-sm"></span>
-                ) : (
-                  '✗ Spent'
-                )}
-              </button>
-            </div>
+            </>
           )}
         </div>
       </div>

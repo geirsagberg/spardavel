@@ -153,8 +153,11 @@ export function getMonthKey(date: string): string {
  */
 export function getMonthBounds(monthKey: string): { start: string; end: string } {
   const [year, month] = monthKey.split('-').map(Number)
-  const start = new Date(year!, month! - 1, 1).toISOString().split('T')[0]!
-  const end = new Date(year!, month!, 0).toISOString().split('T')[0]!
+  // Get the last day of the month
+  const lastDay = new Date(year!, month!, 0).getDate()
+  // Format as YYYY-MM-DD without timezone conversion
+  const start = `${year}-${String(month).padStart(2, '0')}-01`
+  const end = `${year}-${String(month).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
   return { start, end }
 }
 

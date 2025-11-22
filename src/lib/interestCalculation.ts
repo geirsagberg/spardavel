@@ -69,8 +69,10 @@ export function calculatePendingInterestForCurrentMonth(
   }
 
   // Iterate through each day from month start to today
-  const currentDate = new Date(monthStart)
-  const endDate = new Date(today)
+  const [startYear, startMonth, startDay] = monthStart.split('-').map(Number)
+  const currentDate = new Date(startYear!, startMonth! - 1, startDay!)
+  const [endYear, endMonth, endDay] = today.split('-').map(Number)
+  const endDate = new Date(endYear!, endMonth! - 1, endDay!)
 
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0]!
@@ -228,8 +230,10 @@ export function calculateInterestForMonth(
   }
 
   // Iterate through each day of the month
-  const currentDate = new Date(monthStart)
-  const endDate = new Date(monthEnd)
+  const [startYear, startMonth, startDay] = monthStart.split('-').map(Number)
+  const currentDate = new Date(startYear!, startMonth! - 1, startDay!)
+  const [endYear, endMonth, endDay] = monthEnd.split('-').map(Number)
+  const endDate = new Date(endYear!, endMonth! - 1, endDay!)
 
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0]!
