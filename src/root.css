@@ -4,18 +4,59 @@
   themes: light --default, dark --prefersdark, retro, forest, bumblebee, synthwave, dracula, coffee;
 }
 
-/* WCAG AA compliant success color for light-background themes */
+/* Standardize border radius and colors across all themes */
 @plugin "daisyui/theme" {
   name: light;
   --color-success: oklch(0.48 0.177 163.223);
 }
 
 @plugin "daisyui/theme" {
+  name: dark;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
+
+@plugin "daisyui/theme" {
   name: retro;
   --color-success: oklch(0.48 0.177 163.223);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
+
+@plugin "daisyui/theme" {
+  name: forest;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
 }
 
 @plugin "daisyui/theme" {
   name: bumblebee;
   --color-success: oklch(0.48 0.177 163.223);
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
+
+@plugin "daisyui/theme" {
+  name: synthwave;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
+
+@plugin "daisyui/theme" {
+  name: dracula;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
+}
+
+@plugin "daisyui/theme" {
+  name: coffee;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-box: 0.5rem;
 }
