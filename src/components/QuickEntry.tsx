@@ -3,11 +3,7 @@ import {
   createAvoidedPurchaseEvent,
   createPurchaseEvent,
 } from '~/lib/eventUtils'
-import {
-  APP_CURRENCY,
-  formatCurrency,
-  getTodayString,
-} from '~/lib/formatting'
+import { APP_CURRENCY, getTodayString } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
 
@@ -128,13 +124,13 @@ export function QuickEntry() {
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
             <>
-              <div className="flex flex-wrap gap-2 pt-2">
+              <div className="flex flex-wrap gap-2">
                 <div className="form-control min-w-[100px] flex-1">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Amount</span>
                   </label>
                   <div className="join">
-                     <input
+                    <input
                       type="number"
                       placeholder="30"
                       className="input input-bordered input-sm join-item w-full"
@@ -184,7 +180,7 @@ export function QuickEntry() {
               </div>
 
               {/* Action Buttons row with date */}
-              <div className="flex flex-wrap gap-2 pt-2 items-end">
+              <div className="flex flex-wrap gap-2 items-end">
                 <div className="form-control w-[130px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Date</span>

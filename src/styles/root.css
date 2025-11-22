@@ -1,18 +1,26 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark, retro, forest, bumblebee, synthwave, dracula, coffee;
+  themes:
+    light --default,
+    dark --prefersdark,
+    retro,
+    forest,
+    bumblebee,
+    synthwave,
+    dracula,
+    coffee;
 }
 
 /* Hide number input spinners */
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type="number"] {
-  -moz-appearance: textfield;
+input[type='number'] {
+  appearance: textfield;
 }
 
 /* Standardize border radius and colors across all themes */
