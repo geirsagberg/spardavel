@@ -1,4 +1,21 @@
 @import "tailwindcss";
+
 @plugin "daisyui" {
   themes: light --default, dark --prefersdark, retro, forest, bumblebee, synthwave, dracula, coffee;
+}
+
+/* WCAG AA compliant success color for light-background themes */
+@plugin "daisyui/theme" {
+  name: light;
+  --color-success: oklch(0.48 0.177 163.223);
+}
+
+@plugin "daisyui/theme" {
+  name: retro;
+  --color-success: oklch(0.48 0.177 163.223);
+}
+
+@plugin "daisyui/theme" {
+  name: bumblebee;
+  --color-success: oklch(0.48 0.177 163.223);
 }

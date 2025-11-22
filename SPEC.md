@@ -303,12 +303,17 @@ type DashboardMetrics = {
 - **React 19** (latest) - UI framework
 - **Vite** (latest) - Build tool
 - **TanStack Start** (latest) - Routing and SSR
-- **Tailwind CSS** (latest) - Styling
-- **DaisyUI** (latest) - Component library
+- **Tailwind CSS 4** (latest) - Styling with CSS-based configuration
+- **DaisyUI 5** (latest) - Component library with custom theme colors
 - **TypeScript** (latest) - Type safety
 - **Zustand** (latest) - State management (event stream, UI state, derived metrics)
 - **uuid** (latest) - Generate UUIDv7 event IDs (timestamp-sortable)
 - **zod** (latest) - Runtime event validation and schema definition
+
+**Accessibility:**
+- Custom theme colors ensure WCAG AA contrast compliance
+- Light theme: Success color `oklch(0.48 0.177 163.223)` provides 5.19:1 contrast ratio
+- Dark theme: Uses DaisyUI default success color with 9.21:1 contrast ratio
 
 **State Management Details (Zustand):**
 - Single store for event stream and UI state

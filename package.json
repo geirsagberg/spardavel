@@ -22,15 +22,16 @@
     "zustand": "latest"
   },
   "devDependencies": {
+    "@axe-core/cli": "^4.11.0",
+    "@tailwindcss/vite": "latest",
     "@types/bun": "latest",
+    "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "@types/node": "latest",
     "@types/uuid": "latest",
+    "@vitejs/plugin-react": "latest",
     "typescript": "latest",
     "vite": "latest",
-    "@vitejs/plugin-react": "latest",
-    "vite-tsconfig-paths": "latest",
-    "@tailwindcss/vite": "latest"
+    "vite-tsconfig-paths": "latest"
   }
 }
