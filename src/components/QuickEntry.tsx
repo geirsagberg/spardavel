@@ -104,12 +104,15 @@ export function QuickEntry() {
               {PRESETS.map((preset) => (
                 <button
                   key={preset.description}
-                  className={`btn btn-sm aspect-square h-14 w-14 flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
+                  className={`btn btn-sm h-14 flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
                   onClick={() => handlePresetClick(preset)}
                   disabled={isLoading}
                 >
-                  <span className="text-lg">{preset.emoji}</span>
-                  <span className="text-[10px]">
+                  <span className="text-lg leading-none">{preset.emoji}</span>
+                  <span className="text-[10px] leading-tight">
+                    {preset.description}
+                  </span>
+                  <span className="text-[10px] leading-tight">
                     {formatCurrency(preset.amount)}
                   </span>
                 </button>
