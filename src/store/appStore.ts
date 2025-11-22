@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create, type StateCreator } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { FALLBACK_INTEREST_RATE } from '~/lib/constants'
 import { isDateInMonth } from '~/lib/eventUtils'
@@ -17,7 +17,7 @@ import {
   calculateMetricsFromEvents,
 } from './storeHelpers'
 
-interface AppStore {
+export interface AppStore {
   // Event stream
   events: AppEvent[]
   addEvent: (event: AppEvent) => void
@@ -49,130 +49,132 @@ interface AppStore {
 
 const STORAGE_KEY = 'spardavel_events'
 
-export const useAppStore = create<AppStore>()(
-  persist(
-    (set, get) => ({
+export const createAppStore: StateCreator<AppStore> = (set, get) => ({
+  events: [] as AppEvent[],
+  metrics: createEmptyDashboardMetrics(),
+  defaultInterestRate: FALLBACK_INTEREST_RATE,
+  theme: 'dark',
+
+  setTheme: (theme: string) => {
+    set({ theme })
+  },
+
+  setDefaultInterestRate: (rate: number) => {
+    set((state: AppStore) => {
+      // Recalculate all interest with new default rate
+      const filteredEvents = sortEvents(
+        state.events.filter(
+          (e) => e.type !== 'INTEREST_APPLICATION',
+        )
+      )
+      // Use the new default rate directly for recalculation
+      const newEvents = applyInterestForCompletedMonths(filteredEvents, rate)
+      const newMetrics = calculateMetricsFromEvents(newEvents, rate)
+      return {
+        defaultInterestRate: rate,
+        events: newEvents,
+        metrics: newMetrics,
+      }
+    })
+  },
+
+  addEvent: (event: AppEvent) => {
+    set((state: AppStore) => {
+      // Remove existing interest application events - they will be regenerated
+      // This ensures retroactive purchases trigger recalculation of all affected months
+      const filteredEvents = state.events.filter(
+        (e) => e.type !== 'INTEREST_APPLICATION',
+      )
+      const withNewEvent = sortEvents([...filteredEvents, event])
+      const currentRate = getCurrentInterestRateFromEvents(
+        withNewEvent,
+        state.defaultInterestRate,
+      )
+      const newEvents = applyInterestForCompletedMonths(withNewEvent, currentRate)
+      const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
+      return { events: newEvents, metrics: newMetrics }
+    })
+  },
+
+  updateEvent: (id: string, updates: Partial<Omit<AppEvent, 'id' | 'type'>>) => {
+    set((state: AppStore) => {
+      // First, remove any auto-generated interest application events
+      // They will be regenerated based on the updated data
+      const updatedEvents = sortEvents(
+        state.events
+          .filter((event) => event.type !== 'INTEREST_APPLICATION')
+          .map((event) => {
+            if (event.id === id) {
+              return { ...event, ...updates }
+            }
+            return event
+          })
+      )
+      const currentRate = getCurrentInterestRateFromEvents(
+        updatedEvents,
+        state.defaultInterestRate,
+      )
+      const newEvents = applyInterestForCompletedMonths(updatedEvents, currentRate)
+      const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
+      return { events: newEvents, metrics: newMetrics }
+    })
+  },
+
+  deleteEvent: (id: string) => {
+    set((state: AppStore) => {
+      // First, remove the event and any auto-generated interest application events
+      // They will be regenerated based on the updated data
+      const filteredEvents = sortEvents(
+        state.events.filter(
+          (event) => event.id !== id && event.type !== 'INTEREST_APPLICATION',
+        )
+      )
+      const currentRate = getCurrentInterestRateFromEvents(
+        filteredEvents,
+        state.defaultInterestRate,
+      )
+      const newEvents = applyInterestForCompletedMonths(filteredEvents, currentRate)
+      const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
+      return { events: newEvents, metrics: newMetrics }
+    })
+  },
+
+  clearAllEvents: () => {
+    set(() => ({
       events: [],
       metrics: createEmptyDashboardMetrics(),
       defaultInterestRate: FALLBACK_INTEREST_RATE,
-      theme: 'dark',
+    }))
+  },
 
-      setTheme: (theme) => {
-        set({ theme })
-      },
+  recalculateMetrics: () => {
+    set((state: AppStore) => ({
+      metrics: calculateMetricsFromEvents(state.events, state.defaultInterestRate),
+    }))
+  },
 
-      setDefaultInterestRate: (rate) => {
-        set((state) => {
-          // Recalculate all interest with new default rate
-          const filteredEvents = sortEvents(
-            state.events.filter(
-              (e) => e.type !== 'INTEREST_APPLICATION',
-            )
-          )
-          // Use the new default rate directly for recalculation
-          const newEvents = applyInterestForCompletedMonths(filteredEvents, rate)
-          const newMetrics = calculateMetricsFromEvents(newEvents, rate)
-          return {
-            defaultInterestRate: rate,
-            events: newEvents,
-            metrics: newMetrics,
-          }
-        })
-      },
+  getEventById: (id: string) => {
+    return get().events.find((event: AppEvent) => event.id === id)
+  },
 
-      addEvent: (event) => {
-        set((state) => {
-          // Remove existing interest application events - they will be regenerated
-          // This ensures retroactive purchases trigger recalculation of all affected months
-          const filteredEvents = state.events.filter(
-            (e) => e.type !== 'INTEREST_APPLICATION',
-          )
-          const withNewEvent = sortEvents([...filteredEvents, event])
-          const currentRate = getCurrentInterestRateFromEvents(
-            withNewEvent,
-            state.defaultInterestRate,
-          )
-          const newEvents = applyInterestForCompletedMonths(withNewEvent, currentRate)
-          const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
-          return { events: newEvents, metrics: newMetrics }
-        })
-      },
+  getEventsByMonth: (monthKey: string) => {
+    return get().events.filter((event: AppEvent) =>
+      isDateInMonth(event.date, monthKey),
+    )
+  },
 
-      updateEvent: (id, updates) => {
-        set((state) => {
-          // First, remove any auto-generated interest application events
-          // They will be regenerated based on the updated data
-          const updatedEvents = sortEvents(
-            state.events
-              .filter((event) => event.type !== 'INTEREST_APPLICATION')
-              .map((event) => {
-                if (event.id === id) {
-                  return { ...event, ...updates }
-                }
-                return event
-              })
-          )
-          const currentRate = getCurrentInterestRateFromEvents(
-            updatedEvents,
-            state.defaultInterestRate,
-          )
-          const newEvents = applyInterestForCompletedMonths(updatedEvents, currentRate)
-          const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
-          return { events: newEvents, metrics: newMetrics }
-        })
-      },
+  getCurrentMonthMetrics: () => {
+    return get().metrics.currentMonth
+  },
 
-      deleteEvent: (id) => {
-        set((state) => {
-          // First, remove the event and any auto-generated interest application events
-          // They will be regenerated based on the updated data
-          const filteredEvents = sortEvents(
-            state.events.filter(
-              (event) => event.id !== id && event.type !== 'INTEREST_APPLICATION',
-            )
-          )
-          const currentRate = getCurrentInterestRateFromEvents(
-            filteredEvents,
-            state.defaultInterestRate,
-          )
-          const newEvents = applyInterestForCompletedMonths(filteredEvents, currentRate)
-          const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
-          return { events: newEvents, metrics: newMetrics }
-        })
-      },
+  getAllTimeMetrics: () => {
+    return get().metrics.allTime
+  },
+})
 
-      clearAllEvents: () => {
-        set(() => ({
-          events: [],
-          metrics: createEmptyDashboardMetrics(),
-          defaultInterestRate: FALLBACK_INTEREST_RATE,
-        }))
-      },
-
-      recalculateMetrics: () => {
-        set((state) => ({
-          metrics: calculateMetricsFromEvents(state.events, state.defaultInterestRate),
-        }))
-      },
-
-      getEventById: (id) => {
-        return get().events.find((event) => event.id === id)
-      },
-
-      getEventsByMonth: (monthKey) => {
-        return get().events.filter((event) =>
-          isDateInMonth(event.date, monthKey),
-        )
-      },
-
-      getCurrentMonthMetrics: () => {
-        return get().metrics.currentMonth
-      },
-
-      getAllTimeMetrics: () => {
-        return get().metrics.allTime
-      },
-    }),
+export const useAppStore = create<AppStore>()(
+  persist(
+    createAppStore,
     {
       name: STORAGE_KEY,
       partialize: (state) => ({
