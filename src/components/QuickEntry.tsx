@@ -1,10 +1,21 @@
 import { useState } from 'react'
-import type { Category } from '~/types/events'
-import { createPurchaseEvent, createAvoidedPurchaseEvent } from '~/lib/eventUtils'
+import {
+  createAvoidedPurchaseEvent,
+  createPurchaseEvent,
+} from '~/lib/eventUtils'
+import { APP_CURRENCY, formatCurrency } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
-import { formatCurrency, APP_CURRENCY } from '~/lib/formatting'
+import type { Category } from '~/types/events'
 
-const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
+const CATEGORIES: Category[] = [
+  'Alcohol',
+  'Candy',
+  'Snacks',
+  'Food',
+  'Drinks',
+  'Games',
+  'Other',
+]
 
 type Preset = {
   description: string
@@ -98,7 +109,9 @@ export function QuickEntry() {
                   disabled={isLoading}
                 >
                   <span className="text-lg">{preset.emoji}</span>
-                  <span className="text-[10px]">{formatCurrency(preset.amount)}</span>
+                  <span className="text-[10px]">
+                    {formatCurrency(preset.amount)}
+                  </span>
                 </button>
               ))}
               <button
@@ -130,11 +143,13 @@ export function QuickEntry() {
                     min="0"
                     disabled={isLoading}
                   />
-                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">{APP_CURRENCY}</span>
+                  <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-300 border-base-300">
+                    {APP_CURRENCY}
+                  </span>
                 </div>
               </div>
 
-              <div className="form-control min-w-[100px] flex-[2]">
+              <div className="form-control min-w-[100px] flex-2">
                 <label className="label py-0.5">
                   <span className="label-text text-xs">Description</span>
                 </label>
@@ -188,14 +203,22 @@ export function QuickEntry() {
                 onClick={() => handleAddEvent('avoided')}
                 disabled={isLoading}
               >
-                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : '✓ Avoided'}
+                {isLoading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : (
+                  '✓ Avoided'
+                )}
               </button>
               <button
                 className="btn btn-error flex-1"
                 onClick={() => handleAddEvent('purchase')}
                 disabled={isLoading}
               >
-                {isLoading ? <span className="loading loading-spinner loading-sm"></span> : '✗ Spent'}
+                {isLoading ? (
+                  <span className="loading loading-spinner loading-sm"></span>
+                ) : (
+                  '✗ Spent'
+                )}
               </button>
             </div>
           )}

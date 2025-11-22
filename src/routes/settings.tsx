@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
-import { useAppStore } from '~/store/appStore'
+import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
-import type { InterestRateChangeEvent, AppEvent } from '~/types/events'
-import { formatPercent, formatDateOnly } from '~/lib/formatting'
+import { formatDateOnly, formatPercent } from '~/lib/formatting'
+import { useAppStore } from '~/store/appStore'
+import type { AppEvent, InterestRateChangeEvent } from '~/types/events'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
@@ -19,13 +19,19 @@ function Settings() {
   const addEvent = useAppStore((state) => state.addEvent)
   const updateEvent = useAppStore((state) => state.updateEvent)
   const deleteEvent = useAppStore((state) => state.deleteEvent)
-  const currentInterestRate = useAppStore((state) => state.metrics.currentInterestRate)
+  const currentInterestRate = useAppStore(
+    (state) => state.metrics.currentInterestRate,
+  )
   const defaultInterestRate = useAppStore((state) => state.defaultInterestRate)
-  const setDefaultInterestRate = useAppStore((state) => state.setDefaultInterestRate)
+  const setDefaultInterestRate = useAppStore(
+    (state) => state.setDefaultInterestRate,
+  )
   const theme = useAppStore((state) => state.theme)
   const setTheme = useAppStore((state) => state.setTheme)
 
-  const [interestRate, setInterestRate] = useState(() => currentInterestRate.toString())
+  const [interestRate, setInterestRate] = useState(() =>
+    currentInterestRate.toString(),
+  )
   const [effectiveDate, setEffectiveDate] = useState(getTodayString)
   const [successMessage, setSuccessMessage] = useState('')
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
@@ -35,7 +41,9 @@ function Settings() {
   const [editDefaultRate, setEditDefaultRate] = useState('')
 
   const interestRateEvents = events
-    .filter((e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE')
+    .filter(
+      (e): e is InterestRateChangeEvent => e.type === 'INTEREST_RATE_CHANGE',
+    )
     .sort((a, b) => b.date.localeCompare(a.date))
 
   // Find earliest rate change event date for display
@@ -47,7 +55,11 @@ function Settings() {
   }, [currentInterestRate])
 
   const handleClearAll = () => {
-    if (window.confirm('Are you sure you want to delete ALL data? This cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete ALL data? This cannot be undone.',
+      )
+    ) {
       clearAllEvents()
       setSuccessMessage('All data cleared')
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -110,19 +122,23 @@ function Settings() {
           }
         }
 
-        const settingsMessage = data.settings?.defaultInterestRate !== undefined 
-          ? ' Settings restored.' 
-          : ''
+        const settingsMessage =
+          data.settings?.defaultInterestRate !== undefined
+            ? ' Settings restored.'
+            : ''
 
         setSuccessMessage(
-          `Imported ${newEventIds.size} new events. (${data.events.length - newEventIds.size} duplicates skipped)${settingsMessage}`
+          `Imported ${newEventIds.size} new events. (${data.events.length - newEventIds.size} duplicates skipped)${settingsMessage}`,
         )
         setTimeout(() => setSuccessMessage(''), 3000)
 
         // Reset input
         event.target.value = ''
       } catch (error) {
-        alert('Error importing file: ' + (error instanceof Error ? error.message : 'Unknown error'))
+        alert(
+          'Error importing file: ' +
+            (error instanceof Error ? error.message : 'Unknown error'),
+        )
       }
     }
 
@@ -139,7 +155,9 @@ function Settings() {
     const event = createInterestRateChangeEvent(rate, effectiveDate)
     addEvent(event)
 
-    setSuccessMessage(`Interest rate set to ${formatPercent(rate)}% effective ${formatDateOnly(effectiveDate)}`)
+    setSuccessMessage(
+      `Interest rate set to ${formatPercent(rate)}% effective ${formatDateOnly(effectiveDate)}`,
+    )
     setTimeout(() => setSuccessMessage(''), 3000)
     setEffectiveDate(getTodayString())
   }
@@ -163,14 +181,20 @@ function Settings() {
       return
     }
 
-    updateEvent(id, { date: editDate, newRate: rate } as Partial<Omit<AppEvent, 'id' | 'type'>>)
+    updateEvent(id, { date: editDate, newRate: rate } as Partial<
+      Omit<AppEvent, 'id' | 'type'>
+    >)
     setEditingEventId(null)
     setSuccessMessage('Interest rate event updated')
     setTimeout(() => setSuccessMessage(''), 3000)
   }
 
   const handleDeleteRateEvent = (id: string) => {
-    if (window.confirm('Are you sure you want to delete this interest rate change?')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this interest rate change?',
+      )
+    ) {
       deleteEvent(id)
       setSuccessMessage('Interest rate event deleted')
       setTimeout(() => setSuccessMessage(''), 3000)
@@ -205,13 +229,19 @@ function Settings() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
-          <p className="text-sm text-base-content/60 sm:text-base">Configure your app</p>
+          <p className="text-sm text-base-content/60 sm:text-base">
+            Configure your app
+          </p>
         </div>
 
         {/* Success Message */}
         {successMessage && (
           <div className="alert alert-success">
-            <svg className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+            <svg
+              className="h-6 w-6 shrink-0 stroke-current"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -231,7 +261,7 @@ function Settings() {
               Choose your preferred color theme
             </p>
             <div className="form-control pt-2">
-              <select 
+              <select
                 className="select select-bordered w-full max-w-xs"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
@@ -254,7 +284,8 @@ function Settings() {
           <div className="card-body">
             <h2 className="card-title">Interest Rate Configuration</h2>
             <p className="text-base-content/60 text-sm">
-              Set the annual interest rate applied to your saved and spent amounts
+              Set the annual interest rate applied to your saved and spent
+              amounts
             </p>
 
             <div className="form-control gap-4 pt-4">
@@ -284,7 +315,10 @@ function Settings() {
                     onChange={(e) => setEffectiveDate(e.target.value)}
                   />
                 </div>
-                <button className="btn btn-primary btn-sm" onClick={handleUpdateInterestRate}>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleUpdateInterestRate}
+                >
                   Add Rate
                 </button>
               </div>
@@ -298,7 +332,7 @@ function Settings() {
                   <div key={event.id} className="bg-base-300 rounded-lg p-3">
                     {editingEventId === event.id ? (
                       <div className="flex flex-wrap gap-2 items-end">
-                        <div className="form-control flex-1 min-w-[80px]">
+                        <div className="form-control flex-1 min-w-20">
                           <label className="label py-0.5">
                             <span className="label-text text-xs">Rate (%)</span>
                           </label>
@@ -313,7 +347,9 @@ function Settings() {
                         </div>
                         <div className="form-control flex-1 min-w-[120px]">
                           <label className="label py-0.5">
-                            <span className="label-text text-xs">Effective Date</span>
+                            <span className="label-text text-xs">
+                              Effective Date
+                            </span>
                           </label>
                           <input
                             type="date"
@@ -340,7 +376,9 @@ function Settings() {
                     ) : (
                       <div className="flex justify-between items-center">
                         <div>
-                          <span className="font-medium">{formatPercent(event.newRate)}%</span>
+                          <span className="font-medium">
+                            {formatPercent(event.newRate)}%
+                          </span>
                           <span className="text-base-content/60 text-sm ml-2">
                             effective {formatDateOnly(event.date)}
                           </span>
@@ -368,7 +406,7 @@ function Settings() {
                 <div className="bg-base-300 rounded-lg p-3 border-l-4 border-info">
                   {editingDefault ? (
                     <div className="flex flex-wrap gap-2 items-end">
-                      <div className="form-control flex-1 min-w-[80px]">
+                      <div className="form-control flex-1 min-w-20">
                         <label className="label py-0.5">
                           <span className="label-text text-xs">Rate (%)</span>
                         </label>
@@ -382,10 +420,16 @@ function Settings() {
                         />
                       </div>
                       <div className="flex gap-1">
-                        <button className="btn btn-success btn-sm" onClick={handleSaveDefaultRate}>
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={handleSaveDefaultRate}
+                        >
                           Save
                         </button>
-                        <button className="btn btn-ghost btn-sm" onClick={handleCancelEditDefault}>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={handleCancelEditDefault}
+                        >
                           Cancel
                         </button>
                       </div>
@@ -393,12 +437,20 @@ function Settings() {
                   ) : (
                     <div className="flex justify-between items-center">
                       <div>
-                        <span className="font-medium">{formatPercent(defaultInterestRate)}%</span>
+                        <span className="font-medium">
+                          {formatPercent(defaultInterestRate)}%
+                        </span>
                         <span className="text-base-content/60 text-sm ml-2">
-                          default{earliestRateChangeDate ? ` (before ${formatDateOnly(earliestRateChangeDate)})` : ''}
+                          default
+                          {earliestRateChangeDate
+                            ? ` (before ${formatDateOnly(earliestRateChangeDate)})`
+                            : ''}
                         </span>
                       </div>
-                      <button className="btn btn-ghost btn-xs" onClick={handleStartEditDefault}>
+                      <button
+                        className="btn btn-ghost btn-xs"
+                        onClick={handleStartEditDefault}
+                      >
                         Edit
                       </button>
                     </div>
@@ -413,7 +465,9 @@ function Settings() {
         <div className="card bg-base-200">
           <div className="card-body">
             <h2 className="card-title">Data Management</h2>
-            <p className="text-base-content/60 text-sm">Export or import your data as JSON</p>
+            <p className="text-base-content/60 text-sm">
+              Export or import your data as JSON
+            </p>
 
             <div className="flex gap-3 pt-4">
               <button className="btn btn-primary flex-1" onClick={handleExport}>
@@ -421,7 +475,12 @@ function Settings() {
               </button>
               <label className="btn btn-secondary flex-1">
                 Import Data
-                <input type="file" accept=".json" className="hidden" onChange={handleImport} />
+                <input
+                  type="file"
+                  accept=".json"
+                  className="hidden"
+                  onChange={handleImport}
+                />
               </label>
             </div>
           </div>
@@ -431,7 +490,9 @@ function Settings() {
         <div className="card bg-base-200">
           <div className="card-body">
             <h2 className="card-title text-error">Danger Zone</h2>
-            <p className="text-base-content/60 text-sm">Permanently delete all your data</p>
+            <p className="text-base-content/60 text-sm">
+              Permanently delete all your data
+            </p>
 
             <div className="pt-4">
               <button className="btn btn-error" onClick={handleClearAll}>
