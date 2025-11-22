@@ -1,7 +1,21 @@
-import * as echarts from 'echarts'
+import * as echarts from 'echarts/core'
+import { LineChart, type LineSeriesOption } from 'echarts/charts'
+import {
+  GridComponent,
+  TooltipComponent,
+  type TooltipComponentOption,
+  type GridComponentOption,
+} from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef, useState } from 'react'
 import { formatCurrency } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
+
+echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer])
+
+type ECOption = echarts.ComposeOption<
+  LineSeriesOption | TooltipComponentOption | GridComponentOption
+>
 
 export function StackedChart() {
   const chartRef = useRef<HTMLDivElement>(null)
@@ -124,7 +138,7 @@ export function StackedChart() {
     const lineColor = baseContent.replace(')', ' / 0.2)')
     const gridColor = baseContent.replace(')', ' / 0.1)')
 
-    const option: echarts.EChartsOption = {
+    const option: ECOption = {
       backgroundColor: 'transparent',
       tooltip: {
         trigger: 'axis',

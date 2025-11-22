@@ -9,4 +9,21 @@ export default defineConfig({
     port: 3000,
   },
   plugins: [tsConfigPaths(), tanstackStart(), viteReact(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // Only apply manual chunks for client build
+          if (id.includes('node_modules')) {
+            if (id.includes('echarts')) {
+              return 'vendor-charts'
+            }
+            if (id.includes('zustand')) {
+              return 'vendor-zustand'
+            }
+          }
+        },
+      },
+    },
+  },
 })
