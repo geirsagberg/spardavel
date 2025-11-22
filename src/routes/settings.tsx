@@ -1,17 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
-import { formatDateOnly, formatPercent } from '~/lib/formatting'
+import {
+  formatDateOnly,
+  formatPercent,
+  getTodayString,
+} from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent, InterestRateChangeEvent } from '~/types/events'
 
 export const Route = createFileRoute('/settings')({
   component: Settings,
 })
-
-function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]!
-}
 
 function Settings() {
   const events = useAppStore((state) => state.events)

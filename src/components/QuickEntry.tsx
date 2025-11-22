@@ -3,7 +3,11 @@ import {
   createAvoidedPurchaseEvent,
   createPurchaseEvent,
 } from '~/lib/eventUtils'
-import { APP_CURRENCY, formatCurrency } from '~/lib/formatting'
+import {
+  APP_CURRENCY,
+  formatCurrency,
+  getTodayString,
+} from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
 
@@ -30,10 +34,6 @@ const PRESETS: (Preset & { emoji: string })[] = [
   { emoji: '🍿', description: 'Snack', amount: 20, category: 'Snacks' },
   { emoji: '🍔', description: 'Food', amount: 50, category: 'Food' },
 ]
-
-function getTodayString(): string {
-  return new Date().toISOString().split('T')[0]!
-}
 
 export function QuickEntry() {
   const addEvent = useAppStore((state) => state.addEvent)

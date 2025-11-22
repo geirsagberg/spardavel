@@ -80,3 +80,22 @@ export function formatPercent(value: number): string {
 export function formatDateOnly(dateString: string): string {
   return new Date(dateString).toLocaleDateString(APP_LOCALE)
 }
+
+/**
+ * Singleton DateTimeFormat for ISO date strings (YYYY-MM-DD) in local timezone
+ * Uses sv-SE locale which formats dates as YYYY-MM-DD
+ * Avoids timezone issues around midnight by using the local timezone
+ */
+const isoDateFormatter = new Intl.DateTimeFormat('sv-SE', {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+})
+
+/**
+ * Get today's date as ISO string (YYYY-MM-DD) in local timezone
+ * Uses Intl.DateTimeFormat to avoid timezone issues around midnight
+ */
+export function getTodayString(): string {
+  return isoDateFormatter.format(new Date())
+}
