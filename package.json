@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node dist/index.js",
-    "preview": "vite preview",
-    "test": "bun test"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tanstack/react-router": "latest",
