@@ -29,6 +29,7 @@
     "@types/react-dom": "latest",
     "@types/uuid": "latest",
     "@vitejs/plugin-react": "latest",
+    "nitro": "^3.0.1-alpha.1",
     "typescript": "latest",
     "vite": "latest",
     "vite-tsconfig-paths": "latest"
