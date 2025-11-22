@@ -25,12 +25,29 @@ export const Route = createRootRoute({
       {
         title: 'Spardavel',
       },
+      {
+        name: 'description',
+        content: 'Track your savings and avoid impulse purchases',
+      },
+      {
+        name: 'theme-color',
+        content: '#ffffff',
+      },
+      {
+        name: 'apple-mobile-web-app-capable',
+        content: 'yes',
+      },
+      {
+        name: 'apple-mobile-web-app-status-bar-style',
+        content: 'default',
+      },
     ],
     links: [
       { rel: 'stylesheet', href: css },
       { rel: 'icon', href: '/icons/favicon.ico' },
       { rel: 'icon', type: 'image/svg+xml', href: '/icons/favicon.svg' },
       { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.png' },
+      { rel: 'manifest', href: '/manifest.json' },
     ],
   }),
   component: RootComponent,
@@ -79,6 +96,24 @@ function RootDocument({ children }: Readonly<{ children: ReactNode }>) {
       <body>
         {children}
         <Scripts />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    function(registration) {
+                      console.log('ServiceWorker registration successful');
+                    },
+                    function(err) {
+                      console.log('ServiceWorker registration failed: ', err);
+                    }
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   )
