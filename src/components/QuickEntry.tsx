@@ -104,7 +104,7 @@ export function QuickEntry() {
               {PRESETS.map((preset) => (
                 <button
                   key={preset.description}
-                  className={`btn btn-sm h-14 flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
+                  className={`btn btn-sm h-14 min-w-[70px] flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
                   onClick={() => handlePresetClick(preset)}
                   disabled={isLoading}
                 >
@@ -115,7 +115,7 @@ export function QuickEntry() {
                 </button>
               ))}
               <button
-                className={`btn btn-sm h-14 flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
+                className={`btn btn-sm h-14 min-w-[70px] flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
                 onClick={handleCustomClick}
                 disabled={isLoading}
               >
