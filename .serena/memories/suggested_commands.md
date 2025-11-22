@@ -56,9 +56,19 @@ bunx tsc --noEmit  # Check TypeScript types without emitting (if needed)
 - Future: Consider adding Biome for linting/formatting
 - Future: Consider adding Vitest for unit testing
 
+## Documentation Access
+```bash
+# Get Tailwind CSS 4 docs (CSS-first configuration)
+context7_get-library-docs --library "/tailwindlabs/tailwindcss/next" --topic "css configuration"
+
+# Get DaisyUI 5 docs (theme customization)
+context7_get-library-docs --library "/saadeghi/daisyui" --topic "themes"
+```
+
 ## Important Notes
 - Always use `bun` instead of `npm`
 - Always use latest versions of dependencies
 - Never include Claude Code attribution in commits
 - TanStack Start routes are convention-based (files in `src/routes/`)
 - Tailwind CSS 4 uses `@tailwindcss/vite` plugin (no PostCSS config needed)
+- All Tailwind/DaisyUI config is in `src/root.css` using CSS directives
