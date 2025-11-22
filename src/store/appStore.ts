@@ -221,7 +221,6 @@ export const useAppStore = create<AppStore>()(
 
       setTheme: (theme) => {
         set({ theme })
-        document.documentElement.setAttribute('data-theme', theme)
       },
 
       setDefaultInterestRate: (rate) => {
@@ -345,11 +344,6 @@ export const useAppStore = create<AppStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          // Apply theme to document
-          if (state.theme) {
-            document.documentElement.setAttribute('data-theme', state.theme)
-          }
-          
           // Validate events using Zod schema
           const validationResult = AppEventsArraySchema.safeParse(state.events)
           
