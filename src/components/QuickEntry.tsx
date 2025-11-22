@@ -110,10 +110,7 @@ export function QuickEntry() {
                 >
                   <span className="text-lg leading-none">{preset.emoji}</span>
                   <span className="text-[10px] leading-tight">
-                    {preset.description}
-                  </span>
-                  <span className="text-[10px] leading-tight">
-                    {formatCurrency(preset.amount)}
+                    {preset.description} {preset.amount}
                   </span>
                 </button>
               ))}
