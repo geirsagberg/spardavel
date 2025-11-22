@@ -3,3 +3,7 @@
 - Never run `git push` - the user will push manually
 - Use context7 for library docs
 - Dev server runs on port 3000
+- Don't build every time; assume the dev server is running and will hot-reload changes
+- When asked to remember something, update CLAUDE.md with this info
+- Lines started with # should be added to memory (CLAUDE.md)
+- Before starting dev server, check if it is already running (port 3000)
