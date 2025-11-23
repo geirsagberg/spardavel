@@ -1,9 +1,17 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 import { QuickEntry } from '~/components/QuickEntry'
 import { RecentEntries } from '~/components/RecentEntries'
 import { StackedChart } from '~/components/StackedChart'
 
 export const Route = createFileRoute('/')({
+  beforeLoad: () => {
+    if (typeof window !== 'undefined') {
+      const onboardingComplete = localStorage.getItem('spardavel_onboarding_complete')
+      if (!onboardingComplete) {
+        throw redirect({ to: '/onboarding' })
+      }
+    }
+  },
   component: Home,
 })
 

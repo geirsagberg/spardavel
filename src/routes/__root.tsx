@@ -4,6 +4,7 @@ import {
   createRootRoute,
   Scripts,
   HeadContent,
+  useRouterState,
 } from '@tanstack/react-router'
 import { DesktopHeader } from '~/components/DesktopHeader'
 import { Navigation } from '~/components/Navigation'
@@ -56,6 +57,8 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const theme = useAppStore((state) => state.theme)
+  const router = useRouterState()
+  const isOnboarding = router.location.pathname === '/onboarding'
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -63,9 +66,9 @@ function RootComponent() {
 
   return (
     <RootDocument>
-      <DesktopHeader />
+      {!isOnboarding && <DesktopHeader />}
       <SwipeableOutlet />
-      <Navigation />
+      {!isOnboarding && <Navigation />}
     </RootDocument>
   )
 }

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
 import {
@@ -14,6 +14,7 @@ export const Route = createFileRoute('/settings')({
 })
 
 function Settings() {
+  const navigate = useNavigate()
   const events = useAppStore((state) => state.events)
   const clearAllEvents = useAppStore((state) => state.clearAllEvents)
   const addEvent = useAppStore((state) => state.addEvent)
@@ -221,6 +222,11 @@ function Settings() {
     setEditingDefault(false)
     setSuccessMessage(`Default interest rate updated to ${rate}%`)
     setTimeout(() => setSuccessMessage(''), 3000)
+  }
+
+  const handleRedoOnboarding = () => {
+    localStorage.removeItem('spardavel_onboarding_complete')
+    navigate({ to: '/onboarding' })
   }
 
   return (
@@ -457,6 +463,22 @@ function Settings() {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Onboarding */}
+        <div className="card bg-base-200">
+          <div className="card-body">
+            <h2 className="card-title">Onboarding</h2>
+            <p className="text-base-content/60 text-sm">
+              View the onboarding slides again
+            </p>
+
+            <div className="pt-4">
+              <button className="btn btn-secondary" onClick={handleRedoOnboarding}>
+                Redo Onboarding
+              </button>
             </div>
           </div>
         </div>
