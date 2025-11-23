@@ -2,12 +2,12 @@
 
 ## Overview
 
-**Spardavel** is a progressive web app (PWA) designed to help users track and reduce "feel-good" impulse purchases. It uses event sourcing to record purchases and avoided purchases, calculates interest on both to show opportunity cost, and provides insights into spending and savings habits.
+**Spardavel** is a progressive web app (PWA) designed to help users track and reduce "feel-good" impulse purchases. It uses event sourcing to record purchases and avoided purchases, calculates interest on both to show missed interest (opportunity cost), and provides insights into spending and savings habits.
 
 ### Core Concept
 - **Purchases**: Money actually spent on items (Alcohol, Candy, Snacks, Food, Drinks, Games, Other)
 - **Avoided Purchases**: Impulse buys considered but intentionally skipped
-- **Interest Calculation**: Daily pending, applied monthly, simulating savings interest and opportunity cost
+- **Interest Calculation**: Daily pending, applied monthly, simulating savings interest and missed interest
 - **Event Sourcing**: Events can be edited or deleted; changes trigger full recalculation of metrics
 
 ---
@@ -97,7 +97,7 @@ Pending interest accumulates but is not added to the balance until the monthly a
 ### Monthly Interest Application
 On the last day of each month (or first day of next month):
 - All pending interest from avoided purchases is added to the saved balance
-- All pending interest from spent purchases is accumulated separately (opportunity cost)
+- All pending interest from spent purchases is accumulated separately (missed interest)
 - An INTEREST_APPLICATION event is recorded
 - Applied interest becomes part of the principal balance for subsequent interest calculations (compounding)
 

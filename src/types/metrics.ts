@@ -31,7 +31,7 @@ export interface PeriodMetrics {
 export interface AllTimeMetrics {
   savedTotal: number // avoided + applied interest on avoided
   spentTotal: number // total purchases
-  opportunityCost: number // interest on spent
+  missedInterest: number // interest on spent
   pendingSavedInterest: number // pending interest on avoided
   pendingCostInterest: number // pending interest on spent
 }
@@ -87,7 +87,7 @@ export function createEmptyAllTimeMetrics(): AllTimeMetrics {
   return {
     savedTotal: 0,
     spentTotal: 0,
-    opportunityCost: 0,
+    missedInterest: 0,
     pendingSavedInterest: 0,
     pendingCostInterest: 0,
   }

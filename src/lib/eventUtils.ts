@@ -59,7 +59,7 @@ export function createInterestRateChangeEvent(
 /**
  * Create an interest application event
  * @param pendingOnAvoided Interest earned on avoided purchases
- * @param pendingOnSpent Opportunity cost interest on purchases
+ * @param pendingOnSpent Missed interest on purchases
  * @param date The end of month date when interest is applied (YYYY-MM-DD)
  */
 export function createInterestApplicationEvent(

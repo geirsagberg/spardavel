@@ -59,7 +59,7 @@ function Analytics() {
       avoided: month.avoidedTotal,
       spent: month.purchasesTotal,
       interest: month.appliedInterestOnAvoided,
-      opportunityCost: month.appliedInterestOnSpent,
+      missedInterest: month.appliedInterestOnSpent,
     }))
     .reverse()
 
@@ -123,9 +123,9 @@ function Analytics() {
                   </div>
                 </div>
                 <div className="stat flex-1 p-0">
-                  <div className="stat-title text-xs">Opportunity Cost</div>
+                  <div className="stat-title text-xs">Missed Interest</div>
                   <div className="stat-value text-xl text-warning">
-                    -{formatCurrency(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
+                    -{formatCurrency(metrics.allTime.missedInterest + metrics.allTime.pendingCostInterest)}
                   </div>
                   {metrics.allTime.pendingCostInterest > 0 && (
                     <div className="stat-desc text-xs text-warning animate-pulse">
@@ -217,7 +217,7 @@ function Analytics() {
                       <th className="w-1/5 text-right">Avoided</th>
                       <th className="w-1/5 text-right">Spent</th>
                       <th className="w-1/5 text-right">Interest</th>
-                      <th className="w-1/5 text-right">Opportunity Cost</th>
+                      <th className="w-1/5 text-right">Missed</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -227,7 +227,7 @@ function Analytics() {
                         <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
                         <td className="text-right text-error">{formatCurrency(row.spent)}</td>
                         <td className="text-right text-info">{formatCurrency(row.interest)}</td>
-                        <td className="text-right text-warning">{formatCurrency(row.opportunityCost)}</td>
+                        <td className="text-right text-warning">{formatCurrency(row.missedInterest)}</td>
                       </tr>
                     ))}
                   </tbody>

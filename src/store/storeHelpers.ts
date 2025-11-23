@@ -136,7 +136,7 @@ export function calculateMetricsFromEvents(
         monthMetrics.appliedInterestOnAvoided += event.pendingOnAvoided
         monthMetrics.appliedInterestOnSpent += event.pendingOnSpent
         metrics.allTime.savedTotal += event.pendingOnAvoided
-        metrics.allTime.opportunityCost += event.pendingOnSpent
+        metrics.allTime.missedInterest += event.pendingOnSpent
         break
     }
   }

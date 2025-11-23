@@ -84,12 +84,10 @@ export function StackedChart() {
         monthlyHistory.length - 6 + idx,
       )
       const cumulativeSaved = previousMonths.reduce(
-        (sum, p) => sum + p.avoidedTotal + p.appliedInterestOnAvoided,
+        (sum, p) => sum + p.avoidedTotal,
         0,
       )
-      return (
-        cumulativeSaved + period.avoidedTotal + period.appliedInterestOnAvoided
-      )
+      return cumulativeSaved + period.avoidedTotal
     })
 
     const totalInterest = last6Months.map((period, idx) => {
@@ -116,7 +114,7 @@ export function StackedChart() {
       return cumulativeSpent + period.purchasesTotal
     })
 
-    const totalOpportunityCost = last6Months.map((period, idx) => {
+    const totalMissedInterest = last6Months.map((period, idx) => {
       const previousMonths = monthlyHistory.slice(
         0,
         monthlyHistory.length - 6 + idx,
@@ -257,10 +255,10 @@ export function StackedChart() {
           },
         },
         {
-          name: 'Total Opportunity Cost',
+          name: 'Total Missed Interest',
           type: 'line',
           stack: 'Total',
-          data: totalOpportunityCost,
+          data: totalMissedInterest,
           areaStyle: {},
           itemStyle: {
             color: '#f97316',
