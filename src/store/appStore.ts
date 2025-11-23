@@ -21,10 +21,7 @@ export interface AppStore {
   // Event stream
   events: AppEvent[]
   addEvent: (event: AppEvent) => void
-  updateEvent: (
-    id: string,
-    updates: Partial<Omit<AppEvent, 'id' | 'type'>>,
-  ) => void
+  updateEvent: (id: string, updates: Partial<Omit<AppEvent, 'id'>>) => void
   deleteEvent: (id: string) => void
   clearAllEvents: () => void
 
@@ -96,7 +93,7 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
     })
   },
 
-  updateEvent: (id: string, updates: Partial<Omit<AppEvent, 'id' | 'type'>>) => {
+  updateEvent: (id: string, updates: Partial<Omit<AppEvent, 'id'>>) => {
     set((state: AppStore) => {
       // First, remove any auto-generated interest application events
       // They will be regenerated based on the updated data
@@ -105,7 +102,7 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
           .filter((event) => event.type !== 'INTEREST_APPLICATION')
           .map((event) => {
             if (event.id === id) {
-              return { ...event, ...updates }
+              return { ...event, ...updates } as AppEvent
             }
             return event
           })

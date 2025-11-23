@@ -194,7 +194,7 @@ export function QuickEntry() {
                   />
                 </div>
                 <button
-                  className="btn btn-success flex-1"
+                  className="btn btn-success flex-1 whitespace-nowrap"
                   onClick={() => handleAddEvent('avoided')}
                   disabled={isLoading || !isFormValid}
                 >
@@ -205,7 +205,7 @@ export function QuickEntry() {
                   )}
                 </button>
                 <button
-                  className="btn btn-error flex-1"
+                  className="btn btn-error flex-1 whitespace-nowrap"
                   onClick={() => handleAddEvent('purchase')}
                   disabled={isLoading || !isFormValid}
                 >
