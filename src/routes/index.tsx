@@ -28,7 +28,7 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
-      <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
+      <div className="container mx-auto max-w-2xl space-y-6 px-2 sm:px-4 py-6">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold sm:text-4xl">Spardavel</h1>

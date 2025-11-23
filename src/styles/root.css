@@ -23,6 +23,14 @@
   --color-missed: oklch(0.5 0.08 300);
 }
 
+/* Reduce padding on small screens */
+@media (max-width: 639px) {
+  .card-body {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
 /* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
