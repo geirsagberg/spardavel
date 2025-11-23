@@ -57,7 +57,6 @@ export function RecentEntries() {
     <div className="card bg-base-200">
       <div className="card-body">
         <h2 className="card-title">Recent Entries</h2>
-        <div className="divider my-0"></div>
         <div ref={animateRef} className="space-y-3">
           {transactionEvents.map((event) =>
             editingEventId === event.id ? (

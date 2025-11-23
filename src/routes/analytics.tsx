@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useState } from 'react'
 import { CATEGORIES } from '~/lib/constants'
 import { formatCurrency, formatMonthShort } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
@@ -17,6 +18,64 @@ const COLOR_CLASSES = [
   'bg-secondary',
   'bg-accent'
 ]
+
+function MonthlyTrends({ data }: { data: Array<{ month: string; avoided: number; spent: number; interest: number; missedInterest: number }> }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  if (data.length === 0) {
+    return (
+      <div className="card bg-base-200">
+        <div className="card-body">
+          <h2 className="card-title">Monthly Trends</h2>
+          <p className="text-base-content/60">No data yet</p>
+        </div>
+      </div>
+    )
+  }
+
+  const displayData = isExpanded ? data : data.slice(0, 6)
+  const hasMore = data.length > 6
+
+  return (
+    <div className="card bg-base-200">
+      <div className="card-body">
+        <h2 className="card-title">Monthly Trends</h2>
+        <div className="overflow-x-auto">
+          <table className="table table-sm table-fixed">
+            <thead>
+              <tr>
+                <th className="w-1/5">Month</th>
+                <th className="w-1/5 text-right">Avoided</th>
+                <th className="w-1/5 text-right">Spent</th>
+                <th className="w-1/5 text-right">Interest</th>
+                <th className="w-1/5 text-right">Missed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {displayData.map((row) => (
+                <tr key={row.month}>
+                  <td className="font-semibold">{row.month}</td>
+                  <td className="text-right text-saved">{formatCurrency(row.avoided)}</td>
+                  <td className="text-right text-spent">{formatCurrency(row.spent)}</td>
+                  <td className="text-right text-earned">{formatCurrency(row.interest)}</td>
+                  <td className="text-right text-missed">{formatCurrency(row.missedInterest)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {hasMore && (
+          <button
+            className="btn btn-ghost btn-sm self-center"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            {isExpanded ? 'Show less' : `Show all ${data.length} months`}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 function Analytics() {
   const events = useAppStore((state) => state.events)
@@ -87,7 +146,7 @@ function Analytics() {
           {/* Avoided Section */}
           <div className="card bg-base-200 min-w-72 flex-1" style={{ viewTransitionName: 'avoided-card' }}>
             <div className="card-body py-4">
-              <h2 className="card-title text-saved text-lg">✓ Avoided</h2>
+              <h2 className="card-title text-saved text-lg">💪 Avoided</h2>
               <div className="flex gap-4 items-start">
                 <div className="stat flex-1 p-0">
                   <div className="stat-title text-xs">Total Avoided</div>
@@ -202,39 +261,7 @@ function Analytics() {
         </div>
 
         {/* Monthly Trends */}
-        <div className="card bg-base-200">
-          <div className="card-body">
-            <h2 className="card-title">Monthly Trends</h2>
-            {monthlyTrends.length === 0 ? (
-              <p className="text-base-content/60">No data yet</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="table table-sm table-fixed">
-                  <thead>
-                    <tr>
-                      <th className="w-1/5">Month</th>
-                      <th className="w-1/5 text-right">Avoided</th>
-                      <th className="w-1/5 text-right">Spent</th>
-                      <th className="w-1/5 text-right">Interest</th>
-                      <th className="w-1/5 text-right">Missed</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {monthlyTrends.map((row) => (
-                      <tr key={row.month}>
-                        <td className="font-semibold">{row.month}</td>
-                        <td className="text-right text-saved">{formatCurrency(row.avoided)}</td>
-                        <td className="text-right text-spent">{formatCurrency(row.spent)}</td>
-                        <td className="text-right text-earned">{formatCurrency(row.interest)}</td>
-                        <td className="text-right text-missed">{formatCurrency(row.missedInterest)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </div>
+        <MonthlyTrends data={monthlyTrends} />
 
         {/* Current Month Breakdown */}
         <div className="card bg-base-200">

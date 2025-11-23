@@ -214,7 +214,7 @@ export function QuickEntry() {
                   {isLoading ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
-                    '✓ Skipped'
+                    '💪 Skipped'
                   )}
                 </button>
                 <button

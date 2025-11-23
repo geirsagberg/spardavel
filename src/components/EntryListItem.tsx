@@ -10,7 +10,7 @@ type EntryListItemProps = {
 export function EntryListItem({ event, onEdit, onDelete }: EntryListItemProps) {
   const isPurchase = event.type === 'PURCHASE'
   const colorClass = isPurchase ? 'text-spent' : 'text-saved'
-  const icon = isPurchase ? '💸' : '✓'
+  const icon = isPurchase ? '💸' : '💪'
 
   return (
     <div className="flex items-center justify-between rounded-lg bg-base-300 p-3">
