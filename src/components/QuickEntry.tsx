@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useState } from 'react'
 import { CATEGORIES } from '~/lib/constants'
 import {
@@ -23,6 +24,10 @@ const PRESETS: (Preset & { emoji: string })[] = [
 ]
 
 export function QuickEntry() {
+  const [animateRef] = useAutoAnimate({
+    duration: 200,
+    disrespectUserMotionPreference: true,
+  })
   const addEvent = useAppStore((state) => state.addEvent)
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -90,7 +95,7 @@ export function QuickEntry() {
       <div className="card-body">
         <h2 className="card-title">Quick Entry</h2>
 
-        <div className="space-y-4">
+        <div ref={animateRef} className="space-y-4">
           {/* Preset Buttons */}
           <div>
             <p className="label-text mb-2">Select a preset or custom:</p>
@@ -131,7 +136,7 @@ export function QuickEntry() {
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
-            <>
+            <div key="entry-form" className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 <div className="form-control min-w-[100px] flex-1">
                   <label className="label py-0.5">
@@ -224,7 +229,7 @@ export function QuickEntry() {
                   )}
                 </button>
               </div>
-            </>
+            </div>
           )}
         </div>
       </div>
