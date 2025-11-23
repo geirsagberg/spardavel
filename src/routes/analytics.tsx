@@ -83,53 +83,56 @@ function Analytics() {
           <p className="text-sm text-base-content/60 sm:text-base">Your spending patterns</p>
         </div>
 
-        {/* Avoided Section */}
-        <div className="card bg-base-200">
-          <div className="card-body py-4">
-            <h2 className="card-title text-success text-lg">✓ Avoided</h2>
-            <div className="flex gap-4 items-start">
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Total Avoided</div>
-                <div className="stat-value text-xl text-success">
-                  {formatCurrency(metrics.allTime.savedTotal - totalAppliedInterestEarned)}
-                </div>
-              </div>
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Interest Earned</div>
-                <div className="stat-value text-xl text-info">
-                  +{formatCurrency(totalAppliedInterestEarned + metrics.allTime.pendingSavedInterest)}
-                </div>
-                {metrics.allTime.pendingSavedInterest > 0 && (
-                  <div className="stat-desc text-xs text-info animate-pulse">
-                    +{formatCurrency(metrics.allTime.pendingSavedInterest)} this month
+        {/* Avoided & Spent Sections */}
+        <div className="flex flex-wrap gap-4">
+          {/* Avoided Section */}
+          <div className="card bg-base-200 min-w-72 flex-1">
+            <div className="card-body py-4">
+              <h2 className="card-title text-success text-lg">✓ Avoided</h2>
+              <div className="flex gap-4 items-start">
+                <div className="stat flex-1 p-0">
+                  <div className="stat-title text-xs">Total Avoided</div>
+                  <div className="stat-value text-xl text-success">
+                    {formatCurrency(metrics.allTime.savedTotal - totalAppliedInterestEarned)}
                   </div>
-                )}
+                </div>
+                <div className="stat flex-1 p-0">
+                  <div className="stat-title text-xs">Interest Earned</div>
+                  <div className="stat-value text-xl text-info">
+                    +{formatCurrency(totalAppliedInterestEarned + metrics.allTime.pendingSavedInterest)}
+                  </div>
+                  {metrics.allTime.pendingSavedInterest > 0 && (
+                    <div className="stat-desc text-xs text-info animate-pulse">
+                      +{formatCurrency(metrics.allTime.pendingSavedInterest)} this month
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Spent Section */}
-        <div className="card bg-base-200">
-          <div className="card-body py-4">
-            <h2 className="card-title text-error text-lg">✕ Spent</h2>
-            <div className="flex gap-4 items-start">
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Total Spent</div>
-                <div className="stat-value text-xl text-error">
-                  {formatCurrency(metrics.allTime.spentTotal)}
-                </div>
-              </div>
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Opportunity Cost</div>
-                <div className="stat-value text-xl text-warning">
-                  -{formatCurrency(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
-                </div>
-                {metrics.allTime.pendingCostInterest > 0 && (
-                  <div className="stat-desc text-xs text-warning animate-pulse">
-                    -{formatCurrency(metrics.allTime.pendingCostInterest)} this month
+          {/* Spent Section */}
+          <div className="card bg-base-200 min-w-72 flex-1">
+            <div className="card-body py-4">
+              <h2 className="card-title text-error text-lg">✕ Spent</h2>
+              <div className="flex gap-4 items-start">
+                <div className="stat flex-1 p-0">
+                  <div className="stat-title text-xs">Total Spent</div>
+                  <div className="stat-value text-xl text-error">
+                    {formatCurrency(metrics.allTime.spentTotal)}
                   </div>
-                )}
+                </div>
+                <div className="stat flex-1 p-0">
+                  <div className="stat-title text-xs">Opportunity Cost</div>
+                  <div className="stat-value text-xl text-warning">
+                    -{formatCurrency(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
+                  </div>
+                  {metrics.allTime.pendingCostInterest > 0 && (
+                    <div className="stat-desc text-xs text-warning animate-pulse">
+                      -{formatCurrency(metrics.allTime.pendingCostInterest)} this month
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
