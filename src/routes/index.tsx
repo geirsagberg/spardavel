@@ -1,10 +1,11 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { QuickEntry } from '~/components/QuickEntry'
 import { RecentEntries } from '~/components/RecentEntries'
 import { StackedChart } from '~/components/StackedChart'
 
 export const Route = createFileRoute('/')({
-  beforeLoad: () => {
+  beforeLoad: ({ location }) => {
     if (typeof window !== 'undefined') {
       const onboardingComplete = localStorage.getItem('spardavel_onboarding_complete')
       if (!onboardingComplete) {
@@ -16,6 +17,15 @@ export const Route = createFileRoute('/')({
 })
 
 function Home() {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const onboardingComplete = localStorage.getItem('spardavel_onboarding_complete')
+    if (!onboardingComplete) {
+      navigate({ to: '/onboarding/$slide', params: { slide: '1' } })
+    }
+  }, [navigate])
+
   return (
     <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
       <div className="container mx-auto max-w-2xl space-y-6 px-4 py-6">
