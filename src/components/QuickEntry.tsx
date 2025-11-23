@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { CATEGORIES } from '~/lib/constants'
 import {
   createAvoidedPurchaseEvent,
   createPurchaseEvent,
@@ -7,16 +8,6 @@ import { APP_CURRENCY, getTodayString } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
 
-const CATEGORIES: Category[] = [
-  'Alcohol',
-  'Candy',
-  'Snacks',
-  'Food',
-  'Drinks',
-  'Games',
-  'Other',
-]
-
 type Preset = {
   description: string
   amount: number
@@ -24,9 +15,9 @@ type Preset = {
 }
 
 const PRESETS: (Preset & { emoji: string })[] = [
-  { emoji: '🍺', description: 'Beer', amount: 30, category: 'Alcohol' },
   { emoji: '☕', description: 'Coffee', amount: 40, category: 'Drinks' },
   { emoji: '🍬', description: 'Candy', amount: 25, category: 'Candy' },
+  { emoji: '🍺', description: 'Beer', amount: 30, category: 'Alcohol' },
   { emoji: '🍿', description: 'Snack', amount: 20, category: 'Snacks' },
   { emoji: '🍔', description: 'Food', amount: 50, category: 'Food' },
 ]
@@ -41,9 +32,16 @@ export function QuickEntry() {
   const [showCustom, setShowCustom] = useState(false)
 
   const handlePresetClick = (preset: Preset) => {
-    setAmount(preset.amount.toString())
-    setDescription(preset.description)
-    setCategory(preset.category)
+    const isSelected = amount === preset.amount.toString() && description === preset.description
+    if (isSelected) {
+      setAmount('')
+      setDescription('')
+      setCategory('Other')
+    } else {
+      setAmount(preset.amount.toString())
+      setDescription(preset.description)
+      setCategory(preset.category)
+    }
     setShowCustom(false)
   }
 
@@ -96,27 +94,37 @@ export function QuickEntry() {
           {/* Preset Buttons */}
           <div>
             <p className="label-text mb-2">Select a preset or custom:</p>
-            <div className="grid grid-cols-[repeat(auto-fit,minmax(70px,1fr))] gap-2">
-              {PRESETS.map((preset) => (
-                <button
-                  key={preset.description}
-                  className={`btn btn-sm h-14 min-w-[70px] flex-col p-1 ${amount === preset.amount.toString() && description === preset.description ? 'btn-primary' : 'btn-outline'}`}
-                  onClick={() => handlePresetClick(preset)}
-                  disabled={isLoading}
-                >
-                  <span className="text-lg leading-none">{preset.emoji}</span>
-                  <span className="text-[10px] leading-tight">
-                    {preset.description} {preset.amount}
-                  </span>
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-2">
+              {PRESETS.map((preset) => {
+                const isSelected = amount === preset.amount.toString() && description === preset.description
+                return (
+                  <button
+                    key={preset.description}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                      isSelected
+                        ? 'bg-primary text-primary-content shadow-sm'
+                        : 'bg-base-100 hover:bg-base-300 text-base-content'
+                    }`}
+                    onClick={() => handlePresetClick(preset)}
+                    disabled={isLoading}
+                  >
+                    <span>{preset.emoji}</span>
+                    <span className="font-medium">{preset.description}</span>
+                    <span className="text-xs opacity-60">{preset.amount}</span>
+                  </button>
+                )
+              })}
               <button
-                className={`btn btn-sm h-14 min-w-[70px] flex-col p-1 ${showCustom ? 'btn-primary' : 'btn-outline'}`}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                  showCustom
+                    ? 'bg-primary text-primary-content shadow-sm'
+                    : 'bg-base-100 hover:bg-base-300 text-base-content'
+                }`}
                 onClick={handleCustomClick}
                 disabled={isLoading}
               >
-                <span className="text-lg leading-none">✏️</span>
-                <span className="text-[10px] leading-tight">Custom</span>
+                <span>✏️</span>
+                <span className="font-medium">Custom</span>
               </button>
             </div>
           </div>
@@ -152,7 +160,7 @@ export function QuickEntry() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Beer"
+                    placeholder="Other"
                     className="input input-bordered input-sm"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}

@@ -1,13 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { CATEGORIES } from '~/lib/constants'
+import { formatCurrency, formatMonthShort } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
-import { formatCurrency, formatMonthShort } from '~/lib/formatting'
 
 export const Route = createFileRoute('/analytics')({
   component: Analytics,
 })
-
-const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
 // DaisyUI color classes that will adapt to theme changes
 const COLOR_CLASSES = [
   'bg-error',

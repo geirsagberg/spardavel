@@ -1,14 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useState, useMemo } from 'react'
+import { CATEGORIES } from '~/lib/constants'
+import { formatCurrency, formatDateWithWeekday, formatMonth } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
-import { formatCurrency, formatDateWithWeekday, formatMonth } from '~/lib/formatting'
 
 export const Route = createFileRoute('/history')({
   component: History,
 })
-
-const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
 
 function History() {
   const events = useAppStore((state) => state.events)

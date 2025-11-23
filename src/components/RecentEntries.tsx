@@ -1,9 +1,8 @@
 import { useState } from 'react'
+import { CATEGORIES } from '~/lib/constants'
 import { formatCurrency, formatDateWithWeekday } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent, Category, PurchaseEvent, AvoidedPurchaseEvent } from '~/types/events'
-
-const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 'Games', 'Other']
 
 function getEventIcon(event: AppEvent): React.ReactNode {
   if (event.type === 'PURCHASE') {
