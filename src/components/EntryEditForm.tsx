@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { CATEGORIES } from '~/lib/constants'
+import { APP_CURRENCY } from '~/lib/formatting'
 import type { Category, PurchaseEvent, AvoidedPurchaseEvent } from '~/types/events'
 
 type EntryEditFormProps = {
@@ -36,58 +37,93 @@ export function EntryEditForm({ event, onSave, onCancel }: EntryEditFormProps) {
   }
 
   return (
-    <div className="rounded-lg bg-base-300 p-3 space-y-3">
-      <div className="flex gap-2">
+    <div className="rounded-lg bg-base-300 p-3 space-y-4">
+      <div className="flex flex-wrap gap-2">
+        <div className="form-control min-w-[100px] flex-1">
+          <label className="label py-0.5">
+            <span className="label-text text-xs">Amount</span>
+          </label>
+          <div className="join">
+            <input
+              type="number"
+              placeholder="30"
+              className="input input-bordered input-sm join-item w-full"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              step="0.01"
+              min="0"
+            />
+            <span className="btn btn-sm join-item no-animation pointer-events-none bg-base-content/10 border-base-300">
+              {APP_CURRENCY}
+            </span>
+          </div>
+        </div>
+
+        <div className="form-control min-w-[100px] flex-2">
+          <label className="label py-0.5">
+            <span className="label-text text-xs">Description</span>
+          </label>
+          <input
+            type="text"
+            placeholder="Other"
+            className="input input-bordered input-sm"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </div>
+
+        <div className="form-control min-w-[90px] flex-1">
+          <label className="label py-0.5">
+            <span className="label-text text-xs">Category</span>
+          </label>
+          <select
+            className="select select-bordered select-sm"
+            value={category}
+            onChange={(e) => setCategory(e.target.value as Category)}
+          >
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2 items-end">
+        <div className="form-control w-[110px]">
+          <label className="label py-0.5">
+            <span className="label-text text-xs">Date</span>
+          </label>
+          <input
+            type="date"
+            className="input input-bordered input-sm"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </div>
         <button
-          className={`btn btn-sm flex-1 ${isPurchase ? 'bg-spent text-spent-content' : 'btn-outline'}`}
-          onClick={() => setIsPurchase(true)}
-        >
-          Spent
-        </button>
-        <button
-          className={`btn btn-sm flex-1 ${!isPurchase ? 'bg-saved text-saved-content' : 'btn-outline'}`}
+          className={`btn flex-1 whitespace-nowrap ${
+            !isPurchase 
+              ? 'bg-saved text-saved-content' 
+              : 'btn-outline border-saved text-saved hover:bg-saved hover:text-saved-content'
+          }`}
           onClick={() => setIsPurchase(false)}
         >
-          Avoided
+          💪 Skipped
+        </button>
+        <button
+          className={`btn flex-1 whitespace-nowrap ${
+            isPurchase 
+              ? 'bg-spent text-spent-content' 
+              : 'btn-outline border-spent text-spent hover:bg-spent hover:text-spent-content'
+          }`}
+          onClick={() => setIsPurchase(true)}
+        >
+          💸 Bought
         </button>
       </div>
-      <div className="flex gap-2">
-        <input
-          type="number"
-          className="input input-bordered input-sm w-24"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Amount"
-          min="0"
-          step="1"
-        />
-        <input
-          type="text"
-          className="input input-bordered input-sm flex-1"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-        />
-      </div>
-      <div className="flex gap-2">
-        <select
-          className="select select-bordered select-sm flex-1"
-          value={category}
-          onChange={(e) => setCategory(e.target.value as Category)}
-        >
-          {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          className="input input-bordered input-sm"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-      </div>
+
       <div className="flex gap-2 justify-end">
         <button className="btn btn-sm btn-ghost" onClick={onCancel}>
           Cancel
