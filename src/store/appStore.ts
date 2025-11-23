@@ -13,7 +13,6 @@ import { createEmptyDashboardMetrics } from '~/types/metrics'
 import {
   sortEvents,
   applyInterestForCompletedMonths,
-  getCurrentInterestRateFromEvents,
   calculateMetricsFromEvents,
 } from './storeHelpers'
 
@@ -83,11 +82,8 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
         (e) => e.type !== 'INTEREST_APPLICATION',
       )
       const withNewEvent = sortEvents([...filteredEvents, event])
-      const currentRate = getCurrentInterestRateFromEvents(
-        withNewEvent,
-        state.defaultInterestRate,
-      )
-      const newEvents = applyInterestForCompletedMonths(withNewEvent, currentRate)
+      // Pass defaultInterestRate - rate change events will override for dates after their effective date
+      const newEvents = applyInterestForCompletedMonths(withNewEvent, state.defaultInterestRate)
       const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
       return { events: newEvents, metrics: newMetrics }
     })
@@ -107,11 +103,8 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
             return event
           })
       )
-      const currentRate = getCurrentInterestRateFromEvents(
-        updatedEvents,
-        state.defaultInterestRate,
-      )
-      const newEvents = applyInterestForCompletedMonths(updatedEvents, currentRate)
+      // Pass defaultInterestRate - rate change events will override for dates after their effective date
+      const newEvents = applyInterestForCompletedMonths(updatedEvents, state.defaultInterestRate)
       const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
       return { events: newEvents, metrics: newMetrics }
     })
@@ -126,11 +119,8 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
           (event) => event.id !== id && event.type !== 'INTEREST_APPLICATION',
         )
       )
-      const currentRate = getCurrentInterestRateFromEvents(
-        filteredEvents,
-        state.defaultInterestRate,
-      )
-      const newEvents = applyInterestForCompletedMonths(filteredEvents, currentRate)
+      // Pass defaultInterestRate - rate change events will override for dates after their effective date
+      const newEvents = applyInterestForCompletedMonths(filteredEvents, state.defaultInterestRate)
       const newMetrics = calculateMetricsFromEvents(newEvents, state.defaultInterestRate)
       return { events: newEvents, metrics: newMetrics }
     })
@@ -205,15 +195,12 @@ export const useAppStore = create<AppStore>()(
           // Apply interest for any completed months and recalculate metrics
           const defaultRate =
             state.defaultInterestRate ?? FALLBACK_INTEREST_RATE
-          const currentRate = getCurrentInterestRateFromEvents(
-            state.events,
-            defaultRate,
-          )
+          // Pass defaultRate - rate change events will override for dates after their effective date
           // Ensure events are sorted after rehydration
           state.events = sortEvents(
             applyInterestForCompletedMonths(
               state.events,
-              currentRate,
+              defaultRate,
             )
           )
           state.metrics = calculateMetricsFromEvents(state.events, defaultRate)

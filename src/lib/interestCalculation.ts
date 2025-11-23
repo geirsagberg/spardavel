@@ -34,76 +34,132 @@ export function getEffectiveRateForDate(
 }
 
 /**
- * Calculate pending interest for the current month up to today
+ * Calculate pending interest for the current month up to today.
+ * Uses the same optimized period-based calculation as calculateInterestForMonth.
  * Returns { pendingOnAvoided, pendingOnSpent }
  */
 export function calculatePendingInterestForCurrentMonth(
   events: AppEvent[],
-  currentInterestRate: number = FALLBACK_INTEREST_RATE,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
   const today = new Date().toISOString().split('T')[0]!
   const currentMonthKey = getMonthKey(today)
   const { start: monthStart } = getMonthBounds(currentMonthKey)
 
-  // Filter and sort events that occurred on or before today
-  // Include INTEREST_APPLICATION for compounding
-  const relevantEvents = events
-    .filter((e) => {
-      return e.date <= today && 
-        (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
-    })
+  // Use the shared implementation with today as the end date
+  return calculateInterestForDateRange(events, monthStart, today, defaultRate)
+}
+
+/**
+ * Shared implementation for calculating interest over a date range.
+ * Used by both calculatePendingInterestForCurrentMonth and calculateInterestForMonth.
+ */
+function calculateInterestForDateRange(
+  events: AppEvent[],
+  rangeStart: string,
+  rangeEnd: string,
+  defaultRate: number,
+): { pendingOnAvoided: number; pendingOnSpent: number } {
+  // Filter balance-affecting events on or before range end
+  const balanceEvents = events
+    .filter((e) =>
+      e.date <= rangeEnd &&
+      (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
+    )
     .sort((a, b) => a.date.localeCompare(b.date))
+
+  // Initialize balances from events before the range
+  let avoidedBalance = 0
+  let purchaseBalance = 0
+  for (const event of balanceEvents) {
+    if (event.date >= rangeStart) break
+    if (event.type === 'AVOIDED_PURCHASE') {
+      avoidedBalance += event.amount
+    } else if (event.type === 'PURCHASE') {
+      purchaseBalance += event.amount
+    } else if (event.type === 'INTEREST_APPLICATION') {
+      avoidedBalance += event.pendingOnAvoided
+      purchaseBalance += event.pendingOnSpent
+    }
+  }
+
+  // Get events within the range
+  const rangeEvents = balanceEvents.filter(
+    (e) => e.date >= rangeStart && e.date <= rangeEnd
+  )
+  const eventDates = [...new Set(rangeEvents.map((e) => e.date))].sort()
+
+  // Get rate periods for the range
+  const ratePeriods = getRatePeriodsForRange(rangeStart, rangeEnd, events, defaultRate)
+
+  // Build balance change points
+  const balanceChanges = new Map<string, { avoided: number; purchase: number }>()
+  for (const event of rangeEvents) {
+    if (!balanceChanges.has(event.date)) {
+      balanceChanges.set(event.date, { avoided: 0, purchase: 0 })
+    }
+    const change = balanceChanges.get(event.date)!
+    if (event.type === 'AVOIDED_PURCHASE') {
+      change.avoided += event.amount
+    } else if (event.type === 'PURCHASE') {
+      change.purchase += event.amount
+    } else if (event.type === 'INTEREST_APPLICATION') {
+      change.avoided += event.pendingOnAvoided
+      change.purchase += event.pendingOnSpent
+    }
+  }
 
   let pendingOnAvoided = 0
   let pendingOnSpent = 0
-  let avoidedBalance = 0
-  let purchaseBalance = 0
 
-  // Group events by date for efficient processing
-  const eventsByDate = new Map<string, AppEvent[]>()
-  for (const event of relevantEvents) {
-    if (!eventsByDate.has(event.date)) {
-      eventsByDate.set(event.date, [])
-    }
-    eventsByDate.get(event.date)!.push(event)
-  }
+  // Process each rate period
+  for (const ratePeriod of ratePeriods) {
+    const dailyRate = ratePeriod.rate / 100 / 365
 
-  // Iterate through each day from month start to today
-  const [startYear, startMonth, startDay] = monthStart.split('-').map(Number)
-  const currentDate = new Date(startYear!, startMonth! - 1, startDay!)
-  const [endYear, endMonth, endDay] = today.split('-').map(Number)
-  const endDate = new Date(endYear!, endMonth! - 1, endDay!)
+    // Find balance change dates within this rate period
+    const changesInPeriod = eventDates.filter(
+      (d) => d >= ratePeriod.start && d <= ratePeriod.end
+    )
 
-  while (currentDate <= endDate) {
-    const dateStr = currentDate.toISOString().split('T')[0]!
+    if (changesInPeriod.length === 0) {
+      // No balance changes in this rate period - calculate in bulk
+      const days = countDaysInclusive(ratePeriod.start, ratePeriod.end)
+      pendingOnAvoided += avoidedBalance * dailyRate * days
+      pendingOnSpent += purchaseBalance * dailyRate * days
+    } else {
+      // Split rate period into sub-periods based on balance changes
+      let subStart = ratePeriod.start
 
-    // Update balances with events that occurred on this date
-    const dateEvents = eventsByDate.get(dateStr)
-    if (dateEvents) {
-      for (const event of dateEvents) {
-        if (event.type === 'AVOIDED_PURCHASE') {
-          avoidedBalance += event.amount
-        } else if (event.type === 'PURCHASE') {
-          purchaseBalance += event.amount
-        } else if (event.type === 'INTEREST_APPLICATION') {
-          // Add applied interest to balances for compounding
-          avoidedBalance += event.pendingOnAvoided
-          purchaseBalance += event.pendingOnSpent
+      for (const changeDate of changesInPeriod) {
+        // Calculate interest for days before the change date (if any)
+        if (subStart < changeDate) {
+          const daysBefore = countDaysInclusive(subStart, getPreviousDay(changeDate))
+          pendingOnAvoided += avoidedBalance * dailyRate * daysBefore
+          pendingOnSpent += purchaseBalance * dailyRate * daysBefore
         }
+
+        // Apply balance change (events on this date affect this day's interest)
+        const change = balanceChanges.get(changeDate)!
+        avoidedBalance += change.avoided
+        purchaseBalance += change.purchase
+
+        // Calculate interest for the change date with new balance
+        pendingOnAvoided += avoidedBalance * dailyRate
+        pendingOnSpent += purchaseBalance * dailyRate
+
+        // Next sub-period starts the day after
+        subStart = getNextDay(changeDate)
+      }
+
+      // Calculate remaining days after last balance change
+      if (subStart <= ratePeriod.end) {
+        const days = countDaysInclusive(subStart, ratePeriod.end)
+        pendingOnAvoided += avoidedBalance * dailyRate * days
+        pendingOnSpent += purchaseBalance * dailyRate * days
       }
     }
-
-    // Calculate daily interest with current balance
-    const rate = getEffectiveRateForDate(dateStr, events, currentInterestRate)
-    const dailyRate = rate / 100 / 365
-    pendingOnAvoided += avoidedBalance * dailyRate
-    pendingOnSpent += purchaseBalance * dailyRate
-
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1)
   }
 
-  // Round to 2 decimal places to avoid floating point issues
   return {
     pendingOnAvoided: Math.round(pendingOnAvoided * 100) / 100,
     pendingOnSpent: Math.round(pendingOnSpent * 100) / 100,
@@ -179,8 +235,98 @@ export function getMonthsNeedingInterestApplication(
 }
 
 /**
- * Calculate interest for a specific completed month
- * Similar to calculatePendingInterestForCurrentMonth but for any month
+ * Get rate periods for a date range, sorted by start date.
+ * Each period has a start date, end date, and the effective rate.
+ * Handles multiple rate changes efficiently.
+ */
+function getRatePeriodsForRange(
+  rangeStart: string,
+  rangeEnd: string,
+  allEvents: AppEvent[],
+  defaultRate: number,
+): Array<{ start: string; end: string; rate: number }> {
+  // Get all rate changes sorted by date
+  const rateChanges = allEvents
+    .filter((e): e is import('~/types/events').InterestRateChangeEvent =>
+      e.type === 'INTEREST_RATE_CHANGE'
+    )
+    .sort((a, b) => a.date.localeCompare(b.date))
+
+  // Find the rate at range start (most recent rate change before or on range start)
+  let initialRate = defaultRate
+  for (const rc of rateChanges) {
+    if (rc.date <= rangeStart) {
+      initialRate = rc.newRate
+    } else {
+      break
+    }
+  }
+
+  // Find rate changes within the range
+  const changesInRange = rateChanges.filter(
+    (rc) => rc.date > rangeStart && rc.date <= rangeEnd
+  )
+
+  if (changesInRange.length === 0) {
+    // No rate changes in range - single period with initial rate
+    return [{ start: rangeStart, end: rangeEnd, rate: initialRate }]
+  }
+
+  // Build periods from rate changes
+  const periods: Array<{ start: string; end: string; rate: number }> = []
+  let currentStart = rangeStart
+  let currentRate = initialRate
+
+  for (const rc of changesInRange) {
+    // End previous period on the day before rate change
+    const prevDay = getPreviousDay(rc.date)
+    if (prevDay >= currentStart) {
+      periods.push({ start: currentStart, end: prevDay, rate: currentRate })
+    }
+    currentStart = rc.date
+    currentRate = rc.newRate
+  }
+
+  // Add final period
+  periods.push({ start: currentStart, end: rangeEnd, rate: currentRate })
+
+  return periods
+}
+
+/**
+ * Get the previous day as YYYY-MM-DD string
+ */
+function getPreviousDay(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year!, month! - 1, day!)
+  date.setDate(date.getDate() - 1)
+  return date.toISOString().split('T')[0]!
+}
+
+/**
+ * Get the next day as YYYY-MM-DD string
+ */
+function getNextDay(dateStr: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  const date = new Date(year!, month! - 1, day!)
+  date.setDate(date.getDate() + 1)
+  return date.toISOString().split('T')[0]!
+}
+
+/**
+ * Count days between two dates (inclusive of both start and end)
+ */
+function countDaysInclusive(start: string, end: string): number {
+  const [sy, sm, sd] = start.split('-').map(Number)
+  const [ey, em, ed] = end.split('-').map(Number)
+  const startDate = new Date(sy!, sm! - 1, sd!)
+  const endDate = new Date(ey!, em! - 1, ed!)
+  return Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+}
+
+/**
+ * Calculate interest for a specific completed month.
+ * Efficiently handles mid-month rate changes by computing interest periods.
  */
 export function calculateInterestForMonth(
   events: AppEvent[],
@@ -188,86 +334,7 @@ export function calculateInterestForMonth(
   defaultRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
   const { start: monthStart, end: monthEnd } = getMonthBounds(monthKey)
-
-  // Filter and sort events that occurred on or before the month end
-  // Include PURCHASE, AVOIDED_PURCHASE, and INTEREST_APPLICATION for compounding
-  const relevantEvents = events
-    .filter((e) => {
-      return e.date <= monthEnd && 
-        (e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE' || e.type === 'INTEREST_APPLICATION')
-    })
-    .sort((a, b) => a.date.localeCompare(b.date))
-
-  let pendingOnAvoided = 0
-  let pendingOnSpent = 0
-  let avoidedBalance = 0
-  let purchaseBalance = 0
-
-  // Initialize balance with events from before this month (for compounding)
-  for (const event of relevantEvents) {
-    if (event.date >= monthStart) {
-      break // Stop when we reach the month start
-    }
-    if (event.type === 'AVOIDED_PURCHASE') {
-      avoidedBalance += event.amount
-    } else if (event.type === 'PURCHASE') {
-      purchaseBalance += event.amount
-    } else if (event.type === 'INTEREST_APPLICATION') {
-      avoidedBalance += event.pendingOnAvoided
-      purchaseBalance += event.pendingOnSpent
-    }
-  }
-
-  // Group events by date for efficient processing (only events in this month)
-  const eventsByDate = new Map<string, AppEvent[]>()
-  for (const event of relevantEvents) {
-    if (event.date >= monthStart && event.date <= monthEnd) {
-      if (!eventsByDate.has(event.date)) {
-        eventsByDate.set(event.date, [])
-      }
-      eventsByDate.get(event.date)!.push(event)
-    }
-  }
-
-  // Iterate through each day of the month
-  const [startYear, startMonth, startDay] = monthStart.split('-').map(Number)
-  const currentDate = new Date(startYear!, startMonth! - 1, startDay!)
-  const [endYear, endMonth, endDay] = monthEnd.split('-').map(Number)
-  const endDate = new Date(endYear!, endMonth! - 1, endDay!)
-
-  while (currentDate <= endDate) {
-    const dateStr = currentDate.toISOString().split('T')[0]!
-
-    // Update balances with events that occurred on this date
-    const dateEvents = eventsByDate.get(dateStr)
-    if (dateEvents) {
-      for (const event of dateEvents) {
-        if (event.type === 'AVOIDED_PURCHASE') {
-          avoidedBalance += event.amount
-        } else if (event.type === 'PURCHASE') {
-          purchaseBalance += event.amount
-        } else if (event.type === 'INTEREST_APPLICATION') {
-          // Add applied interest to balances for compounding
-          avoidedBalance += event.pendingOnAvoided
-          purchaseBalance += event.pendingOnSpent
-        }
-      }
-    }
-
-    // Calculate daily interest with current balance
-    const rate = getEffectiveRateForDate(dateStr, events, defaultRate)
-    const dailyRate = rate / 100 / 365
-    pendingOnAvoided += avoidedBalance * dailyRate
-    pendingOnSpent += purchaseBalance * dailyRate
-
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1)
-  }
-
-  return {
-    pendingOnAvoided: Math.round(pendingOnAvoided * 100) / 100,
-    pendingOnSpent: Math.round(pendingOnSpent * 100) / 100,
-  }
+  return calculateInterestForDateRange(events, monthStart, monthEnd, defaultRate)
 }
 
 /**
