@@ -268,7 +268,7 @@ export function QuickEntry() {
 
               {/* Action Buttons row with date */}
               <div className="flex flex-wrap gap-2 items-end">
-                <div className="form-control w-[110px]">
+                <div className="form-control w-[118px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Date</span>
                   </label>
@@ -280,28 +280,30 @@ export function QuickEntry() {
                     disabled={isLoading}
                   />
                 </div>
-                <button
-                  className="btn bg-saved text-saved-content flex-1 whitespace-nowrap"
-                  onClick={() => handleAddEvent('avoided')}
-                  disabled={isLoading || !isFormValid}
-                >
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm"></span>
-                  ) : (
-                    '💪 Skipped'
-                  )}
-                </button>
-                <button
-                  className="btn bg-spent text-spent-content flex-1 whitespace-nowrap"
-                  onClick={() => handleAddEvent('purchase')}
-                  disabled={isLoading || !isFormValid}
-                >
-                  {isLoading ? (
-                    <span className="loading loading-spinner loading-sm"></span>
-                  ) : (
-                    '💸 Bought'
-                  )}
-                </button>
+                <div className="flex gap-2 flex-1 min-w-[200px]">
+                  <button
+                    className="btn bg-saved text-saved-content flex-1 whitespace-nowrap"
+                    onClick={() => handleAddEvent('avoided')}
+                    disabled={isLoading || !isFormValid}
+                  >
+                    {isLoading ? (
+                      <span className="loading loading-spinner loading-sm"></span>
+                    ) : (
+                      '💪 Skipped'
+                    )}
+                  </button>
+                  <button
+                    className="btn bg-spent text-spent-content flex-1 whitespace-nowrap"
+                    onClick={() => handleAddEvent('purchase')}
+                    disabled={isLoading || !isFormValid}
+                  >
+                    {isLoading ? (
+                      <span className="loading loading-spinner loading-sm"></span>
+                    ) : (
+                      '💸 Bought'
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           )}
