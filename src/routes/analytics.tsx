@@ -156,7 +156,7 @@ function Analytics() {
                     +{formatCurrency(totalAppliedInterestEarned + metrics.allTime.pendingSavedInterest)}
                   </div>
                   {metrics.allTime.pendingSavedInterest > 0 && (
-                    <div className="stat-desc text-xs text-earned animate-pulse">
+                    <div className="stat-desc text-xs text-earned">
                       +{formatCurrency(metrics.allTime.pendingSavedInterest, 2)} this month
                     </div>
                   )}
@@ -182,7 +182,7 @@ function Analytics() {
                     -{formatCurrency(metrics.allTime.missedInterest + metrics.allTime.pendingCostInterest)}
                   </div>
                   {metrics.allTime.pendingCostInterest > 0 && (
-                    <div className="stat-desc text-xs text-missed animate-pulse">
+                    <div className="stat-desc text-xs text-missed">
                       -{formatCurrency(metrics.allTime.pendingCostInterest, 2)} this month
                     </div>
                   )}

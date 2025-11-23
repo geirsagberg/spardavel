@@ -287,6 +287,7 @@ export function StackedChart() {
         axisLabel: {
           interval: 0,
           color: textColorMuted,
+          rotate: timeRange === '1w' || timeRange === '1mo' ? 30 : 0,
           formatter: (value: string) => {
             if (!value) return ''
             if (timeRange === '6mo') {
@@ -337,6 +338,7 @@ export function StackedChart() {
           type: 'line',
           stack: 'Total',
           data: totalSaved,
+          showSymbol: false,
           areaStyle: {},
           itemStyle: {
             color: savedColor,
@@ -350,6 +352,7 @@ export function StackedChart() {
           type: 'line',
           stack: 'Total',
           data: totalInterest,
+          showSymbol: false,
           areaStyle: {},
           itemStyle: {
             color: earnedColor,
@@ -363,6 +366,7 @@ export function StackedChart() {
           type: 'line',
           stack: 'Total',
           data: totalSpent,
+          showSymbol: false,
           areaStyle: {},
           itemStyle: {
             color: spentColor,
@@ -376,6 +380,7 @@ export function StackedChart() {
           type: 'line',
           stack: 'Total',
           data: totalMissedInterest,
+          showSymbol: false,
           areaStyle: {},
           itemStyle: {
             color: missedColor,
@@ -412,14 +417,14 @@ export function StackedChart() {
     <div className="bg-base-200 rounded-lg">
       <div ref={chartRef} className="w-full h-64 p-4" />
       <div className="flex items-center justify-between px-4 pb-3">
-        <label className="flex items-center gap-1.5 cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
+        <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={autoScale}
             onChange={(e) => handleAutoScaleChange(e.target.checked)}
-            className="checkbox checkbox-xs border-base-content/20"
+            className="checkbox checkbox-sm"
           />
-          <span className="text-[10px] text-base-content/80">Scaled</span>
+          <span className="label-text">Scaled</span>
         </label>
         <div className="join">
           <button
