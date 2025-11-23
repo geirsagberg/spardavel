@@ -163,11 +163,11 @@ function History() {
         </div>
 
         <div className="flex gap-4">
-          <div className="stat bg-base-200 flex-1 py-3">
+          <div className="stat bg-base-200 flex-1 py-3" style={{ viewTransitionName: 'avoided-card' }}>
             <div className="stat-title text-xs">Avoided</div>
             <div className="stat-value text-xl text-saved">{formatCurrency(totals.avoided)}</div>
           </div>
-          <div className="stat bg-base-200 flex-1 py-3">
+          <div className="stat bg-base-200 flex-1 py-3" style={{ viewTransitionName: 'spent-card' }}>
             <div className="stat-title text-xs">Spent</div>
             <div className="stat-value text-xl text-spent">{formatCurrency(totals.purchases)}</div>
           </div>

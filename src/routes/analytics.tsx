@@ -85,7 +85,7 @@ function Analytics() {
         {/* Avoided & Spent Sections */}
         <div className="flex flex-wrap gap-4">
           {/* Avoided Section */}
-          <div className="card bg-base-200 min-w-72 flex-1">
+          <div className="card bg-base-200 min-w-72 flex-1" style={{ viewTransitionName: 'avoided-card' }}>
             <div className="card-body py-4">
               <h2 className="card-title text-saved text-lg">✓ Avoided</h2>
               <div className="flex gap-4 items-start">
@@ -111,7 +111,7 @@ function Analytics() {
           </div>
 
           {/* Spent Section */}
-          <div className="card bg-base-200 min-w-72 flex-1">
+          <div className="card bg-base-200 min-w-72 flex-1" style={{ viewTransitionName: 'spent-card' }}>
             <div className="card-body py-4">
               <h2 className="card-title text-spent text-lg">💸 Spent</h2>
               <div className="flex gap-4 items-start">
