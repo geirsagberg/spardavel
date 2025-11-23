@@ -39,8 +39,12 @@ const slides: Slide[] = [
 const SWIPE_THRESHOLD = 80
 const VELOCITY_THRESHOLD = 0.5
 
-export function Onboarding() {
-  const [currentSlide, setCurrentSlide] = useState(0)
+type OnboardingProps = {
+  slideNumber: number
+}
+
+export function Onboarding({ slideNumber }: OnboardingProps) {
+  const currentSlide = slideNumber - 1 // Convert 1-indexed to 0-indexed
   const [dragState, setDragState] = useState({ offset: 0, isDragging: false })
   const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null)
   const navigate = useNavigate()
@@ -53,7 +57,7 @@ export function Onboarding() {
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
       setSlideDirection('left')
-      setCurrentSlide(currentSlide + 1)
+      navigate({ to: '/onboarding/$slide', params: { slide: String(slideNumber + 1) } })
     } else {
       handleComplete()
     }
@@ -62,12 +66,18 @@ export function Onboarding() {
   const handlePrev = () => {
     if (currentSlide > 0) {
       setSlideDirection('right')
-      setCurrentSlide(currentSlide - 1)
+      navigate({ to: '/onboarding/$slide', params: { slide: String(slideNumber - 1) } })
     }
   }
 
   const handleSkip = () => {
     handleComplete()
+  }
+
+  const goToSlide = (index: number) => {
+    const direction = index > currentSlide ? 'left' : 'right'
+    setSlideDirection(direction)
+    navigate({ to: '/onboarding/$slide', params: { slide: String(index + 1) } })
   }
 
   const slide = slides[currentSlide]
@@ -78,7 +88,7 @@ export function Onboarding() {
   const bind = useDrag(
     ({ movement: [mx], velocity: [vx], active, event }) => {
       event?.preventDefault()
-      
+
       if (active) {
         const isSwipingRight = mx > 0
         const isSwipingLeft = mx < 0
@@ -119,8 +129,8 @@ export function Onboarding() {
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 flex flex-col overflow-hidden">
       {/* Skip button */}
       <div className="absolute top-4 right-4 z-10">
-        <button 
-          className="btn btn-ghost btn-sm btn-circle" 
+        <button
+          className="btn btn-ghost btn-sm btn-circle"
           onClick={handleSkip}
           aria-label="Skip onboarding"
         >
@@ -144,11 +154,11 @@ export function Onboarding() {
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center p-6 max-w-2xl mx-auto w-full overflow-hidden" style={{ paddingTop: 'max(4vh, 48px)' }}>
         {/* Swipeable content */}
-        <div 
+        <div
           {...bind()}
           key={currentSlide}
           className={`touch-none select-none ${
-            slideDirection === 'left' ? 'slide-in-from-right' : 
+            slideDirection === 'left' ? 'slide-in-from-right' :
             slideDirection === 'right' ? 'slide-in-from-left' : ''
           }`}
           style={{
@@ -158,8 +168,8 @@ export function Onboarding() {
         >
           {/* Image */}
           <div className="w-full max-w-xl mb-4 rounded-2xl bg-base-200 overflow-hidden" style={{ height: 'min(50vh, 500px)' }}>
-            <img 
-              src={slide.image} 
+            <img
+              src={slide.image}
               alt={slide.imageAlt}
               className="w-full h-full object-cover pointer-events-none"
             />
@@ -186,7 +196,7 @@ export function Onboarding() {
                   ? 'w-8 bg-primary'
                   : 'w-2 bg-base-content/20 hover:bg-base-content/40'
               }`}
-              onClick={() => setCurrentSlide(index)}
+              onClick={() => goToSlide(index)}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}

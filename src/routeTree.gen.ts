@@ -10,19 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as OnboardingSlideRouteImport } from './routes/onboarding.$slide'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -40,43 +35,59 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OnboardingSlideRoute = OnboardingSlideRouteImport.update({
+  id: '/onboarding/$slide',
+  path: '/onboarding/$slide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/history': typeof HistoryRoute
-  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/onboarding/$slide': typeof OnboardingSlideRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/history': typeof HistoryRoute
-  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/onboarding/$slide': typeof OnboardingSlideRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/analytics': typeof AnalyticsRoute
   '/history': typeof HistoryRoute
-  '/onboarding': typeof OnboardingRoute
   '/settings': typeof SettingsRoute
+  '/onboarding/$slide': typeof OnboardingSlideRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/analytics' | '/history' | '/onboarding' | '/settings'
+  fullPaths:
+    | '/'
+    | '/analytics'
+    | '/history'
+    | '/settings'
+    | '/onboarding/$slide'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/analytics' | '/history' | '/onboarding' | '/settings'
-  id: '__root__' | '/' | '/analytics' | '/history' | '/onboarding' | '/settings'
+  to: '/' | '/analytics' | '/history' | '/settings' | '/onboarding/$slide'
+  id:
+    | '__root__'
+    | '/'
+    | '/analytics'
+    | '/history'
+    | '/settings'
+    | '/onboarding/$slide'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyticsRoute: typeof AnalyticsRoute
   HistoryRoute: typeof HistoryRoute
-  OnboardingRoute: typeof OnboardingRoute
   SettingsRoute: typeof SettingsRoute
+  OnboardingSlideRoute: typeof OnboardingSlideRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -86,13 +97,6 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -116,6 +120,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/onboarding/$slide': {
+      id: '/onboarding/$slide'
+      path: '/onboarding/$slide'
+      fullPath: '/onboarding/$slide'
+      preLoaderRoute: typeof OnboardingSlideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -123,8 +134,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyticsRoute: AnalyticsRoute,
   HistoryRoute: HistoryRoute,
-  OnboardingRoute: OnboardingRoute,
   SettingsRoute: SettingsRoute,
+  OnboardingSlideRoute: OnboardingSlideRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

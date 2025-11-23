@@ -4,7 +4,7 @@ import { useSwipeNavigation } from '~/lib/useSwipeNavigation'
 export function SwipeableOutlet() {
   const router = useRouterState()
   const currentPath = router.location.pathname
-  const isOnboarding = currentPath === '/onboarding'
+  const isOnboarding = currentPath.startsWith('/onboarding')
   
   const {
     bind,

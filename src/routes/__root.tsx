@@ -58,7 +58,7 @@ export const Route = createRootRoute({
 function RootComponent() {
   const theme = useAppStore((state) => state.theme)
   const router = useRouterState()
-  const isOnboarding = router.location.pathname === '/onboarding'
+  const isOnboarding = router.location.pathname.startsWith('/onboarding')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)

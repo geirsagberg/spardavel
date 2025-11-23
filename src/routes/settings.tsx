@@ -226,7 +226,7 @@ function Settings() {
 
   const handleRedoOnboarding = () => {
     localStorage.removeItem('spardavel_onboarding_complete')
-    navigate({ to: '/onboarding' })
+    navigate({ to: '/onboarding/1' })
   }
 
   return (

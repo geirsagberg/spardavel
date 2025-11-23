@@ -26,6 +26,15 @@ export function StackedChart() {
     const stored = localStorage.getItem('chartAutoScale')
     return stored === null ? true : stored === 'true'
   })
+  const [cssReady, setCssReady] = useState(false)
+
+  // Wait for CSS variables to be computed after theme changes
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      setCssReady(true)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   const handleAutoScaleChange = (checked: boolean) => {
     setAutoScale(checked)
@@ -33,7 +42,7 @@ export function StackedChart() {
   }
 
   useEffect(() => {
-    if (!chartRef.current) return
+    if (!chartRef.current || !cssReady) return
 
     if (!chartInstanceRef.current) {
       chartInstanceRef.current = echarts.init(chartRef.current)
@@ -136,19 +145,27 @@ export function StackedChart() {
 
     // Get computed colors from CSS variables (DaisyUI 5)
     const computedStyle = getComputedStyle(document.documentElement)
-    const baseContent = computedStyle
-      .getPropertyValue('--color-base-content')
-      .trim()
+    const baseContent =
+      computedStyle.getPropertyValue('--color-base-content').trim() ||
+      'oklch(21% 0.006 285.885)' // fallback for light theme
     const textColor = baseContent
     const textColorMuted = baseContent.replace(')', ' / 0.6)')
     const lineColor = baseContent.replace(')', ' / 0.2)')
     const gridColor = baseContent.replace(')', ' / 0.1)')
 
-    // Get semantic colors
-    const savedColor = computedStyle.getPropertyValue('--color-saved').trim()
-    const earnedColor = computedStyle.getPropertyValue('--color-earned').trim()
-    const spentColor = computedStyle.getPropertyValue('--color-spent').trim()
-    const missedColor = computedStyle.getPropertyValue('--color-missed').trim()
+    // Get semantic colors with fallbacks
+    const savedColor =
+      computedStyle.getPropertyValue('--color-saved').trim() ||
+      'oklch(0.5 0.17 145)'
+    const earnedColor =
+      computedStyle.getPropertyValue('--color-earned').trim() ||
+      'oklch(0.5 0.08 145)'
+    const spentColor =
+      computedStyle.getPropertyValue('--color-spent').trim() ||
+      'oklch(0.5 0.15 300)'
+    const missedColor =
+      computedStyle.getPropertyValue('--color-missed').trim() ||
+      'oklch(0.5 0.08 300)'
 
     const option: ECOption = {
       backgroundColor: 'transparent',
@@ -294,7 +311,7 @@ export function StackedChart() {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [metrics, theme, autoScale])
+  }, [metrics, theme, autoScale, cssReady])
 
   useEffect(() => {
     return () => {
