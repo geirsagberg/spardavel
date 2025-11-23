@@ -131,7 +131,7 @@ export function QuickEntry() {
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || isFormValid) && (
-            <div className="animate-in space-y-4">
+            <>
               <div className="flex flex-wrap gap-2">
                 <div className="form-control min-w-[100px] flex-1">
                   <label className="label py-0.5">
@@ -224,7 +224,7 @@ export function QuickEntry() {
                   )}
                 </button>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

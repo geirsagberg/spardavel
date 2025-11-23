@@ -114,20 +114,6 @@ input[type='number'] {
 
 /* Dark themes (dark, forest, synthwave, dracula, coffee) keep their original lighter colors */
 
-/* Entry animations using @starting-style */
-.animate-in {
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity 0.2s ease-out,
-    transform 0.2s ease-out;
-
-  @starting-style {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-}
-
 /* Semantic color overrides for dark themes */
 [data-theme='dark'],
 [data-theme='forest'],
