@@ -1,11 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
-import {
-  formatDateOnly,
-  formatPercent,
-  getTodayString,
-} from '~/lib/formatting'
+import { formatDateOnly, formatPercent, getTodayString } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent, InterestRateChangeEvent } from '~/types/events'
 
@@ -155,8 +151,10 @@ function Settings() {
     }
 
     // Check if there are existing rate change events for this date
-    const existingEvents = interestRateEvents.filter((e) => e.date === effectiveDate)
-    
+    const existingEvents = interestRateEvents.filter(
+      (e) => e.date === effectiveDate,
+    )
+
     // Delete all existing events for this date
     for (const existingEvent of existingEvents) {
       deleteEvent(existingEvent.id)
@@ -211,14 +209,14 @@ function Settings() {
     setEditingDefault(true)
     setEditDefaultRate(defaultInterestRate.toString())
   }
-  
+
   const handleStartAddRate = () => {
     setEditingDefault(false) // Close default edit if open
     setShowAddRateForm(true)
     setInterestRate(currentInterestRate.toString())
     setEffectiveDate(getTodayString())
   }
-  
+
   const handleCancelAddRate = () => {
     setShowAddRateForm(false)
   }
@@ -520,7 +518,10 @@ function Settings() {
             </p>
 
             <div className="pt-4">
-              <button className="btn btn-secondary" onClick={handleRedoOnboarding}>
+              <button
+                className="btn btn-secondary"
+                onClick={handleRedoOnboarding}
+              >
                 Redo Onboarding
               </button>
             </div>
@@ -566,6 +567,11 @@ function Settings() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Copyright Notice */}
+        <div className="text-center text-base-content/40 text-sm py-4">
+          © {new Date().getFullYear()} Geir Sagberg
         </div>
       </div>
     </div>
