@@ -5,28 +5,32 @@ export function SwipeableOutlet() {
   const router = useRouterState()
   const currentPath = router.location.pathname
   const {
-    containerRef,
+    bind,
     offset,
     isDragging,
     shouldShowPrevIndicator,
     shouldShowNextIndicator,
+    indicatorOpacity,
   } = useSwipeNavigation(currentPath)
 
   return (
     <div className="relative overflow-hidden">
       <div
-        ref={containerRef}
-        className="transition-transform duration-100"
+        {...bind()}
+        className={isDragging ? '' : 'transition-transform duration-200'}
         style={{
-          transform: isDragging ? `translateX(${offset * 0.3}px)` : 'translateX(0)',
-          touchAction: 'pan-y',
+          transform: `translateX(${offset * 0.4}px)`,
+          touchAction: 'pan-y pinch-zoom',
         }}
       >
         <Outlet />
       </div>
 
       {shouldShowPrevIndicator && (
-        <div className="fixed left-4 top-1/2 -translate-y-1/2 pointer-events-none z-50 sm:hidden">
+        <div
+          className="fixed left-4 top-1/2 -translate-y-1/2 pointer-events-none z-50 sm:hidden"
+          style={{ opacity: indicatorOpacity }}
+        >
           <div className="bg-base-300/90 rounded-full p-3 shadow-lg backdrop-blur-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -47,7 +51,10 @@ export function SwipeableOutlet() {
       )}
 
       {shouldShowNextIndicator && (
-        <div className="fixed right-4 top-1/2 -translate-y-1/2 pointer-events-none z-50 sm:hidden">
+        <div
+          className="fixed right-4 top-1/2 -translate-y-1/2 pointer-events-none z-50 sm:hidden"
+          style={{ opacity: indicatorOpacity }}
+        >
           <div className="bg-base-300/90 rounded-full p-3 shadow-lg backdrop-blur-sm">
             <svg
               xmlns="http://www.w3.org/2000/svg"
