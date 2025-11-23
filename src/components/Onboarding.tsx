@@ -1,6 +1,6 @@
-import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useDrag } from '@use-gesture/react'
+import { useState } from 'react'
 
 type Slide = {
   title: string
@@ -46,7 +46,9 @@ type OnboardingProps = {
 export function Onboarding({ slideNumber }: OnboardingProps) {
   const currentSlide = slideNumber - 1 // Convert 1-indexed to 0-indexed
   const [dragState, setDragState] = useState({ offset: 0, isDragging: false })
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null)
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(
+    null,
+  )
   const navigate = useNavigate()
 
   const handleComplete = () => {
@@ -57,7 +59,10 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
   const handleNext = () => {
     if (currentSlide < slides.length - 1) {
       setSlideDirection('left')
-      navigate({ to: '/onboarding/$slide', params: { slide: String(slideNumber + 1) } })
+      navigate({
+        to: '/onboarding/$slide',
+        params: { slide: String(slideNumber + 1) },
+      })
     } else {
       handleComplete()
     }
@@ -66,7 +71,10 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
   const handlePrev = () => {
     if (currentSlide > 0) {
       setSlideDirection('right')
-      navigate({ to: '/onboarding/$slide', params: { slide: String(slideNumber - 1) } })
+      navigate({
+        to: '/onboarding/$slide',
+        params: { slide: String(slideNumber - 1) },
+      })
     }
   }
 
@@ -80,7 +88,7 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
     navigate({ to: '/onboarding/$slide', params: { slide: String(index + 1) } })
   }
 
-  const slide = slides[currentSlide]
+  const slide = slides[currentSlide]!
   const isLastSlide = currentSlide === slides.length - 1
   const hasNext = currentSlide < slides.length - 1
   const hasPrev = currentSlide > 0
@@ -102,7 +110,8 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
       } else {
         const absOffset = Math.abs(mx)
         const absVelocity = Math.abs(vx)
-        const shouldNavigate = absOffset > SWIPE_THRESHOLD || absVelocity > VELOCITY_THRESHOLD
+        const shouldNavigate =
+          absOffset > SWIPE_THRESHOLD || absVelocity > VELOCITY_THRESHOLD
 
         if (shouldNavigate) {
           if (mx > 0 && hasPrev) {
@@ -122,11 +131,11 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
       filterTaps: true,
       pointer: { touch: true },
       threshold: 10,
-    }
+    },
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-base-100 to-secondary/10 flex flex-col overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-primary/10 via-base-100 to-secondary/10 flex flex-col overflow-hidden">
       {/* Skip button */}
       <div className="absolute top-4 right-4 z-10">
         <button
@@ -152,22 +161,35 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
       </div>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col items-center p-6 max-w-2xl mx-auto w-full overflow-hidden" style={{ paddingTop: 'max(4vh, 48px)' }}>
+      <div
+        className="flex-1 flex flex-col items-center p-6 max-w-2xl mx-auto w-full overflow-hidden"
+        style={{ paddingTop: 'max(4vh, 48px)' }}
+      >
         {/* Swipeable content */}
         <div
           {...bind()}
           key={currentSlide}
           className={`touch-none select-none ${
-            slideDirection === 'left' ? 'slide-in-from-right' :
-            slideDirection === 'right' ? 'slide-in-from-left' : ''
+            slideDirection === 'left'
+              ? 'slide-in-from-right'
+              : slideDirection === 'right'
+                ? 'slide-in-from-left'
+                : ''
           }`}
           style={{
-            transform: dragState.isDragging ? `translateX(${dragState.offset}px)` : 'translateX(0)',
-            transition: dragState.isDragging ? 'none' : 'transform 0.3s ease-out',
+            transform: dragState.isDragging
+              ? `translateX(${dragState.offset}px)`
+              : 'translateX(0)',
+            transition: dragState.isDragging
+              ? 'none'
+              : 'transform 0.3s ease-out',
           }}
         >
           {/* Image */}
-          <div className="w-full max-w-xl mb-4 rounded-2xl bg-base-200 overflow-hidden" style={{ height: 'min(50vh, 500px)' }}>
+          <div
+            className="w-full max-w-xl mb-4 rounded-2xl bg-base-200 overflow-hidden"
+            style={{ height: 'min(50vh, 500px)' }}
+          >
             <img
               src={slide.image}
               alt={slide.imageAlt}
@@ -205,18 +227,13 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
         {/* Navigation buttons - viewport-based height */}
         <div className="flex gap-4 w-full max-w-md h-[8vh]">
           {currentSlide > 0 && (
-            <button
-              className="btn btn-outline flex-1"
-              onClick={handlePrev}
-            >
+            <button className="btn btn-outline flex-1" onClick={handlePrev}>
               Back
             </button>
           )}
           <button
             className={`btn flex-1 ${
-              isLastSlide
-                ? 'btn-primary'
-                : 'btn-ghost'
+              isLastSlide ? 'btn-primary' : 'btn-ghost'
             }`}
             onClick={handleNext}
           >

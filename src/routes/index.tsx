@@ -8,7 +8,7 @@ export const Route = createFileRoute('/')({
     if (typeof window !== 'undefined') {
       const onboardingComplete = localStorage.getItem('spardavel_onboarding_complete')
       if (!onboardingComplete) {
-        throw redirect({ to: '/onboarding/1' })
+        throw redirect({ to: '/onboarding/$slide', params: { slide: '1' } })
       }
     }
   },

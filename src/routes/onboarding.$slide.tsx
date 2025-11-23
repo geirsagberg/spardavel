@@ -5,7 +5,7 @@ export const Route = createFileRoute('/onboarding/$slide')({
   beforeLoad: ({ params }) => {
     const slide = parseInt(params.slide)
     if (isNaN(slide) || slide < 1 || slide > 4) {
-      throw redirect({ to: '/onboarding/1' })
+      throw redirect({ to: '/onboarding/$slide', params: { slide: '1' } })
     }
   },
   component: OnboardingPage,
