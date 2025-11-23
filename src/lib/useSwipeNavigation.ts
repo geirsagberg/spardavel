@@ -1,6 +1,6 @@
 import { useDrag } from '@use-gesture/react'
 import { useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const SWIPE_THRESHOLD = 80
 const VELOCITY_THRESHOLD = 0.5
@@ -10,6 +10,17 @@ const routes = ['/', '/history', '/analytics', '/settings'] as const
 export function useSwipeNavigation(currentPath: string) {
   const navigate = useNavigate()
   const [dragState, setDragState] = useState({ offset: 0, isDragging: false })
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640) // sm breakpoint in Tailwind
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const currentIndex = routes.indexOf(currentPath as (typeof routes)[number])
   const hasNext = currentIndex >= 0 && currentIndex < routes.length - 1
@@ -17,6 +28,11 @@ export function useSwipeNavigation(currentPath: string) {
 
   const bind = useDrag(
     ({ movement: [mx], velocity: [vx], direction: [_dx], active, cancel: _cancel }) => {
+      // Disable swipe on non-mobile viewports
+      if (!isMobile) {
+        return
+      }
+
       // Prevent drag if no valid direction
       if (active) {
         const isSwipingRight = mx > 0
@@ -57,6 +73,7 @@ export function useSwipeNavigation(currentPath: string) {
       filterTaps: true,
       pointer: { touch: true },
       threshold: 10,
+      enabled: isMobile,
     }
   )
 

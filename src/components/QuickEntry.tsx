@@ -277,7 +277,7 @@ export function QuickEntry() {
 
               {/* Action Buttons row with date */}
               <div className="flex flex-wrap gap-2 items-end">
-                <div className="form-control w-[118px]">
+                <div className="form-control w-[128px]">
                   <label className="label py-0.5">
                     <span className="label-text text-xs">Date</span>
                   </label>
