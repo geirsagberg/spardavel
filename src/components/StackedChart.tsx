@@ -33,7 +33,7 @@ export function StackedChart() {
   })
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
     const stored = localStorage.getItem('chartTimeRange')
-    return (stored as TimeRange) || '6mo'
+    return (stored as TimeRange) || '1w'
   })
   const [cssReady, setCssReady] = useState(false)
 
