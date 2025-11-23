@@ -20,7 +20,7 @@ export function SwipeableOutlet() {
   }
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-x-clip">
       <div
         {...bind()}
         className={isDragging ? '' : 'transition-transform duration-200'}

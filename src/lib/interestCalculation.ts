@@ -167,6 +167,35 @@ function calculateInterestForDateRange(
 }
 
 /**
+ * Calculate pending interest for a date range (from the start of the first transaction's month to the given end date).
+ * Useful for calculating cumulative pending interest up to any point in time.
+ */
+export function calculatePendingInterestUpToDate(
+  events: AppEvent[],
+  endDate: string,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
+): { pendingOnAvoided: number; pendingOnSpent: number } {
+  // Find the earliest transaction date to determine range start
+  const transactionEvents = events.filter(
+    (e) => e.type === 'PURCHASE' || e.type === 'AVOIDED_PURCHASE'
+  )
+  if (transactionEvents.length === 0) {
+    return { pendingOnAvoided: 0, pendingOnSpent: 0 }
+  }
+
+  const earliestDate = transactionEvents.reduce(
+    (earliest, e) => (e.date < earliest ? e.date : earliest),
+    transactionEvents[0]!.date
+  )
+
+  // Get the start of the month containing the earliest transaction
+  const monthKey = getMonthKey(earliestDate)
+  const { start: rangeStart } = getMonthBounds(monthKey)
+
+  return calculateInterestForDateRange(events, rangeStart, endDate, defaultRate)
+}
+
+/**
  * Check if a month needs interest application
  * Returns true if we're past the last day of the month
  */

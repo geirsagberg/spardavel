@@ -9,7 +9,10 @@ import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef, useState } from 'react'
 import { formatCurrency } from '~/lib/formatting'
+import { calculatePendingInterestUpToDate } from '~/lib/interestCalculation'
 import { useAppStore } from '~/store/appStore'
+
+type TimeRange = '1w' | '1mo' | '6mo'
 
 echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer])
 
@@ -21,10 +24,16 @@ export function StackedChart() {
   const chartRef = useRef<HTMLDivElement>(null)
   const chartInstanceRef = useRef<echarts.ECharts | null>(null)
   const metrics = useAppStore((state) => state.metrics)
+  const events = useAppStore((state) => state.events)
+  const defaultInterestRate = useAppStore((state) => state.defaultInterestRate)
   const theme = useAppStore((state) => state.theme)
   const [autoScale, setAutoScale] = useState(() => {
     const stored = localStorage.getItem('chartAutoScale')
     return stored === null ? true : stored === 'true'
+  })
+  const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    const stored = localStorage.getItem('chartTimeRange')
+    return (stored as TimeRange) || '6mo'
   })
   const [cssReady, setCssReady] = useState(false)
 
@@ -41,6 +50,11 @@ export function StackedChart() {
     localStorage.setItem('chartAutoScale', String(checked))
   }
 
+  const handleTimeRangeChange = (range: TimeRange) => {
+    setTimeRange(range)
+    localStorage.setItem('chartTimeRange', range)
+  }
+
   useEffect(() => {
     if (!chartRef.current || !cssReady) return
 
@@ -51,97 +65,165 @@ export function StackedChart() {
     const chart = chartInstanceRef.current
     const monthlyHistory = metrics.monthlyHistory
 
-    // Generate last 6 months including current month
+    // Generate date range and data based on selected time range
     const now = new Date()
-    const last6MonthDates = Array.from({ length: 6 }, (_, i) => {
-      const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
-      return {
-        year: date.getFullYear(),
-        month: date.getMonth(),
-        key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
-      }
-    })
 
-    // Map history data to the last 6 months, filling in zeros for missing months
-    const last6Months = last6MonthDates.map(({ key }) => {
-      const found = monthlyHistory.find((m) => m.periodStart.startsWith(key))
-      if (found) return found
-      // Return empty period for missing months
-      const parts = key.split('-')
-      const year = parseInt(parts[0]!)
-      const month = parseInt(parts[1]!)
-      return {
-        periodStart: `${key}-01`,
-        periodEnd: `${key}-${new Date(year, month, 0).getDate()}`,
-        purchasesCount: 0,
-        purchasesTotal: 0,
-        purchasesByCategory: {},
-        avoidedCount: 0,
-        avoidedTotal: 0,
-        avoidedByCategory: {},
-        pendingInterestOnAvoided: 0,
-        pendingInterestOnSpent: 0,
-        appliedInterestOnAvoided: 0,
-        appliedInterestOnSpent: 0,
-      }
-    })
+    let categories: string[] = []
+    let totalSaved: number[] = []
+    let totalInterest: number[] = []
+    let totalSpent: number[] = []
+    let totalMissedInterest: number[] = []
 
-    const categories = last6Months.map((period) => {
-      const [year, month, day] = period.periodStart.split('-').map(Number)
-      const date = new Date(year!, month! - 1, day!)
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        year: 'numeric',
+    if (timeRange === '6mo') {
+      // Monthly data for 6 months
+      const last6MonthDates = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+        return {
+          year: date.getFullYear(),
+          month: date.getMonth(),
+          key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`,
+        }
       })
-    })
 
-    const totalSaved = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(
-        0,
-        monthlyHistory.length - 6 + idx,
-      )
-      const cumulativeSaved = previousMonths.reduce(
-        (sum, p) => sum + p.avoidedTotal,
-        0,
-      )
-      return cumulativeSaved + period.avoidedTotal
-    })
+      const last6Months = last6MonthDates.map(({ key }) => {
+        const found = monthlyHistory.find((m) => m.periodStart.startsWith(key))
+        if (found) return found
+        const parts = key.split('-')
+        const year = parseInt(parts[0]!)
+        const month = parseInt(parts[1]!)
+        return {
+          periodStart: `${key}-01`,
+          periodEnd: `${key}-${new Date(year, month, 0).getDate()}`,
+          purchasesCount: 0,
+          purchasesTotal: 0,
+          purchasesByCategory: {},
+          avoidedCount: 0,
+          avoidedTotal: 0,
+          avoidedByCategory: {},
+          pendingInterestOnAvoided: 0,
+          pendingInterestOnSpent: 0,
+          appliedInterestOnAvoided: 0,
+          appliedInterestOnSpent: 0,
+        }
+      })
 
-    const totalInterest = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(
-        0,
-        monthlyHistory.length - 6 + idx,
-      )
-      const cumulativeInterest = previousMonths.reduce(
-        (sum, p) => sum + p.appliedInterestOnAvoided,
-        0,
-      )
-      return cumulativeInterest + period.appliedInterestOnAvoided
-    })
+      categories = last6Months.map((period) => {
+        const [year, month, day] = period.periodStart.split('-').map(Number)
+        const date = new Date(year!, month! - 1, day!)
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          year: 'numeric',
+        })
+      })
 
-    const totalSpent = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(
-        0,
-        monthlyHistory.length - 6 + idx,
-      )
-      const cumulativeSpent = previousMonths.reduce(
-        (sum, p) => sum + p.purchasesTotal,
-        0,
-      )
-      return cumulativeSpent + period.purchasesTotal
-    })
+      // Check if current month is in the displayed range
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      const currentMonthIndex = last6MonthDates.findIndex((d) => d.key === currentMonthKey)
 
-    const totalMissedInterest = last6Months.map((period, idx) => {
-      const previousMonths = monthlyHistory.slice(
-        0,
-        monthlyHistory.length - 6 + idx,
-      )
-      const cumulativeCost = previousMonths.reduce(
-        (sum, p) => sum + p.appliedInterestOnSpent,
-        0,
-      )
-      return cumulativeCost + period.appliedInterestOnSpent
-    })
+      totalSaved = last6Months.map((period, idx) => {
+        const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+        const cumulativeSaved = previousMonths.reduce((sum, p) => sum + p.avoidedTotal, 0)
+        return cumulativeSaved + period.avoidedTotal
+      })
+
+      totalInterest = last6Months.map((period, idx) => {
+        const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+        const cumulativeInterest = previousMonths.reduce((sum, p) => sum + p.appliedInterestOnAvoided, 0)
+        let periodInterest = period.appliedInterestOnAvoided
+
+        // Add pending interest to current month
+        if (idx === currentMonthIndex) {
+          periodInterest += period.pendingInterestOnAvoided
+        }
+
+        return cumulativeInterest + periodInterest
+      })
+
+      totalSpent = last6Months.map((period, idx) => {
+        const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+        const cumulativeSpent = previousMonths.reduce((sum, p) => sum + p.purchasesTotal, 0)
+        return cumulativeSpent + period.purchasesTotal
+      })
+
+      totalMissedInterest = last6Months.map((period, idx) => {
+        const previousMonths = monthlyHistory.slice(0, monthlyHistory.length - 6 + idx)
+        const cumulativeCost = previousMonths.reduce((sum, p) => sum + p.appliedInterestOnSpent, 0)
+        let periodMissed = period.appliedInterestOnSpent
+
+        // Add pending missed interest to current month
+        if (idx === currentMonthIndex) {
+          periodMissed += period.pendingInterestOnSpent
+        }
+
+        return cumulativeCost + periodMissed
+      })
+    } else {
+      // Daily data for 1 week or 1 month
+      const daysCount = timeRange === '1w' ? 7 : 30
+      const dates: string[] = []
+
+      for (let i = daysCount - 1; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+        // Format directly to avoid timezone issues from toISOString()
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+        dates.push(dateStr)
+      }
+
+      categories = dates.map((dateStr, idx) => {
+        const [year, month, day] = dateStr.split('-').map(Number)
+        const date = new Date(year!, month! - 1, day!)
+        const label = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+        // For 1mo, only show label for last date and every 7 days back
+        if (timeRange === '1mo') {
+          const isLastDate = idx === dates.length - 1
+          const daysFromEnd = dates.length - 1 - idx
+          if (isLastDate || daysFromEnd % 7 === 0) {
+            return label
+          }
+          return ''
+        }
+        return label
+      })
+
+      // Calculate cumulative values for each day
+      totalSaved = dates.map((dateStr) => {
+        return events
+          .filter((e) => e.type === 'AVOIDED_PURCHASE' && e.date <= dateStr)
+          .reduce((sum, e) => sum + (e.type === 'AVOIDED_PURCHASE' ? e.amount : 0), 0)
+      })
+
+      totalSpent = dates.map((dateStr) => {
+        return events
+          .filter((e) => e.type === 'PURCHASE' && e.date <= dateStr)
+          .reduce((sum, e) => sum + (e.type === 'PURCHASE' ? e.amount : 0), 0)
+      })
+
+      // Calculate interest (applied + pending) for each day
+      totalInterest = dates.map((dateStr) => {
+        // Applied interest from completed months
+        const appliedInterest = events
+          .filter((e) => e.type === 'INTEREST_APPLICATION' && e.date <= dateStr)
+          .reduce((sum, e) => sum + (e.type === 'INTEREST_APPLICATION' ? e.pendingOnAvoided : 0), 0)
+
+        // Add pending interest calculated up to this date
+        const { pendingOnAvoided } = calculatePendingInterestUpToDate(events, dateStr, defaultInterestRate)
+        return appliedInterest + pendingOnAvoided
+      })
+
+      totalMissedInterest = dates.map((dateStr) => {
+        // Applied missed interest from completed months
+        const appliedMissed = events
+          .filter((e) => e.type === 'INTEREST_APPLICATION' && e.date <= dateStr)
+          .reduce((sum, e) => sum + (e.type === 'INTEREST_APPLICATION' ? e.pendingOnSpent : 0), 0)
+
+        // Add pending missed interest calculated up to this date
+        const { pendingOnSpent } = calculatePendingInterestUpToDate(events, dateStr, defaultInterestRate)
+        return appliedMissed + pendingOnSpent
+      })
+    }
 
     // Get computed colors from CSS variables (DaisyUI 5)
     const computedStyle = getComputedStyle(document.documentElement)
@@ -206,8 +288,13 @@ export function StackedChart() {
           interval: 0,
           color: textColorMuted,
           formatter: (value: string) => {
-            const [month, year] = value.split(' ')
-            return `{month|${month}}\n{year|${year}}`
+            if (!value) return ''
+            if (timeRange === '6mo') {
+              const [month, year] = value.split(' ')
+              return `{month|${month}}\n{year|${year}}`
+            }
+            // Daily format: "Nov 23"
+            return value
           },
           rich: {
             month: {
@@ -310,7 +397,7 @@ export function StackedChart() {
     return () => {
       window.removeEventListener('resize', handleResize)
     }
-  }, [metrics, theme, autoScale, cssReady])
+  }, [metrics, events, defaultInterestRate, theme, autoScale, timeRange, cssReady])
 
   useEffect(() => {
     return () => {
@@ -322,9 +409,9 @@ export function StackedChart() {
   }, [])
 
   return (
-    <div className="relative">
-      <div ref={chartRef} className="w-full h-64 bg-base-200 rounded-lg p-4" />
-      <div className="absolute bottom-5 left-6 z-10">
+    <div className="bg-base-200 rounded-lg">
+      <div ref={chartRef} className="w-full h-64 p-4" />
+      <div className="flex items-center justify-between px-4 pb-3">
         <label className="flex items-center gap-1.5 cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
           <input
             type="checkbox"
@@ -334,6 +421,29 @@ export function StackedChart() {
           />
           <span className="text-[10px] text-base-content/80">Scaled</span>
         </label>
+        <div className="join">
+          <button
+            type="button"
+            className={`join-item btn btn-xs ${timeRange === '1w' ? 'btn-active' : ''}`}
+            onClick={() => handleTimeRangeChange('1w')}
+          >
+            1w
+          </button>
+          <button
+            type="button"
+            className={`join-item btn btn-xs ${timeRange === '1mo' ? 'btn-active' : ''}`}
+            onClick={() => handleTimeRangeChange('1mo')}
+          >
+            1mo
+          </button>
+          <button
+            type="button"
+            className={`join-item btn btn-xs ${timeRange === '6mo' ? 'btn-active' : ''}`}
+            onClick={() => handleTimeRangeChange('6mo')}
+          >
+            6mo
+          </button>
+        </div>
       </div>
     </div>
   )
