@@ -106,15 +106,20 @@ function Analytics() {
     }
   }
 
-  // Monthly trends (only show applied interest, not pending, since these are historical months)
+  // Monthly trends - include pending interest for current month
+  const currentMonthKey = metrics.currentMonth.periodStart
   const monthlyTrends = (metrics.monthlyHistory || [])
-    .map((month) => ({
-      month: formatMonthShort(month.periodStart),
-      avoided: month.avoidedTotal,
-      spent: month.purchasesTotal,
-      interest: month.appliedInterestOnAvoided,
-      missedInterest: month.appliedInterestOnSpent,
-    }))
+    .map((month) => {
+      // For current month, include pending interest in addition to applied interest
+      const isCurrentMonth = month.periodStart === currentMonthKey
+      return {
+        month: formatMonthShort(month.periodStart),
+        avoided: month.avoidedTotal,
+        spent: month.purchasesTotal,
+        interest: month.appliedInterestOnAvoided + (isCurrentMonth ? month.pendingInterestOnAvoided : 0),
+        missedInterest: month.appliedInterestOnSpent + (isCurrentMonth ? month.pendingInterestOnSpent : 0),
+      }
+    })
     .reverse()
 
   // Category pie data (current month)

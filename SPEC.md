@@ -277,10 +277,13 @@ type DashboardMetrics = {
   - Reorder (drag?)
 
 - **Interest Rate**
-  - Current rate (e.g., 3.5% annually)
-  - Edit current rate
-  - Schedule future rate changes
-  - View rate history
+  - Two primary actions (buttons):
+    - "Set Default Rate" (primary) - Most common action
+    - "Set Rate at Date" (secondary) - For historical rate changes
+  - View rate history with:
+    - Historical rate change events (newest first)
+    - Default rate (shown at bottom with applicable date range)
+    - Edit/delete options for each entry
 
 - **Data Management**
   - Export (JSON) button

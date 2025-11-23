@@ -40,6 +40,7 @@ function Settings() {
   const [editDate, setEditDate] = useState('')
   const [editingDefault, setEditingDefault] = useState(false)
   const [editDefaultRate, setEditDefaultRate] = useState('')
+  const [showAddRateForm, setShowAddRateForm] = useState(false)
 
   const interestRateEvents = events
     .filter(
@@ -153,6 +154,14 @@ function Settings() {
       return
     }
 
+    // Check if there are existing rate change events for this date
+    const existingEvents = interestRateEvents.filter((e) => e.date === effectiveDate)
+    
+    // Delete all existing events for this date
+    for (const existingEvent of existingEvents) {
+      deleteEvent(existingEvent.id)
+    }
+
     const event = createInterestRateChangeEvent(rate, effectiveDate)
     addEvent(event)
 
@@ -161,6 +170,7 @@ function Settings() {
     )
     setTimeout(() => setSuccessMessage(''), 3000)
     setEffectiveDate(getTodayString())
+    setShowAddRateForm(false)
   }
 
   const handleStartEdit = (event: InterestRateChangeEvent) => {
@@ -191,20 +201,26 @@ function Settings() {
   }
 
   const handleDeleteRateEvent = (id: string) => {
-    if (
-      window.confirm(
-        'Are you sure you want to delete this interest rate change?',
-      )
-    ) {
-      deleteEvent(id)
-      setSuccessMessage('Interest rate event deleted')
-      setTimeout(() => setSuccessMessage(''), 3000)
-    }
+    deleteEvent(id)
+    setSuccessMessage('Interest rate event deleted')
+    setTimeout(() => setSuccessMessage(''), 3000)
   }
 
   const handleStartEditDefault = () => {
+    setShowAddRateForm(false) // Close add rate form if open
     setEditingDefault(true)
     setEditDefaultRate(defaultInterestRate.toString())
+  }
+  
+  const handleStartAddRate = () => {
+    setEditingDefault(false) // Close default edit if open
+    setShowAddRateForm(true)
+    setInterestRate(currentInterestRate.toString())
+    setEffectiveDate(getTodayString())
+  }
+  
+  const handleCancelAddRate = () => {
+    setShowAddRateForm(false)
   }
 
   const handleCancelEditDefault = () => {
@@ -231,17 +247,9 @@ function Settings() {
 
   return (
     <div className="min-h-screen bg-base-100 pb-20 sm:pb-8">
-      <div className="container mx-auto max-w-2xl space-y-6 px-2 sm:px-4 py-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
-          <p className="text-sm text-base-content/60 sm:text-base">
-            Configure your app
-          </p>
-        </div>
-
-        {/* Success Message */}
-        {successMessage && (
+      {/* Success Message Toast */}
+      {successMessage && (
+        <div className="toast toast-top toast-end z-50">
           <div className="alert alert-success">
             <svg
               className="h-6 w-6 shrink-0 stroke-current"
@@ -257,7 +265,17 @@ function Settings() {
             </svg>
             <span>{successMessage}</span>
           </div>
-        )}
+        </div>
+      )}
+
+      <div className="container mx-auto max-w-2xl space-y-6 px-2 sm:px-4 py-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold sm:text-4xl">Settings</h1>
+          <p className="text-sm text-base-content/60 sm:text-base">
+            Configure your app
+          </p>
+        </div>
 
         {/* Theme Selection */}
         <div className="card bg-base-200">
@@ -294,41 +312,105 @@ function Settings() {
               amounts
             </p>
 
-            <div className="form-control gap-4 pt-4">
-              <div className="flex flex-wrap gap-2 items-end">
-                <div className="form-control flex-1 min-w-[100px]">
-                  <label className="label py-0.5">
-                    <span className="label-text text-xs">Rate (%)</span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="3.5"
-                    className="input input-bordered input-sm"
-                    value={interestRate}
-                    onChange={(e) => setInterestRate(e.target.value)}
-                    step="0.1"
-                    min="0"
-                  />
-                </div>
-                <div className="form-control flex-1 min-w-[130px]">
-                  <label className="label py-0.5">
-                    <span className="label-text text-xs">Effective Date</span>
-                  </label>
-                  <input
-                    type="date"
-                    className="input input-bordered input-sm"
-                    value={effectiveDate}
-                    onChange={(e) => setEffectiveDate(e.target.value)}
-                  />
-                </div>
+            {/* Action buttons or form */}
+            {!showAddRateForm && !editingDefault ? (
+              <div className="flex gap-3 pt-4">
                 <button
-                  className="btn btn-primary btn-sm"
-                  onClick={handleUpdateInterestRate}
+                  className="btn btn-primary flex-1"
+                  onClick={handleStartEditDefault}
                 >
-                  Add Rate
+                  Set Default Rate
+                </button>
+                <button
+                  className="btn btn-secondary flex-1"
+                  onClick={handleStartAddRate}
+                >
+                  Set Rate at Date
                 </button>
               </div>
-            </div>
+            ) : showAddRateForm ? (
+              <div className="form-control gap-4 pt-4">
+                <div className="flex flex-wrap gap-2 items-end">
+                  <div className="form-control flex-1 min-w-[100px]">
+                    <label className="label py-0.5">
+                      <span className="label-text text-xs">Rate (%)</span>
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="3.5"
+                      className="input input-bordered input-sm"
+                      value={interestRate}
+                      onChange={(e) => setInterestRate(e.target.value)}
+                      step="0.1"
+                      min="0"
+                    />
+                  </div>
+                  <div className="form-control flex-1 min-w-[130px]">
+                    <label className="label py-0.5">
+                      <span className="label-text text-xs">Effective Date</span>
+                    </label>
+                    <input
+                      type="date"
+                      className="input input-bordered input-sm"
+                      value={effectiveDate}
+                      onChange={(e) => setEffectiveDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      className="btn btn-primary btn-sm"
+                      onClick={handleUpdateInterestRate}
+                    >
+                      Add Rate
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={handleCancelAddRate}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Default Rate - shown first when editing */}
+            {editingDefault && (
+              <div className="pt-4">
+                <h3 className="text-sm font-semibold mb-2">Default Rate</h3>
+                <div className="bg-base-300 rounded-lg p-3 border-l-4 border-info">
+                  <div className="flex flex-wrap gap-2 items-end">
+                    <div className="form-control flex-1 min-w-20">
+                      <label className="label py-0.5">
+                        <span className="label-text text-xs">Rate (%)</span>
+                      </label>
+                      <input
+                        type="number"
+                        className="input input-bordered input-sm"
+                        value={editDefaultRate}
+                        onChange={(e) => setEditDefaultRate(e.target.value)}
+                        step="0.1"
+                        min="0"
+                      />
+                    </div>
+                    <div className="flex gap-1">
+                      <button
+                        className="btn btn-success btn-sm"
+                        onClick={handleSaveDefaultRate}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={handleCancelEditDefault}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Interest Rate History */}
             <div className="pt-4">
@@ -410,57 +492,19 @@ function Settings() {
 
                 {/* Default Rate (always shown at the bottom) */}
                 <div className="bg-base-300 rounded-lg p-3 border-l-4 border-info">
-                  {editingDefault ? (
-                    <div className="flex flex-wrap gap-2 items-end">
-                      <div className="form-control flex-1 min-w-20">
-                        <label className="label py-0.5">
-                          <span className="label-text text-xs">Rate (%)</span>
-                        </label>
-                        <input
-                          type="number"
-                          className="input input-bordered input-sm"
-                          value={editDefaultRate}
-                          onChange={(e) => setEditDefaultRate(e.target.value)}
-                          step="0.1"
-                          min="0"
-                        />
-                      </div>
-                      <div className="flex gap-1">
-                        <button
-                          className="btn btn-success btn-sm"
-                          onClick={handleSaveDefaultRate}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="btn btn-ghost btn-sm"
-                          onClick={handleCancelEditDefault}
-                        >
-                          Cancel
-                        </button>
-                      </div>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium">
+                        {formatPercent(defaultInterestRate)}%
+                      </span>
+                      <span className="text-base-content/60 text-sm ml-2">
+                        default
+                        {earliestRateChangeDate
+                          ? ` (before ${formatDateOnly(earliestRateChangeDate)})`
+                          : ''}
+                      </span>
                     </div>
-                  ) : (
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <span className="font-medium">
-                          {formatPercent(defaultInterestRate)}%
-                        </span>
-                        <span className="text-base-content/60 text-sm ml-2">
-                          default
-                          {earliestRateChangeDate
-                            ? ` (before ${formatDateOnly(earliestRateChangeDate)})`
-                            : ''}
-                        </span>
-                      </div>
-                      <button
-                        className="btn btn-ghost btn-xs"
-                        onClick={handleStartEditDefault}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
