@@ -4,6 +4,8 @@ import { useSwipeNavigation } from '~/lib/useSwipeNavigation'
 export function SwipeableOutlet() {
   const router = useRouterState()
   const currentPath = router.location.pathname
+  const isOnboarding = currentPath === '/onboarding'
+  
   const {
     bind,
     offset,
@@ -12,6 +14,10 @@ export function SwipeableOutlet() {
     shouldShowNextIndicator,
     indicatorOpacity,
   } = useSwipeNavigation(currentPath)
+
+  if (isOnboarding) {
+    return <Outlet />
+  }
 
   return (
     <div className="relative overflow-hidden">
