@@ -23,18 +23,68 @@ const PRESETS: (Preset & { emoji: string })[] = [
   { emoji: '🍔', description: 'Food', amount: 50, category: 'Food' },
 ]
 
+// Map categories to emoji icons
+const CATEGORY_ICONS: Record<Category, string> = {
+  'Alcohol': '🍺',
+  'Candy': '🍬',
+  'Drinks': '☕',
+  'Food': '🍔',
+  'Games': '🎮',
+  'Snacks': '🍿',
+  'Other': '📦',
+}
+
 export function QuickEntry() {
   const [animateRef] = useAutoAnimate({
     duration: 200,
     disrespectUserMotionPreference: true,
   })
   const addEvent = useAppStore((state) => state.addEvent)
+  const events = useAppStore((state) => state.events)
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<Category>('Other')
   const [date, setDate] = useState(getTodayString)
   const [isLoading, setIsLoading] = useState(false)
   const [showCustom, setShowCustom] = useState(false)
+
+  // Get last 5 unique entries (avoiding duplicates and static presets)
+  const dynamicPresets: Preset[] = (() => {
+    const seen = new Set<string>()
+    const presets: Preset[] = []
+    
+    // Create a set of static preset keys to filter them out
+    const staticPresetKeys = new Set(
+      PRESETS.map(p => `${p.description}-${p.amount}-${p.category}`)
+    )
+    
+    // Sort events by date descending to get most recent first
+    const sortedEvents = [...events]
+      .filter(e => e.type === 'AVOIDED_PURCHASE' || e.type === 'PURCHASE')
+      .sort((a, b) => b.date.localeCompare(a.date))
+    
+    for (const event of sortedEvents) {
+      if (event.type !== 'AVOIDED_PURCHASE' && event.type !== 'PURCHASE') continue
+      
+      const key = `${event.description}-${event.amount}-${event.category}`
+      
+      // Skip if it's a static preset or already seen
+      if (staticPresetKeys.has(key) || seen.has(key)) continue
+      
+      if (presets.length < 5) {
+        seen.add(key)
+        presets.push({
+          description: event.description,
+          amount: event.amount,
+          category: event.category,
+        })
+      }
+      
+      if (presets.length >= 5) break
+    }
+    
+    return presets
+  })()
 
   const handlePresetClick = (preset: Preset) => {
     const isSelected = amount === preset.amount.toString() && description === preset.description
@@ -100,6 +150,28 @@ export function QuickEntry() {
           <div>
             <p className="label-text mb-2">Select a preset or custom:</p>
             <div className="flex flex-wrap gap-2">
+              {/* Dynamic presets from recent entries */}
+              {dynamicPresets.map((preset) => {
+                const isSelected = amount === preset.amount.toString() && description === preset.description
+                return (
+                  <button
+                    key={`${preset.description}-${preset.amount}-${preset.category}`}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                      isSelected
+                        ? 'bg-primary text-primary-content shadow-sm'
+                        : 'bg-base-100 hover:bg-base-300 text-base-content'
+                    }`}
+                    onClick={() => handlePresetClick(preset)}
+                    disabled={isLoading}
+                  >
+                    <span>{CATEGORY_ICONS[preset.category]}</span>
+                    <span className="font-medium">{preset.description}</span>
+                    <span className="text-xs opacity-60">{preset.amount}</span>
+                  </button>
+                )
+              })}
+              
+              {/* Static presets */}
               {PRESETS.map((preset) => {
                 const isSelected = amount === preset.amount.toString() && description === preset.description
                 return (
@@ -119,6 +191,8 @@ export function QuickEntry() {
                   </button>
                 )
               })}
+              
+              {/* Custom button */}
               <button
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
                   showCustom

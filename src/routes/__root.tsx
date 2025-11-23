@@ -5,6 +5,7 @@ import {
   Scripts,
   HeadContent,
   useRouterState,
+  useRouter,
 } from '@tanstack/react-router'
 import { DesktopHeader } from '~/components/DesktopHeader'
 import { Navigation } from '~/components/Navigation'
@@ -57,12 +58,32 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   const theme = useAppStore((state) => state.theme)
-  const router = useRouterState()
-  const isOnboarding = router.location.pathname.startsWith('/onboarding')
+  const routerState = useRouterState()
+  const router = useRouter()
+  const isOnboarding = routerState.location.pathname.startsWith('/onboarding')
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
+
+  // Preload all routes asynchronously on mount
+  useEffect(() => {
+    const preloadRoutes = async () => {
+      try {
+        await Promise.all([
+          router.preloadRoute({ to: '/' }),
+          router.preloadRoute({ to: '/history' }),
+          router.preloadRoute({ to: '/analytics' }),
+          router.preloadRoute({ to: '/settings' }),
+        ])
+      } catch (err) {
+        // Silently fail if preloading fails
+        console.error('Failed to preload routes:', err)
+      }
+    }
+
+    preloadRoutes()
+  }, [router])
 
   return (
     <RootDocument>
