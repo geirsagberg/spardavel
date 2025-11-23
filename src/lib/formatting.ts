@@ -9,12 +9,12 @@ const APP_CURRENCY_CODE = 'NOK'
 /**
  * Format a number as currency according to the app locale
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, decimals = 0): string {
   return new Intl.NumberFormat(APP_LOCALE, {
     style: 'currency',
     currency: APP_CURRENCY_CODE,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
   }).format(amount)
 }
 

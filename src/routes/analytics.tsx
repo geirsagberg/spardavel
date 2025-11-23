@@ -102,7 +102,7 @@ function Analytics() {
                   </div>
                   {metrics.allTime.pendingSavedInterest > 0 && (
                     <div className="stat-desc text-xs text-earned animate-pulse">
-                      +{formatCurrency(metrics.allTime.pendingSavedInterest)} this month
+                      +{formatCurrency(metrics.allTime.pendingSavedInterest, 2)} this month
                     </div>
                   )}
                 </div>
@@ -128,7 +128,7 @@ function Analytics() {
                   </div>
                   {metrics.allTime.pendingCostInterest > 0 && (
                     <div className="stat-desc text-xs text-missed animate-pulse">
-                      -{formatCurrency(metrics.allTime.pendingCostInterest)} this month
+                      -{formatCurrency(metrics.allTime.pendingCostInterest, 2)} this month
                     </div>
                   )}
                 </div>
