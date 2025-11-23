@@ -87,26 +87,23 @@ function Analytics() {
         <div className="card bg-base-200">
           <div className="card-body py-4">
             <h2 className="card-title text-success text-lg">✓ Avoided</h2>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-start">
               <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Total Saved</div>
+                <div className="stat-title text-xs">Total Avoided</div>
                 <div className="stat-value text-xl text-success">
-                  {formatCurrency(metrics.allTime.savedTotal + metrics.allTime.pendingSavedInterest)}
+                  {formatCurrency(metrics.allTime.savedTotal - totalAppliedInterestEarned)}
                 </div>
               </div>
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Interest Earned</div>
                 <div className="stat-value text-xl text-info">
-                  +{formatCurrency(metrics.allTime.pendingSavedInterest)}
+                  +{formatCurrency(totalAppliedInterestEarned + metrics.allTime.pendingSavedInterest)}
                 </div>
-                <div className="stat-desc text-xs">pending this month</div>
-              </div>
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Applied Interest</div>
-                <div className="stat-value text-xl text-info">
-                  +{formatCurrency(totalAppliedInterestEarned)}
-                </div>
-                <div className="stat-desc text-xs">all time</div>
+                {metrics.allTime.pendingSavedInterest > 0 && (
+                  <div className="stat-desc text-xs text-info animate-pulse">
+                    +{formatCurrency(metrics.allTime.pendingSavedInterest)} this month
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -116,7 +113,7 @@ function Analytics() {
         <div className="card bg-base-200">
           <div className="card-body py-4">
             <h2 className="card-title text-error text-lg">✕ Spent</h2>
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-start">
               <div className="stat flex-1 p-0">
                 <div className="stat-title text-xs">Total Spent</div>
                 <div className="stat-value text-xl text-error">
@@ -128,14 +125,11 @@ function Analytics() {
                 <div className="stat-value text-xl text-warning">
                   -{formatCurrency(metrics.allTime.opportunityCost + metrics.allTime.pendingCostInterest)}
                 </div>
-                <div className="stat-desc text-xs">interest lost</div>
-              </div>
-              <div className="stat flex-1 p-0">
-                <div className="stat-title text-xs">Applied Interest</div>
-                <div className="stat-value text-xl text-warning">
-                  -{formatCurrency(totalAppliedInterestCost)}
-                </div>
-                <div className="stat-desc text-xs">all time</div>
+                {metrics.allTime.pendingCostInterest > 0 && (
+                  <div className="stat-desc text-xs text-warning animate-pulse">
+                    -{formatCurrency(metrics.allTime.pendingCostInterest)} this month
+                  </div>
+                )}
               </div>
             </div>
           </div>
