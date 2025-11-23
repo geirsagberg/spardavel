@@ -7,20 +7,20 @@ const CATEGORIES: Category[] = ['Alcohol', 'Candy', 'Snacks', 'Food', 'Drinks', 
 
 function getEventIcon(event: AppEvent): React.ReactNode {
   if (event.type === 'PURCHASE') {
-    return <span className="text-error">✕</span>
+    return <span className="text-spent">💸</span>
   }
   if (event.type === 'AVOIDED_PURCHASE') {
-    return <span className="text-success">✓</span>
+    return <span className="text-saved">✓</span>
   }
   return null
 }
 
 function getEventColor(event: AppEvent): string {
   if (event.type === 'PURCHASE') {
-    return 'text-error'
+    return 'text-spent'
   }
   if (event.type === 'AVOIDED_PURCHASE') {
-    return 'text-success'
+    return 'text-saved'
   }
   return 'text-base-content'
 }
@@ -110,13 +110,13 @@ export function RecentEntries() {
                 <div key={event.id} className="rounded-lg bg-base-300 p-3 space-y-3">
                   <div className="flex gap-2">
                     <button
-                      className={`btn btn-sm flex-1 ${editIsPurchase ? 'btn-error' : 'btn-outline'}`}
+                      className={`btn btn-sm flex-1 ${editIsPurchase ? 'bg-spent text-spent-content' : 'btn-outline'}`}
                       onClick={() => setEditIsPurchase(true)}
                     >
                       Spent
                     </button>
                     <button
-                      className={`btn btn-sm flex-1 ${!editIsPurchase ? 'btn-success' : 'btn-outline'}`}
+                      className={`btn btn-sm flex-1 ${!editIsPurchase ? 'bg-saved text-saved-content' : 'btn-outline'}`}
                       onClick={() => setEditIsPurchase(false)}
                     >
                       Avoided

@@ -13,19 +13,19 @@ export function Dashboard() {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <div className="stat bg-base-200 py-3">
         <div className="stat-title text-xs">This Month Avoided</div>
-        <div className="stat-value text-xl text-success">{formatCurrency(currentMonth.avoidedTotal)}</div>
+        <div className="stat-value text-xl text-saved">{formatCurrency(currentMonth.avoidedTotal)}</div>
       </div>
       <div className="stat bg-base-200 py-3">
         <div className="stat-title text-xs">This Month Spent</div>
-        <div className="stat-value text-xl text-error">{formatCurrency(currentMonth.purchasesTotal)}</div>
+        <div className="stat-value text-xl text-spent">{formatCurrency(currentMonth.purchasesTotal)}</div>
       </div>
       <div className="stat bg-base-200 py-3">
         <div className="stat-title text-xs">All Time Saved</div>
-        <div className="stat-value text-xl text-success">{formatCurrency(allTime.savedTotal)}</div>
+        <div className="stat-value text-xl text-saved">{formatCurrency(allTime.savedTotal)}</div>
       </div>
       <div className="stat bg-base-200 py-3">
         <div className="stat-title text-xs">All Time Spent</div>
-        <div className="stat-value text-xl text-error">{formatCurrency(allTime.spentTotal)}</div>
+        <div className="stat-value text-xl text-spent">{formatCurrency(allTime.spentTotal)}</div>
       </div>
     </div>
   )

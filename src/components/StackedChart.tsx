@@ -136,6 +136,12 @@ export function StackedChart() {
     const lineColor = baseContent.replace(')', ' / 0.2)')
     const gridColor = baseContent.replace(')', ' / 0.1)')
 
+    // Get semantic colors
+    const savedColor = computedStyle.getPropertyValue('--color-saved').trim()
+    const earnedColor = computedStyle.getPropertyValue('--color-earned').trim()
+    const spentColor = computedStyle.getPropertyValue('--color-spent').trim()
+    const missedColor = computedStyle.getPropertyValue('--color-missed').trim()
+
     const option: ECOption = {
       backgroundColor: 'transparent',
       tooltip: {
@@ -222,7 +228,7 @@ export function StackedChart() {
           data: totalSaved,
           areaStyle: {},
           itemStyle: {
-            color: '#10b981',
+            color: savedColor,
           },
           emphasis: {
             focus: 'series',
@@ -235,7 +241,7 @@ export function StackedChart() {
           data: totalInterest,
           areaStyle: {},
           itemStyle: {
-            color: '#3b82f6',
+            color: earnedColor,
           },
           emphasis: {
             focus: 'series',
@@ -248,7 +254,7 @@ export function StackedChart() {
           data: totalSpent,
           areaStyle: {},
           itemStyle: {
-            color: '#ef4444',
+            color: spentColor,
           },
           emphasis: {
             focus: 'series',
@@ -261,7 +267,7 @@ export function StackedChart() {
           data: totalMissedInterest,
           areaStyle: {},
           itemStyle: {
-            color: '#f97316',
+            color: missedColor,
           },
           emphasis: {
             focus: 'series',

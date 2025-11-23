@@ -187,11 +187,11 @@ function History() {
         <div className="flex gap-4">
           <div className="stat bg-base-200 flex-1 py-3">
             <div className="stat-title text-xs">Avoided</div>
-            <div className="stat-value text-xl text-success">{formatCurrency(totals.avoided)}</div>
+            <div className="stat-value text-xl text-saved">{formatCurrency(totals.avoided)}</div>
           </div>
           <div className="stat bg-base-200 flex-1 py-3">
             <div className="stat-title text-xs">Spent</div>
-            <div className="stat-value text-xl text-error">{formatCurrency(totals.purchases)}</div>
+            <div className="stat-value text-xl text-spent">{formatCurrency(totals.purchases)}</div>
           </div>
         </div>
 
@@ -217,13 +217,13 @@ function History() {
                       <div key={event.id} className="rounded-lg bg-base-300 p-3 space-y-3">
                         <div className="flex gap-2">
                           <button
-                            className={`btn btn-sm flex-1 ${editIsPurchase ? 'btn-error' : 'btn-outline'}`}
+                            className={`btn btn-sm flex-1 ${editIsPurchase ? 'bg-spent text-spent-content' : 'btn-outline'}`}
                             onClick={() => setEditIsPurchase(true)}
                           >
                             Spent
                           </button>
                           <button
-                            className={`btn btn-sm flex-1 ${!editIsPurchase ? 'btn-success' : 'btn-outline'}`}
+                            className={`btn btn-sm flex-1 ${!editIsPurchase ? 'bg-saved text-saved-content' : 'btn-outline'}`}
                             onClick={() => setEditIsPurchase(false)}
                           >
                             Avoided
@@ -286,15 +286,15 @@ function History() {
                         <div className="flex flex-1 items-center gap-3">
                           <div className="text-xl">
                             {event.type === 'PURCHASE' ? (
-                              <span className="text-error">✕</span>
+                              <span className="text-spent">💸</span>
                             ) : (
-                              <span className="text-success">✓</span>
+                              <span className="text-saved">✓</span>
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
                             <div
                               className={`font-semibold ${
-                                event.type === 'PURCHASE' ? 'text-error' : 'text-success'
+                                event.type === 'PURCHASE' ? 'text-spent' : 'text-saved'
                               }`}
                             >
                               {event.description}
@@ -310,7 +310,7 @@ function History() {
                         <div className="flex flex-col items-end gap-2">
                           <div
                             className={`font-bold ${
-                              event.type === 'PURCHASE' ? 'text-error' : 'text-success'
+                              event.type === 'PURCHASE' ? 'text-spent' : 'text-saved'
                             }`}
                           >
                             {formatCurrency(event.amount)}

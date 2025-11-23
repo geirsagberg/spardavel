@@ -12,6 +12,17 @@
     coffee;
 }
 
+/* Semantic colors for savings tracking */
+@theme {
+  /* Light theme defaults */
+  --color-saved: oklch(0.5 0.17 145);
+  --color-saved-content: oklch(0.98 0 0);
+  --color-earned: oklch(0.5 0.08 145);
+  --color-spent: oklch(0.5 0.15 300);
+  --color-spent-content: oklch(0.98 0 0);
+  --color-missed: oklch(0.5 0.08 300);
+}
+
 /* Hide number input spinners */
 input[type='number']::-webkit-inner-spin-button,
 input[type='number']::-webkit-outer-spin-button {
@@ -102,3 +113,17 @@ input[type='number'] {
 }
 
 /* Dark themes (dark, forest, synthwave, dracula, coffee) keep their original lighter colors */
+
+/* Semantic color overrides for dark themes */
+[data-theme='dark'],
+[data-theme='forest'],
+[data-theme='synthwave'],
+[data-theme='dracula'],
+[data-theme='coffee'] {
+  --color-saved: oklch(0.7 0.19 145);
+  --color-saved-content: oklch(0.15 0 0);
+  --color-earned: oklch(0.65 0.1 145);
+  --color-spent: oklch(0.75 0.15 300);
+  --color-spent-content: oklch(0.15 0 0);
+  --color-missed: oklch(0.7 0.08 300);
+}

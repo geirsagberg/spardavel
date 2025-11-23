@@ -88,21 +88,21 @@ function Analytics() {
           {/* Avoided Section */}
           <div className="card bg-base-200 min-w-72 flex-1">
             <div className="card-body py-4">
-              <h2 className="card-title text-success text-lg">✓ Avoided</h2>
+              <h2 className="card-title text-saved text-lg">✓ Avoided</h2>
               <div className="flex gap-4 items-start">
                 <div className="stat flex-1 p-0">
                   <div className="stat-title text-xs">Total Avoided</div>
-                  <div className="stat-value text-xl text-success">
+                  <div className="stat-value text-xl text-saved">
                     {formatCurrency(metrics.allTime.savedTotal - totalAppliedInterestEarned)}
                   </div>
                 </div>
                 <div className="stat flex-1 p-0">
                   <div className="stat-title text-xs">Interest Earned</div>
-                  <div className="stat-value text-xl text-info">
+                  <div className="stat-value text-xl text-earned">
                     +{formatCurrency(totalAppliedInterestEarned + metrics.allTime.pendingSavedInterest)}
                   </div>
                   {metrics.allTime.pendingSavedInterest > 0 && (
-                    <div className="stat-desc text-xs text-info animate-pulse">
+                    <div className="stat-desc text-xs text-earned animate-pulse">
                       +{formatCurrency(metrics.allTime.pendingSavedInterest)} this month
                     </div>
                   )}
@@ -114,21 +114,21 @@ function Analytics() {
           {/* Spent Section */}
           <div className="card bg-base-200 min-w-72 flex-1">
             <div className="card-body py-4">
-              <h2 className="card-title text-error text-lg">✕ Spent</h2>
+              <h2 className="card-title text-spent text-lg">💸 Spent</h2>
               <div className="flex gap-4 items-start">
                 <div className="stat flex-1 p-0">
                   <div className="stat-title text-xs">Total Spent</div>
-                  <div className="stat-value text-xl text-error">
+                  <div className="stat-value text-xl text-spent">
                     {formatCurrency(metrics.allTime.spentTotal)}
                   </div>
                 </div>
                 <div className="stat flex-1 p-0">
                   <div className="stat-title text-xs">Missed Interest</div>
-                  <div className="stat-value text-xl text-warning">
+                  <div className="stat-value text-xl text-missed">
                     -{formatCurrency(metrics.allTime.missedInterest + metrics.allTime.pendingCostInterest)}
                   </div>
                   {metrics.allTime.pendingCostInterest > 0 && (
-                    <div className="stat-desc text-xs text-warning animate-pulse">
+                    <div className="stat-desc text-xs text-missed animate-pulse">
                       -{formatCurrency(metrics.allTime.pendingCostInterest)} this month
                     </div>
                   )}
@@ -159,12 +159,12 @@ function Analytics() {
                         </div>
                         <div className="h-6 w-full overflow-hidden rounded-lg bg-base-300 flex">
                           <div
-                            className="bg-success"
+                            className="bg-saved"
                             style={{ width: `${avoidedPercent}%` }}
                             title={`Avoided: ${formatCurrency(row.avoided)}`}
                           />
                           <div
-                            className="bg-error"
+                            className="bg-spent"
                             style={{ width: `${100 - avoidedPercent}%` }}
                             title={`Spent: ${formatCurrency(row.spent)}`}
                           />
@@ -189,8 +189,8 @@ function Analytics() {
                       {categoryBreakdown.map((row) => (
                         <tr key={row.category}>
                           <td>{row.category}</td>
-                          <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
-                          <td className="text-right text-error">{formatCurrency(row.spent)}</td>
+                          <td className="text-right text-saved">{formatCurrency(row.avoided)}</td>
+                          <td className="text-right text-spent">{formatCurrency(row.spent)}</td>
                           <td className="text-right font-semibold">{formatCurrency(row.avoided + row.spent)}</td>
                         </tr>
                       ))}
@@ -224,10 +224,10 @@ function Analytics() {
                     {monthlyTrends.map((row) => (
                       <tr key={row.month}>
                         <td className="font-semibold">{row.month}</td>
-                        <td className="text-right text-success">{formatCurrency(row.avoided)}</td>
-                        <td className="text-right text-error">{formatCurrency(row.spent)}</td>
-                        <td className="text-right text-info">{formatCurrency(row.interest)}</td>
-                        <td className="text-right text-warning">{formatCurrency(row.missedInterest)}</td>
+                        <td className="text-right text-saved">{formatCurrency(row.avoided)}</td>
+                        <td className="text-right text-spent">{formatCurrency(row.spent)}</td>
+                        <td className="text-right text-earned">{formatCurrency(row.interest)}</td>
+                        <td className="text-right text-missed">{formatCurrency(row.missedInterest)}</td>
                       </tr>
                     ))}
                   </tbody>

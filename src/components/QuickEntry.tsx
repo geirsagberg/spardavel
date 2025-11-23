@@ -194,7 +194,7 @@ export function QuickEntry() {
                   />
                 </div>
                 <button
-                  className="btn btn-success flex-1 whitespace-nowrap"
+                  className="btn bg-saved text-saved-content flex-1 whitespace-nowrap"
                   onClick={() => handleAddEvent('avoided')}
                   disabled={isLoading || !isFormValid}
                 >
@@ -205,14 +205,14 @@ export function QuickEntry() {
                   )}
                 </button>
                 <button
-                  className="btn btn-error flex-1 whitespace-nowrap"
+                  className="btn bg-spent text-spent-content flex-1 whitespace-nowrap"
                   onClick={() => handleAddEvent('purchase')}
                   disabled={isLoading || !isFormValid}
                 >
                   {isLoading ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
-                    '✗ Bought'
+                    '💸 Bought'
                   )}
                 </button>
               </div>
