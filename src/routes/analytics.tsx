@@ -86,10 +86,6 @@ function Analytics() {
     (sum, month) => sum + month.appliedInterestOnAvoided,
     0
   )
-  const totalAppliedInterestCost = metrics.monthlyHistory.reduce(
-    (sum, month) => sum + month.appliedInterestOnSpent,
-    0
-  )
 
   // Category breakdown (all time)
   const categoryBreakdown: Array<{ category: Category; avoided: number; spent: number }> = []

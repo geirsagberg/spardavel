@@ -6,9 +6,6 @@ export function Dashboard() {
   const currentMonth = metrics.currentMonth
   const allTime = metrics.allTime
 
-  // Calculate pending interest for current month
-  const currentPendingInterest = currentMonth.pendingInterestOnAvoided + currentMonth.pendingInterestOnSpent
-
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <div className="stat bg-base-200 py-3">

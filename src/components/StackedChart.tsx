@@ -148,7 +148,6 @@ export function StackedChart() {
     const baseContent =
       computedStyle.getPropertyValue('--color-base-content').trim() ||
       'oklch(21% 0.006 285.885)' // fallback for light theme
-    const textColor = baseContent
     const textColorMuted = baseContent.replace(')', ' / 0.6)')
     const lineColor = baseContent.replace(')', ' / 0.2)')
     const gridColor = baseContent.replace(')', ' / 0.1)')

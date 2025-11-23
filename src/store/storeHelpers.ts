@@ -89,7 +89,7 @@ export function calculateMetricsFromEvents(
     getMonthBounds(currentMonthKey)
 
   // Initialize metrics
-  let metrics: DashboardMetrics = createEmptyDashboardMetrics()
+  const metrics: DashboardMetrics = createEmptyDashboardMetrics()
   const monthlyMap = new Map<string, PeriodMetrics>()
 
   // Extract current interest rate from events

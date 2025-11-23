@@ -1,6 +1,6 @@
 import { useDrag } from '@use-gesture/react'
 import { useNavigate } from '@tanstack/react-router'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 const SWIPE_THRESHOLD = 80
 const VELOCITY_THRESHOLD = 0.5
@@ -16,7 +16,7 @@ export function useSwipeNavigation(currentPath: string) {
   const hasPrev = currentIndex > 0
 
   const bind = useDrag(
-    ({ movement: [mx], velocity: [vx], direction: [dx], active, cancel }) => {
+    ({ movement: [mx], velocity: [vx], direction: [_dx], active, cancel: _cancel }) => {
       // Prevent drag if no valid direction
       if (active) {
         const isSwipingRight = mx > 0

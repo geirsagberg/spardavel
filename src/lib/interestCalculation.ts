@@ -171,7 +171,6 @@ function calculateInterestForDateRange(
  * Returns true if we're past the last day of the month
  */
 export function shouldApplyMonthlyInterest(monthKey: string): boolean {
-  const today = new Date()
   const currentMonthKey = getMonthKey(new Date().toISOString())
 
   // Only apply interest if we're in a different month than the one we're checking
@@ -351,7 +350,7 @@ export function generateInterestApplicationEvents(
   
   // Create a combined array that includes both existing events and newly generated interest events
   // This ensures compound interest works correctly when generating interest for multiple months
-  let eventsWithNewInterest = [...events]
+  const eventsWithNewInterest = [...events]
 
   for (const monthKey of monthsNeedingApplication) {
     const { end: monthEnd } = getMonthBounds(monthKey)
