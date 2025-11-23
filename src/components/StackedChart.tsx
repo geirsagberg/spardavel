@@ -1,11 +1,11 @@
-import * as echarts from 'echarts/core'
 import { LineChart, type LineSeriesOption } from 'echarts/charts'
 import {
   GridComponent,
   TooltipComponent,
-  type TooltipComponentOption,
   type GridComponentOption,
+  type TooltipComponentOption,
 } from 'echarts/components'
+import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef, useState } from 'react'
 import { formatCurrency } from '~/lib/formatting'
@@ -22,7 +22,15 @@ export function StackedChart() {
   const chartInstanceRef = useRef<echarts.ECharts | null>(null)
   const metrics = useAppStore((state) => state.metrics)
   const theme = useAppStore((state) => state.theme)
-  const [autoScale, setAutoScale] = useState(true)
+  const [autoScale, setAutoScale] = useState(() => {
+    const stored = localStorage.getItem('chartAutoScale')
+    return stored === null ? true : stored === 'true'
+  })
+
+  const handleAutoScaleChange = (checked: boolean) => {
+    setAutoScale(checked)
+    localStorage.setItem('chartAutoScale', String(checked))
+  }
 
   useEffect(() => {
     if (!chartRef.current) return
@@ -300,15 +308,15 @@ export function StackedChart() {
   return (
     <div className="relative">
       <div ref={chartRef} className="w-full h-64 bg-base-200 rounded-lg p-4" />
-      <div className="absolute bottom-[18px] left-6 z-10">
+      <div className="absolute bottom-5 left-6 z-10">
         <label className="flex items-center gap-1.5 cursor-pointer opacity-60 hover:opacity-100 transition-opacity">
           <input
             type="checkbox"
             checked={autoScale}
-            onChange={(e) => setAutoScale(e.target.checked)}
+            onChange={(e) => handleAutoScaleChange(e.target.checked)}
             className="checkbox checkbox-xs border-base-content/20"
           />
-          <span className="text-[10px] text-base-content/80">Scale Y</span>
+          <span className="text-[10px] text-base-content/80">Scaled</span>
         </label>
       </div>
     </div>
