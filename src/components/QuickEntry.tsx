@@ -147,64 +147,73 @@ export function QuickEntry() {
 
         <div ref={animateRef} className="space-y-4">
           {/* Preset Buttons */}
-          <div>
-            <p className="label-text mb-2">Select a preset or custom:</p>
-            <div className="flex flex-wrap gap-2">
-              {/* Dynamic presets from recent entries */}
-              {dynamicPresets.map((preset) => {
-                const isSelected = amount === preset.amount.toString() && description === preset.description
-                return (
-                  <button
-                    key={`${preset.description}-${preset.amount}-${preset.category}`}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
-                      isSelected
-                        ? 'bg-primary text-primary-content shadow-sm'
-                        : 'bg-base-100 hover:bg-base-300 text-base-content'
-                    }`}
-                    onClick={() => handlePresetClick(preset)}
-                    disabled={isLoading}
-                  >
-                    <span>{CATEGORY_ICONS[preset.category]}</span>
-                    <span className="font-medium">{preset.description}</span>
-                    <span className="text-xs opacity-60">{preset.amount}</span>
-                  </button>
-                )
-              })}
-              
-              {/* Static presets */}
-              {PRESETS.map((preset) => {
-                const isSelected = amount === preset.amount.toString() && description === preset.description
-                return (
-                  <button
-                    key={preset.description}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
-                      isSelected
-                        ? 'bg-primary text-primary-content shadow-sm'
-                        : 'bg-base-100 hover:bg-base-300 text-base-content'
-                    }`}
-                    onClick={() => handlePresetClick(preset)}
-                    disabled={isLoading}
-                  >
-                    <span>{preset.emoji}</span>
-                    <span className="font-medium">{preset.description}</span>
-                    <span className="text-xs opacity-60">{preset.amount}</span>
-                  </button>
-                )
-              })}
-              
-              {/* Custom button */}
-              <button
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
-                  showCustom
-                    ? 'bg-primary text-primary-content shadow-sm'
-                    : 'bg-base-100 hover:bg-base-300 text-base-content'
-                }`}
-                onClick={handleCustomClick}
-                disabled={isLoading}
-              >
-                <span>✏️</span>
-                <span className="font-medium">Custom</span>
-              </button>
+          <div className="space-y-3">
+            {/* Dynamic presets from recent entries */}
+            {dynamicPresets.length > 0 && (
+              <div>
+                <p className="label-text mb-2">Recent</p>
+                <div className="flex flex-wrap gap-2">
+                  {dynamicPresets.map((preset) => {
+                    const isSelected = amount === preset.amount.toString() && description === preset.description
+                    return (
+                      <button
+                        key={`${preset.description}-${preset.amount}-${preset.category}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                          isSelected
+                            ? 'bg-primary text-primary-content shadow-sm'
+                            : 'bg-base-100 hover:bg-base-300 text-base-content'
+                        }`}
+                        onClick={() => handlePresetClick(preset)}
+                        disabled={isLoading}
+                      >
+                        <span>{CATEGORY_ICONS[preset.category]}</span>
+                        <span className="font-medium">{preset.description}</span>
+                        <span className="text-xs opacity-60">{preset.amount}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
+            
+            {/* Static presets */}
+            <div>
+              <p className="label-text mb-2">Presets</p>
+              <div className="flex flex-wrap gap-2">
+                {PRESETS.map((preset) => {
+                  const isSelected = amount === preset.amount.toString() && description === preset.description
+                  return (
+                    <button
+                      key={preset.description}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                        isSelected
+                          ? 'bg-primary text-primary-content shadow-sm'
+                          : 'bg-base-100 hover:bg-base-300 text-base-content'
+                      }`}
+                      onClick={() => handlePresetClick(preset)}
+                      disabled={isLoading}
+                    >
+                      <span>{preset.emoji}</span>
+                      <span className="font-medium">{preset.description}</span>
+                      <span className="text-xs opacity-60">{preset.amount}</span>
+                    </button>
+                  )
+                })}
+                
+                {/* Custom button */}
+                <button
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-all ${
+                    showCustom
+                      ? 'bg-primary text-primary-content shadow-sm'
+                      : 'bg-base-100 hover:bg-base-300 text-base-content'
+                  }`}
+                  onClick={handleCustomClick}
+                  disabled={isLoading}
+                >
+                  <span>✏️</span>
+                  <span className="font-medium">Custom</span>
+                </button>
+              </div>
             </div>
           </div>
 
