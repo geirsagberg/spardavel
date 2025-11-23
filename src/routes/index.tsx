@@ -17,7 +17,12 @@ function Home() {
           <p className="text-sm text-base-content/60">Track your savings</p>
         </div>
 
-        <StackedChart />
+        <div className="relative">
+          <StackedChart />
+          {/* Invisible transition anchors for card animations */}
+          <div className="absolute inset-0 pointer-events-none" style={{ viewTransitionName: 'avoided-card' }} aria-hidden="true" />
+          <div className="absolute inset-0 pointer-events-none" style={{ viewTransitionName: 'spent-card' }} aria-hidden="true" />
+        </div>
         <QuickEntry />
         <RecentEntries />
       </div>
