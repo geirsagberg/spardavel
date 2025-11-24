@@ -218,7 +218,7 @@ export function QuickEntry() {
           </div>
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
-          {(showCustom || isFormValid) && (
+          {(showCustom || amount || description) && (
             <div key="entry-form" className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 <div className="form-control min-w-[100px] flex-1">
