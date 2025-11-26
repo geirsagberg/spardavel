@@ -101,10 +101,19 @@ export function QuickEntry() {
   }
 
   const handleCustomClick = () => {
-    setShowCustom(true)
-    setAmount('')
-    setDescription('')
-    setCategory('Other')
+    if (showCustom) {
+      // If custom form is already open, close it and clear fields
+      setShowCustom(false)
+      setAmount('')
+      setDescription('')
+      setCategory('Other')
+    } else {
+      // If custom form is closed, open it and clear fields
+      setShowCustom(true)
+      setAmount('')
+      setDescription('')
+      setCategory('Other')
+    }
   }
 
   const handleAddEvent = async (type: 'purchase' | 'avoided') => {
