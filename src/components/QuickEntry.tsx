@@ -101,19 +101,12 @@ export function QuickEntry() {
   }
 
   const handleCustomClick = () => {
-    if (showCustom) {
-      // If custom form is already open, close it and clear fields
-      setShowCustom(false)
-      setAmount('')
-      setDescription('')
-      setCategory('Other')
-    } else {
-      // If custom form is closed, open it and clear fields
-      setShowCustom(true)
-      setAmount('')
-      setDescription('')
-      setCategory('Other')
-    }
+    // Toggle the custom form visibility
+    setShowCustom(!showCustom)
+    // Always clear fields when Custom button is clicked
+    setAmount('')
+    setDescription('')
+    setCategory('Other')
   }
 
   const handleAddEvent = async (type: 'purchase' | 'avoided') => {
