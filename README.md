@@ -22,7 +22,7 @@ Spardavel (Norwegian for "savings lever") is a personal finance tracking app tha
 - 📈 **Visual Analytics** - Charts and metrics to track your progress
 - 🏷️ **Categorization** - Organize purchases by type (Alcohol, Candy, Snacks, Food, Drinks, Games, Other)
 - 🔄 **Retroactive Edits** - Change past events and watch everything recalculate automatically
-- 💾 **Local-First** - All data stored in your browser's LocalStorage
+- 💾 **Local-First** - All data stored in your browser's localStorage
 
 ## Getting Started
 
@@ -70,7 +70,7 @@ The dev server runs on port 3000 and supports hot module reloading. Changes to s
 ## Technology Stack
 
 - **Frontend Framework**: React
-- **Routing**: TanStack Router
+- **Routing & Framework**: TanStack Start (React Start)
 - **State Management**: Zustand
 - **Build Tool**: Vite
 - **Styling**: Tailwind CSS + DaisyUI
