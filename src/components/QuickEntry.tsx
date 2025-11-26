@@ -1,4 +1,5 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react'
+import confetti from 'canvas-confetti'
 import { useState } from 'react'
 import { CATEGORIES } from '~/lib/constants'
 import {
@@ -126,6 +127,15 @@ export function QuickEntry() {
           : createAvoidedPurchaseEvent(numAmount, category, description, date)
 
       addEvent(event)
+
+      // Trigger confetti when purchase is avoided
+      if (type === 'avoided') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        })
+      }
 
       // Reset form
       setAmount('')
