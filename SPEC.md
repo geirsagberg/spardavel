@@ -246,6 +246,7 @@ type DashboardMetrics = {
 - Two buttons:
   - "Mark as Purchase" (red/warning)
   - "Mark as Avoided" (green/success)
+- Visual feedback: Confetti animation when purchase is avoided (celebration effect)
 
 **Recent Entries:**
 - List of last 10 entries with:
@@ -312,6 +313,7 @@ type DashboardMetrics = {
 - **Zustand** (latest) - State management (event stream, UI state, derived metrics)
 - **uuid** (latest) - Generate UUIDv7 event IDs (timestamp-sortable)
 - **zod** (latest) - Runtime event validation and schema definition
+- **canvas-confetti** (latest) - Celebration effects when purchases are avoided
 
 **Accessibility:**
 - Custom theme colors ensure WCAG AA contrast compliance
