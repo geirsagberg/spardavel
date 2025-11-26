@@ -53,13 +53,22 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
 
   // Prefetch all onboarding images on component mount
   useEffect(() => {
+    const links: HTMLLinkElement[] = []
     slides.forEach((slide) => {
       const link = document.createElement('link')
       link.rel = 'prefetch'
       link.as = 'image'
       link.href = slide.image
       document.head.appendChild(link)
+      links.push(link)
     })
+
+    // Cleanup: remove prefetch links on unmount
+    return () => {
+      links.forEach((link) => {
+        document.head.removeChild(link)
+      })
+    }
   }, [])
 
   const handleComplete = () => {
