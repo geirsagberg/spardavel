@@ -489,6 +489,7 @@ If importing events from another device:
 - [x] Mobile UX refinement (responsive design with Tailwind, DaisyUI components)
 - [x] Performance optimization (Production build: 301KB JS gzip, 52KB CSS gzip, LCP 108ms, CLS 0, INP 4ms)
 - [x] Accessibility audit (semantic HTML, keyboard navigation, proper ARIA labels)
+- [x] Onboarding image prefetching (all slides' images preloaded on first slide for smooth navigation)
 
 ---
 

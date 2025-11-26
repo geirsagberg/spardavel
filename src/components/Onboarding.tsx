@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useDrag } from '@use-gesture/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type Slide = {
   title: string
@@ -50,6 +50,17 @@ export function Onboarding({ slideNumber }: OnboardingProps) {
     null,
   )
   const navigate = useNavigate()
+
+  // Prefetch all onboarding images on component mount
+  useEffect(() => {
+    slides.forEach((slide) => {
+      const link = document.createElement('link')
+      link.rel = 'prefetch'
+      link.as = 'image'
+      link.href = slide.image
+      document.head.appendChild(link)
+    })
+  }, [])
 
   const handleComplete = () => {
     localStorage.setItem('spardavel_onboarding_complete', 'true')
