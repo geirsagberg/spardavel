@@ -6,7 +6,7 @@ A progressive web app (PWA) that helps you track and reduce "feel-good" impulse 
 
 ## What is Spardavel?
 
-Spardavel (Norwegian for "savings lever") is a personal finance tracking app that helps you:
+Spardavel (Norwegian for "Spar, da vel" — "Come on then, save") is a personal finance tracking app that helps you:
 
 - **Track purchases** - Record your impulse buys (alcohol, candy, snacks, food, drinks, games, etc.)
 - **Log avoided purchases** - Celebrate when you resist temptation
