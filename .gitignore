@@ -39,3 +39,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 # Tanstack start
 .tanstack
 package-lock.json
+
+# Claude Code
+.claude/tsc-cache
