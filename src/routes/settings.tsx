@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
+import { exportAppData } from '~/lib/exportData'
 import { formatDateOnly, formatPercent, getTodayString } from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent, InterestRateChangeEvent } from '~/types/events'
@@ -25,9 +26,6 @@ function Settings() {
   )
   const theme = useAppStore((state) => state.theme)
   const setTheme = useAppStore((state) => state.setTheme)
-  const setLastExportTimestamp = useAppStore(
-    (state) => state.setLastExportTimestamp,
-  )
 
   const [interestRate, setInterestRate] = useState(() =>
     currentInterestRate.toString(),
@@ -68,34 +66,11 @@ function Settings() {
   }
 
   const handleExport = () => {
-    const exportDate = new Date().toISOString()
-    const data = {
-      version: '1',
-      exportDate: exportDate,
-      events: events,
-      settings: {
-        defaultInterestRate: defaultInterestRate,
-      },
+    const success = exportAppData()
+    if (success) {
+      setSuccessMessage('Data exported successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
     }
-
-    const jsonString = JSON.stringify(data, null, 2)
-    const blob = new Blob([jsonString], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    // Include full timestamp in filename (YYYYMMDD_HHmmss format)
-    const timestamp = exportDate.replace(/[-:]/g, '').replace('T', '_').slice(0, 15)
-    link.download = `spardavel_export_${timestamp}.json`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-
-    // Save the export timestamp to localStorage
-    setLastExportTimestamp(exportDate)
-
-    setSuccessMessage('Data exported successfully')
-    setTimeout(() => setSuccessMessage(''), 3000)
   }
 
   const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {

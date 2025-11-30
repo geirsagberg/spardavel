@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router'
+import { exportAppData } from '~/lib/exportData'
 import { useAppStore } from '~/store/appStore'
 
 interface ExportReminderModalProps {
@@ -10,12 +10,11 @@ export function ExportReminderModal({
   isOpen,
   onClose,
 }: ExportReminderModalProps) {
-  const navigate = useNavigate()
   const setDontRemindExport = useAppStore((state) => state.setDontRemindExport)
 
   const handleExport = () => {
+    exportAppData()
     onClose()
-    navigate({ to: '/settings' })
   }
 
   const handleLater = () => {
