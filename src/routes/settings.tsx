@@ -2,7 +2,12 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { createInterestRateChangeEvent } from '~/lib/eventUtils'
 import { exportAppData } from '~/lib/exportData'
-import { formatDateOnly, formatPercent, getTodayString } from '~/lib/formatting'
+import {
+  formatDateTime,
+  formatDateOnly,
+  formatPercent,
+  getTodayString,
+} from '~/lib/formatting'
 import { useAppStore } from '~/store/appStore'
 import type { AppEvent, InterestRateChangeEvent } from '~/types/events'
 
@@ -26,6 +31,7 @@ function Settings() {
   )
   const theme = useAppStore((state) => state.theme)
   const setTheme = useAppStore((state) => state.setTheme)
+  const lastExportTimestamp = useAppStore((state) => state.lastExportTimestamp)
 
   const [interestRate, setInterestRate] = useState(() =>
     currentInterestRate.toString(),
@@ -518,6 +524,10 @@ function Settings() {
             <h2 className="card-title">Data Management</h2>
             <p className="text-base-content/60 text-sm">
               Export or import your data as JSON
+            </p>
+            <p className="text-base-content/80 text-sm pt-2">
+              Last export:{' '}
+              {lastExportTimestamp ? formatDateTime(lastExportTimestamp) : 'Never'}
             </p>
 
             <div className="flex gap-3 pt-4">

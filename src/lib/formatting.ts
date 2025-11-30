@@ -33,6 +33,19 @@ export function formatDate(timestamp: string): string {
 }
 
 /**
+ * Format a timestamp with date and time (e.g., "30. nov., 12:59")
+ */
+export function formatDateTime(timestamp: string): string {
+  const date = new Date(timestamp)
+  return date.toLocaleDateString(APP_LOCALE, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/**
  * Format a date with weekday, year and date for entries (e.g., "man. 15. jan. 2025")
  */
 export function formatDateWithWeekday(date: string): string {
