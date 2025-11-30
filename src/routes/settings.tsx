@@ -25,6 +25,9 @@ function Settings() {
   )
   const theme = useAppStore((state) => state.theme)
   const setTheme = useAppStore((state) => state.setTheme)
+  const setLastExportTimestamp = useAppStore(
+    (state) => state.setLastExportTimestamp,
+  )
 
   const [interestRate, setInterestRate] = useState(() =>
     currentInterestRate.toString(),
@@ -65,9 +68,10 @@ function Settings() {
   }
 
   const handleExport = () => {
+    const exportDate = new Date().toISOString()
     const data = {
       version: '1',
-      exportDate: new Date().toISOString(),
+      exportDate: exportDate,
       events: events,
       settings: {
         defaultInterestRate: defaultInterestRate,
@@ -79,11 +83,16 @@ function Settings() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `spardavel_export_${new Date().toISOString().split('T')[0]}.json`
+    // Include full timestamp in filename (YYYYMMDD_HHmmss format)
+    const timestamp = exportDate.replace(/[-:]/g, '').replace('T', '_').slice(0, 15)
+    link.download = `spardavel_export_${timestamp}.json`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
+
+    // Save the export timestamp to localStorage
+    setLastExportTimestamp(exportDate)
 
     setSuccessMessage('Data exported successfully')
     setTimeout(() => setSuccessMessage(''), 3000)

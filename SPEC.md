@@ -343,18 +343,36 @@ type DashboardMetrics = {
 ### LocalStorage Schema
 
 ```javascript
-// Events stored as array
-localStorage['spardavel_events'] = JSON.stringify([
-  { type: 'PURCHASE', id: '...', ... },
-  { type: 'AVOIDED_PURCHASE', id: '...', ... },
-  { type: 'INTEREST_RATE_CHANGE', id: '...', ... },
-  ...
-])
-
-// Metadata
-localStorage['spardavel_version'] = '1'
-localStorage['spardavel_lastCalculated'] = '2025-01-15'
+// Events stored as array (part of persisted Zustand state)
+localStorage['spardavel_events'] = JSON.stringify({
+  state: {
+    events: [
+      { type: 'PURCHASE', id: '...', ... },
+      { type: 'AVOIDED_PURCHASE', id: '...', ... },
+      { type: 'INTEREST_RATE_CHANGE', id: '...', ... },
+      ...
+    ],
+    defaultInterestRate: 3.5,
+    theme: 'dark',
+    lastExportTimestamp: '2025-01-15T10:30:00Z', // ISO 8601 timestamp of last export
+    dontRemindExport: false, // If true, don't show export reminder
+  },
+  version: 0
+})
 ```
+
+### Export Reminder
+To prevent data loss, the app prompts users to export their data regularly:
+
+- **Trigger conditions**: 14 days have passed since either:
+  - The last export (tracked via `lastExportTimestamp`)
+  - The first transaction event (if never exported)
+- **User options**:
+  - "Export Now" - Navigates to settings page for export
+  - "Later" - Dismisses the modal for this session
+  - "Don't remind me" - Disables reminders permanently (sets `dontRemindExport` to true)
+- **Display**: Modal appears once per session when conditions are met
+- **Filename format**: `spardavel_export_YYYYMMDD_HHmmss.json` (includes timestamp)
 
 ### Event Reconstruction
 On app load:

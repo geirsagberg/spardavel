@@ -5,7 +5,7 @@ import { RecentEntries } from '~/components/RecentEntries'
 import { StackedChart } from '~/components/StackedChart'
 
 export const Route = createFileRoute('/')({
-  beforeLoad: ({ location }) => {
+  beforeLoad: () => {
     if (typeof window !== 'undefined') {
       const onboardingComplete = localStorage.getItem('spardavel_onboarding_complete')
       if (!onboardingComplete) {

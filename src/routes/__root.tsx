@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import {
   createRootRoute,
   Scripts,
@@ -8,9 +8,11 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { DesktopHeader } from '~/components/DesktopHeader'
+import { ExportReminderModal } from '~/components/ExportReminderModal'
 import { Navigation } from '~/components/Navigation'
 import { NotFound } from '~/components/NotFound'
 import { SwipeableOutlet } from '~/components/SwipeableOutlet'
+import { useExportReminder } from '~/lib/useExportReminder'
 import { useAppStore } from '~/store/appStore'
 import css from '~/styles/root.css?url'
 
@@ -61,6 +63,22 @@ function RootComponent() {
   const routerState = useRouterState()
   const router = useRouter()
   const isOnboarding = routerState.location.pathname.startsWith('/onboarding')
+  const shouldShowExportReminder = useExportReminder()
+  // Track if modal has been dismissed this session
+  const [modalDismissed, setModalDismissed] = useState(false)
+  // Track if we've already shown the modal once (to avoid showing again after user dismisses)
+  const [hasShownOnce, setHasShownOnce] = useState(false)
+
+  // Show modal if conditions are met and hasn't been dismissed or shown before
+  const showExportModal = shouldShowExportReminder && 
+    !isOnboarding && 
+    !modalDismissed &&
+    !hasShownOnce
+
+  const handleCloseModal = () => {
+    setHasShownOnce(true)
+    setModalDismissed(true)
+  }
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -90,6 +108,10 @@ function RootComponent() {
       {!isOnboarding && <DesktopHeader />}
       <SwipeableOutlet />
       {!isOnboarding && <Navigation />}
+      <ExportReminderModal
+        isOpen={showExportModal}
+        onClose={handleCloseModal}
+      />
     </RootDocument>
   )
 }

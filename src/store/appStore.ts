@@ -32,6 +32,12 @@ export interface AppStore {
   theme: string
   setTheme: (theme: string) => void
 
+  // Export reminder
+  lastExportTimestamp: string | null // ISO 8601 timestamp
+  dontRemindExport: boolean
+  setLastExportTimestamp: (timestamp: string | null) => void
+  setDontRemindExport: (dontRemind: boolean) => void
+
   // Metrics (derived)
   metrics: DashboardMetrics
   recalculateMetrics: () => void
@@ -50,9 +56,19 @@ export const createAppStore: StateCreator<AppStore> = (set, get) => ({
   metrics: createEmptyDashboardMetrics(),
   defaultInterestRate: FALLBACK_INTEREST_RATE,
   theme: 'dark',
+  lastExportTimestamp: null,
+  dontRemindExport: false,
 
   setTheme: (theme: string) => {
     set({ theme })
+  },
+
+  setLastExportTimestamp: (timestamp: string | null) => {
+    set({ lastExportTimestamp: timestamp })
+  },
+
+  setDontRemindExport: (dontRemind: boolean) => {
+    set({ dontRemindExport: dontRemind })
   },
 
   setDefaultInterestRate: (rate: number) => {
@@ -168,6 +184,8 @@ export const useAppStore = create<AppStore>()(
         events: state.events,
         defaultInterestRate: state.defaultInterestRate,
         theme: state.theme,
+        lastExportTimestamp: state.lastExportTimestamp,
+        dontRemindExport: state.dontRemindExport,
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
