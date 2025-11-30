@@ -1,6 +1,7 @@
 import type { AppEvent, InterestApplicationEvent } from '~/types/events'
 import { getMonthKey, getMonthBounds, createInterestApplicationEvent } from './eventUtils'
 import { FALLBACK_INTEREST_RATE } from './constants'
+import { getTodayString } from './formatting'
 
 /**
  * Get the effective interest rate for a given date
@@ -42,7 +43,7 @@ export function calculatePendingInterestForCurrentMonth(
   events: AppEvent[],
   defaultRate: number = FALLBACK_INTEREST_RATE,
 ): { pendingOnAvoided: number; pendingOnSpent: number } {
-  const today = new Date().toISOString().split('T')[0]!
+  const today = getTodayString()
   const currentMonthKey = getMonthKey(today)
   const { start: monthStart } = getMonthBounds(currentMonthKey)
 
@@ -196,11 +197,29 @@ export function calculatePendingInterestUpToDate(
 }
 
 /**
+ * Calculate pending interest within the current month up to a specific date.
+ * Useful for visualizing day-by-day interest accumulation in graphs.
+ */
+export function calculatePendingInterestInCurrentMonthUpToDate(
+  events: AppEvent[],
+  endDate: string,
+  defaultRate: number = FALLBACK_INTEREST_RATE,
+): { pendingOnAvoided: number; pendingOnSpent: number } {
+  const today = getTodayString()
+  const currentMonthKey = getMonthKey(today)
+  const { start: monthStart } = getMonthBounds(currentMonthKey)
+
+  // Calculate interest from the start of the current month to the end date
+  return calculateInterestForDateRange(events, monthStart, endDate, defaultRate)
+}
+
+/**
  * Check if a month needs interest application
  * Returns true if we're past the last day of the month
  */
 export function shouldApplyMonthlyInterest(monthKey: string): boolean {
-  const currentMonthKey = getMonthKey(new Date().toISOString())
+  const today = getTodayString()
+  const currentMonthKey = getMonthKey(today)
 
   // Only apply interest if we're in a different month than the one we're checking
   return monthKey < currentMonthKey

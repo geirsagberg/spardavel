@@ -1,5 +1,6 @@
 import { v7 as uuidv7 } from 'uuid'
 import type { AppEvent, PurchaseEvent, AvoidedPurchaseEvent, InterestRateChangeEvent, InterestApplicationEvent, Category } from '~/types/events'
+import { getTodayString } from './formatting'
 
 /**
  * Create a new purchase event
@@ -8,7 +9,7 @@ export function createPurchaseEvent(
   amount: number,
   category: Category,
   description: string,
-  date = new Date().toISOString().split('T')[0]!,
+  date = getTodayString(),
 ): PurchaseEvent {
   return {
     type: 'PURCHASE',
@@ -27,7 +28,7 @@ export function createAvoidedPurchaseEvent(
   amount: number,
   category: Category,
   description: string,
-  date = new Date().toISOString().split('T')[0]!,
+  date = getTodayString(),
 ): AvoidedPurchaseEvent {
   return {
     type: 'AVOIDED_PURCHASE',
@@ -165,8 +166,8 @@ export function getMonthBounds(monthKey: string): { start: string; end: string }
  * Get the current month key
  */
 export function getCurrentMonthKey(): string {
-  const now = new Date()
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const today = getTodayString()
+  return getMonthKey(today)
 }
 
 /**

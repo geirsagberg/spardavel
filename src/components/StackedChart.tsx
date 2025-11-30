@@ -8,8 +8,8 @@ import {
 import * as echarts from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useEffect, useRef, useState } from 'react'
-import { formatCurrency } from '~/lib/formatting'
-import { calculatePendingInterestUpToDate } from '~/lib/interestCalculation'
+import { formatCurrency, getTodayString } from '~/lib/formatting'
+import { calculatePendingInterestInCurrentMonthUpToDate } from '~/lib/interestCalculation'
 import { useAppStore } from '~/store/appStore'
 
 type TimeRange = '1w' | '1mo' | '6mo'
@@ -28,10 +28,12 @@ export function StackedChart() {
   const defaultInterestRate = useAppStore((state) => state.defaultInterestRate)
   const theme = useAppStore((state) => state.theme)
   const [autoScale, setAutoScale] = useState(() => {
+    if (typeof window === 'undefined') return true
     const stored = localStorage.getItem('chartAutoScale')
     return stored === null ? true : stored === 'true'
   })
   const [timeRange, setTimeRange] = useState<TimeRange>(() => {
+    if (typeof window === 'undefined') return '1w'
     const stored = localStorage.getItem('chartTimeRange')
     return (stored as TimeRange) || '1w'
   })
@@ -66,7 +68,8 @@ export function StackedChart() {
     const monthlyHistory = metrics.monthlyHistory
 
     // Generate date range and data based on selected time range
-    const now = new Date()
+    const today = getTodayString()
+    const [todayYear, todayMonth, todayDay] = today.split('-').map(Number)
 
     let categories: string[] = []
     let totalSaved: number[] = []
@@ -77,7 +80,7 @@ export function StackedChart() {
     if (timeRange === '6mo') {
       // Monthly data for 6 months
       const last6MonthDates = Array.from({ length: 6 }, (_, i) => {
-        const date = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1)
+        const date = new Date(todayYear!, todayMonth! - 1 - (5 - i), 1)
         return {
           year: date.getFullYear(),
           month: date.getMonth(),
@@ -117,7 +120,7 @@ export function StackedChart() {
       })
 
       // Check if current month is in the displayed range
-      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+      const currentMonthKey = `${todayYear}-${String(todayMonth).padStart(2, '0')}`
       const currentMonthIndex = last6MonthDates.findIndex((d) => d.key === currentMonthKey)
 
       totalSaved = last6Months.map((period, idx) => {
@@ -163,7 +166,7 @@ export function StackedChart() {
       const dates: string[] = []
 
       for (let i = daysCount - 1; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i)
+        const date = new Date(todayYear!, todayMonth! - 1, todayDay! - i)
         // Format directly to avoid timezone issues from toISOString()
         const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
         dates.push(dateStr)
@@ -201,6 +204,9 @@ export function StackedChart() {
           .reduce((sum, e) => sum + (e.type === 'PURCHASE' ? e.amount : 0), 0)
       })
 
+      // Get current month key for comparison
+      const currentMonthKey = `${todayYear}-${String(todayMonth).padStart(2, '0')}`
+
       // Calculate interest (applied + pending) for each day
       totalInterest = dates.map((dateStr) => {
         // Applied interest from completed months
@@ -208,9 +214,17 @@ export function StackedChart() {
           .filter((e) => e.type === 'INTEREST_APPLICATION' && e.date <= dateStr)
           .reduce((sum, e) => sum + (e.type === 'INTEREST_APPLICATION' ? e.pendingOnAvoided : 0), 0)
 
-        // Add pending interest calculated up to this date
-        const { pendingOnAvoided } = calculatePendingInterestUpToDate(events, dateStr, defaultInterestRate)
-        return appliedInterest + pendingOnAvoided
+        // Check if this date is in the current month
+        const dateMonthKey = dateStr.substring(0, 7) // Extract YYYY-MM from YYYY-MM-DD
+        const isCurrentMonth = dateMonthKey === currentMonthKey
+
+        // For current month dates, add pending interest accumulated up to that specific date
+        if (isCurrentMonth) {
+          const { pendingOnAvoided } = calculatePendingInterestInCurrentMonthUpToDate(events, dateStr, defaultInterestRate)
+          return appliedInterest + pendingOnAvoided
+        }
+
+        return appliedInterest
       })
 
       totalMissedInterest = dates.map((dateStr) => {
@@ -219,9 +233,17 @@ export function StackedChart() {
           .filter((e) => e.type === 'INTEREST_APPLICATION' && e.date <= dateStr)
           .reduce((sum, e) => sum + (e.type === 'INTEREST_APPLICATION' ? e.pendingOnSpent : 0), 0)
 
-        // Add pending missed interest calculated up to this date
-        const { pendingOnSpent } = calculatePendingInterestUpToDate(events, dateStr, defaultInterestRate)
-        return appliedMissed + pendingOnSpent
+        // Check if this date is in the current month
+        const dateMonthKey = dateStr.substring(0, 7)
+        const isCurrentMonth = dateMonthKey === currentMonthKey
+
+        // For current month dates, add pending interest accumulated up to that specific date
+        if (isCurrentMonth) {
+          const { pendingOnSpent } = calculatePendingInterestInCurrentMonthUpToDate(events, dateStr, defaultInterestRate)
+          return appliedMissed + pendingOnSpent
+        }
+
+        return appliedMissed
       })
     }
 
