@@ -41,7 +41,7 @@ const DateSchema = z
 const PurchaseEventSchema = z
   .object({
     type: z.literal('PURCHASE'),
-    id: z.uuid(),
+    id: z.string().uuid(),
     date: DateSchema,
     amount: z.number().positive(),
     category: CategorySchema,
@@ -52,7 +52,7 @@ const PurchaseEventSchema = z
 const AvoidedPurchaseEventSchema = z
   .object({
     type: z.literal('AVOIDED_PURCHASE'),
-    id: z.uuid(),
+    id: z.string().uuid(),
     date: DateSchema,
     amount: z.number().positive(),
     category: CategorySchema,
@@ -63,7 +63,7 @@ const AvoidedPurchaseEventSchema = z
 const InterestRateChangeEventSchema = z
   .object({
     type: z.literal('INTEREST_RATE_CHANGE'),
-    id: z.uuid(),
+    id: z.string().uuid(),
     date: DateSchema,
     newRate: z.number().min(0).max(100),
   })
@@ -72,7 +72,7 @@ const InterestRateChangeEventSchema = z
 const InterestApplicationEventSchema = z
   .object({
     type: z.literal('INTEREST_APPLICATION'),
-    id: z.uuid(),
+    id: z.string().uuid(),
     date: DateSchema,
     pendingOnAvoided: z.number(),
     pendingOnSpent: z.number(),
