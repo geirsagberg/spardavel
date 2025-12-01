@@ -1,5 +1,5 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAppStore } from '~/store/appStore'
 import type { Category, PurchaseEvent, AvoidedPurchaseEvent } from '~/types/events'
 import { EntryEditForm } from './EntryEditForm'
@@ -14,6 +14,7 @@ export function RecentEntries() {
   const deleteEvent = useAppStore((state) => state.deleteEvent)
   const updateEvent = useAppStore((state) => state.updateEvent)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
+  const editFormRefs = useRef<Map<string, HTMLDivElement>>(new Map())
 
   const handleSaveEdit = (
     id: string,
@@ -28,6 +29,19 @@ export function RecentEntries() {
     updateEvent(id, updates)
     setEditingEventId(null)
   }
+
+  // Scroll edit form into view when editing starts
+  useEffect(() => {
+    if (editingEventId) {
+      const editFormElement = editFormRefs.current.get(editingEventId)
+      if (editFormElement) {
+        // Use setTimeout to allow the animation to start before scrolling
+        setTimeout(() => {
+          editFormElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        }, 100)
+      }
+    }
+  }, [editingEventId])
 
   const transactionEvents = events
     .filter((e): e is PurchaseEvent | AvoidedPurchaseEvent =>
@@ -60,12 +74,22 @@ export function RecentEntries() {
         <div ref={animateRef} className="space-y-3">
           {transactionEvents.map((event) =>
             editingEventId === event.id ? (
-              <EntryEditForm
+              <div
                 key={event.id}
-                event={event}
-                onSave={handleSaveEdit}
-                onCancel={() => setEditingEventId(null)}
-              />
+                ref={(el) => {
+                  if (el) {
+                    editFormRefs.current.set(event.id, el)
+                  } else {
+                    editFormRefs.current.delete(event.id)
+                  }
+                }}
+              >
+                <EntryEditForm
+                  event={event}
+                  onSave={handleSaveEdit}
+                  onCancel={() => setEditingEventId(null)}
+                />
+              </div>
             ) : (
               <EntryListItem
                 key={event.id}
