@@ -5,6 +5,8 @@ import type { Category, PurchaseEvent, AvoidedPurchaseEvent } from '~/types/even
 import { EntryEditForm } from './EntryEditForm'
 import { EntryListItem } from './EntryListItem'
 
+const SCROLL_DELAY_MS = 100 // Delay to allow animation to start before scrolling
+
 export function RecentEntries() {
   const [animateRef] = useAutoAnimate({
     duration: 200,
@@ -38,7 +40,7 @@ export function RecentEntries() {
         // Use setTimeout to allow the animation to start before scrolling
         setTimeout(() => {
           editFormElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-        }, 100)
+        }, SCROLL_DELAY_MS)
       }
     }
   }, [editingEventId])
