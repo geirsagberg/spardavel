@@ -1,6 +1,6 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import confetti from 'canvas-confetti'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { CATEGORIES } from '~/lib/constants'
 import {
   createAvoidedPurchaseEvent,
@@ -48,6 +48,7 @@ export function QuickEntry() {
   const [date, setDate] = useState(getTodayString)
   const [isLoading, setIsLoading] = useState(false)
   const [showCustom, setShowCustom] = useState(false)
+  const formRef = useRef<HTMLDivElement>(null)
 
   // Get last 5 unique entries (avoiding duplicates and static presets)
   const dynamicPresets: Preset[] = (() => {
@@ -100,6 +101,16 @@ export function QuickEntry() {
     }
     setShowCustom(false)
   }
+
+  // Scroll form into view when it becomes visible
+  useEffect(() => {
+    if ((showCustom || amount || description) && formRef.current) {
+      // Use setTimeout to allow the animation to start before scrolling
+      setTimeout(() => {
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }, 100)
+    }
+  }, [showCustom, amount, description])
 
   const handleCustomClick = () => {
     // Toggle the custom form visibility
@@ -231,7 +242,7 @@ export function QuickEntry() {
 
           {/* Custom Entry Form - shown when Custom is selected or a preset is modified */}
           {(showCustom || amount || description) && (
-            <div key="entry-form" className="space-y-4">
+            <div key="entry-form" className="space-y-4" ref={formRef}>
               <div className="flex flex-wrap gap-2">
                 <div className="form-control min-w-[100px] flex-1">
                   <label className="label py-0.5">
