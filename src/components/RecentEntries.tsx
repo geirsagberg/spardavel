@@ -16,7 +16,7 @@ export function RecentEntries() {
   const deleteEvent = useAppStore((state) => state.deleteEvent)
   const updateEvent = useAppStore((state) => state.updateEvent)
   const [editingEventId, setEditingEventId] = useState<string | null>(null)
-  const editFormRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const editFormRefs = useRef(new Map<string, HTMLDivElement>())
 
   const handleSaveEdit = (
     id: string,
