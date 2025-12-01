@@ -16,6 +16,8 @@ type Preset = {
   category: Category
 }
 
+const SCROLL_DELAY_MS = 100 // Delay to allow animation to start before scrolling
+
 const PRESETS: (Preset & { emoji: string })[] = [
   { emoji: '☕', description: 'Coffee', amount: 40, category: 'Drinks' },
   { emoji: '🍬', description: 'Candy', amount: 25, category: 'Candy' },
@@ -108,7 +110,7 @@ export function QuickEntry() {
       // Use setTimeout to allow the animation to start before scrolling
       setTimeout(() => {
         formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      }, 100)
+      }, SCROLL_DELAY_MS)
     }
   }, [showCustom, amount, description])
 
