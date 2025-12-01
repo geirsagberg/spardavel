@@ -38,9 +38,10 @@ export function RecentEntries() {
       const editFormElement = editFormRefs.current.get(editingEventId)
       if (editFormElement) {
         // Use setTimeout to allow the animation to start before scrolling
-        setTimeout(() => {
+        const timeoutId = setTimeout(() => {
           editFormElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
         }, SCROLL_DELAY_MS)
+        return () => clearTimeout(timeoutId)
       }
     }
   }, [editingEventId])
