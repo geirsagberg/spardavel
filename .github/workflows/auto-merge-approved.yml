@@ -32,11 +32,15 @@ jobs:
           fi
 
           # Check if PR is mergeable
+          # CLEAN: All checks passed, ready to merge
+          # UNSTABLE: Some checks failed but merge is allowed (e.g., optional)
           PR_STATE=$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
             --json mergeStateStatus --jq '.mergeStateStatus')
 
           if [ "$PR_STATE" = "CLEAN" ] || [ "$PR_STATE" = "UNSTABLE" ]; then
             echo "PR is mergeable, proceeding with merge"
+            # Note: --delete-branch only deletes the head branch if it's not
+            # the default branch and the user has permissions
             gh pr merge "${PR_NUMBER}" --repo "${REPO}" --squash \
               --delete-branch
           else
