@@ -511,6 +511,23 @@ If importing events from another device:
 
 ---
 
+## GitHub Actions Automation
+
+### Copilot PR Ready for Review
+- **Workflow**: `.github/workflows/copilot-pr-ready.yml`
+- **Trigger**: When a PR is labeled with `copilot-ready`
+- **Action**: Marks draft PR as ready for review
+- **Usage**: Copilot agent adds the `copilot-ready` label when work is complete
+
+### Auto-merge Approved PRs
+- **Workflow**: `.github/workflows/auto-merge-approved.yml`
+- **Trigger**: When a PR review is submitted with approval
+- **Action**: Automatically merges the PR if it's in a mergeable state
+- **Merge strategy**: Squash merge
+- **Safety**: Only merges if PR state is CLEAN or UNSTABLE
+
+---
+
 ## Future Enhancements
 
 - **Cloud Sync** - Sync across devices (Firebase, Supabase, etc.)
