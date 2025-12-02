@@ -12,7 +12,7 @@ jobs:
   auto-merge:
     runs-on: ubuntu-latest
     # Only run if the review is an approval
-    if: github.event.review.state == 'approved'
+    if: github.event.review.state == 'APPROVED'
     steps:
       - name: Check if PR is approved and merge
         env:
@@ -22,15 +22,23 @@ jobs:
         run: |
           echo "PR #${PR_NUMBER} has been approved, attempting to merge"
 
+          # Verify PR has approval status
+          REVIEW_STATE=$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
+            --json reviewDecision --jq '.reviewDecision')
+
+          if [ "$REVIEW_STATE" != "APPROVED" ]; then
+            echo "PR does not have approval status, skipping merge"
+            exit 0
+          fi
+
           # Check if PR is mergeable
           PR_STATE=$(gh pr view "${PR_NUMBER}" --repo "${REPO}" \
-            --json mergeable,mergeStateStatus --jq '.mergeStateStatus')
+            --json mergeStateStatus --jq '.mergeStateStatus')
 
           if [ "$PR_STATE" = "CLEAN" ] || [ "$PR_STATE" = "UNSTABLE" ]; then
             echo "PR is mergeable, proceeding with merge"
             gh pr merge "${PR_NUMBER}" --repo "${REPO}" --squash --auto
           else
-            echo "PR is not in a mergeable state (state: $PR_STATE)," \
-              "skipping merge"
+            echo "PR not in mergeable state: $PR_STATE, skipping merge"
             exit 0
           fi
