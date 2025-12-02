@@ -37,7 +37,8 @@ jobs:
 
           if [ "$PR_STATE" = "CLEAN" ] || [ "$PR_STATE" = "UNSTABLE" ]; then
             echo "PR is mergeable, proceeding with merge"
-            gh pr merge "${PR_NUMBER}" --repo "${REPO}" --squash
+            gh pr merge "${PR_NUMBER}" --repo "${REPO}" --squash \
+              --delete-branch
           else
             echo "PR not in mergeable state: $PR_STATE, skipping merge"
             exit 0
