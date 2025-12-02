@@ -1,12 +1,13 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import confetti from 'canvas-confetti'
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 import { CATEGORIES } from '~/lib/constants'
 import {
   createAvoidedPurchaseEvent,
   createPurchaseEvent,
 } from '~/lib/eventUtils'
 import { APP_CURRENCY, getTodayString } from '~/lib/formatting'
+import { useScrollIntoView } from '~/lib/useScrollIntoView'
 import { useAppStore } from '~/store/appStore'
 import type { Category } from '~/types/events'
 
@@ -15,8 +16,6 @@ type Preset = {
   amount: number
   category: Category
 }
-
-const SCROLL_DELAY_MS = 100 // Delay to allow animation to start before scrolling
 
 const PRESETS: (Preset & { emoji: string })[] = [
   { emoji: '☕', description: 'Coffee', amount: 40, category: 'Drinks' },
@@ -50,7 +49,10 @@ export function QuickEntry() {
   const [date, setDate] = useState(getTodayString)
   const [isLoading, setIsLoading] = useState(false)
   const [showCustom, setShowCustom] = useState(false)
-  const formRef = useRef<HTMLDivElement>(null)
+  
+  // Track if form is visible and get ref for scrolling
+  const isFormVisible = !!(showCustom || amount || description)
+  const formRef = useScrollIntoView(isFormVisible)
 
   // Get last 5 unique entries (avoiding duplicates and static presets)
   const dynamicPresets: Preset[] = (() => {
@@ -103,17 +105,6 @@ export function QuickEntry() {
     }
     setShowCustom(false)
   }
-
-  // Scroll form into view when it becomes visible
-  useEffect(() => {
-    if ((showCustom || amount || description) && formRef.current) {
-      // Use setTimeout to allow the animation to start before scrolling
-      const timeoutId = setTimeout(() => {
-        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }, SCROLL_DELAY_MS)
-      return () => clearTimeout(timeoutId)
-    }
-  }, [showCustom, amount, description])
 
   const handleCustomClick = () => {
     // Toggle the custom form visibility
