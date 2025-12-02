@@ -109,7 +109,7 @@ export function QuickEntry() {
     if ((showCustom || amount || description) && formRef.current) {
       // Use setTimeout to allow the animation to start before scrolling
       const timeoutId = setTimeout(() => {
-        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+        formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
       }, SCROLL_DELAY_MS)
       return () => clearTimeout(timeoutId)
     }
