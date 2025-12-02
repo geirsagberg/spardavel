@@ -9,8 +9,8 @@ const SCROLL_DELAY_MS = 100 // Delay to allow animation to start before scrollin
  * @param isVisible - Condition that determines if the element should be scrolled into view
  * @returns A ref to attach to the element that should be scrolled
  */
-export function useScrollIntoView(isVisible: boolean) {
-  const elementRef = useRef<HTMLDivElement>(null)
+export function useScrollIntoView<T extends HTMLElement = HTMLDivElement>(isVisible: boolean) {
+  const elementRef = useRef<T>(null)
   const hasScrolledRef = useRef(false)
 
   useEffect(() => {
@@ -33,10 +33,12 @@ export function useScrollIntoView(isVisible: boolean) {
 /**
  * Helper function to scroll an element into view with a delay.
  * Useful when working with refs stored in Maps or other data structures.
+ * Returns a cleanup function that should be called to clear the timeout.
  * 
  * @param element - The element to scroll into view
+ * @returns Cleanup function to clear the timeout, or undefined if no element
  */
-export function scrollElementIntoView(element: HTMLElement | null) {
+export function scrollElementIntoView(element: HTMLElement | null): (() => void) | undefined {
   if (element) {
     // Use setTimeout to allow the animation to start before scrolling
     const timeoutId = setTimeout(() => {
@@ -44,4 +46,5 @@ export function scrollElementIntoView(element: HTMLElement | null) {
     }, SCROLL_DELAY_MS)
     return () => clearTimeout(timeoutId)
   }
+  return undefined
 }
