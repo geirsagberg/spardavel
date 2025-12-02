@@ -1,11 +1,10 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useState, useEffect, useRef } from 'react'
+import { scrollElementIntoView } from '~/lib/useScrollIntoView'
 import { useAppStore } from '~/store/appStore'
 import type { Category, PurchaseEvent, AvoidedPurchaseEvent } from '~/types/events'
 import { EntryEditForm } from './EntryEditForm'
 import { EntryListItem } from './EntryListItem'
-
-const SCROLL_DELAY_MS = 100 // Delay to allow animation to start before scrolling
 
 export function RecentEntries() {
   const [animateRef] = useAutoAnimate({
@@ -36,13 +35,7 @@ export function RecentEntries() {
   useEffect(() => {
     if (editingEventId) {
       const editFormElement = editFormRefs.current.get(editingEventId)
-      if (editFormElement) {
-        // Use setTimeout to allow the animation to start before scrolling
-        const timeoutId = setTimeout(() => {
-          editFormElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        }, SCROLL_DELAY_MS)
-        return () => clearTimeout(timeoutId)
-      }
+      return scrollElementIntoView(editFormElement || null)
     }
   }, [editingEventId])
 
